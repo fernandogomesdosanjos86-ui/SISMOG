@@ -69,7 +69,7 @@ export default function Login() {
             if (authMode === 'login') {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
-                navigate('/');
+                navigate('/app');
             } else if (authMode === 'register') {
                 if (password.length < 6) {
                     throw new Error('A senha deve ter no mínimo 6 caracteres');

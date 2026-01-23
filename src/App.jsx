@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastProvider } from './components/ui/Toast'
 import PrivateRoute from './components/auth/PrivateRoute'
 import MainLayout from './layouts/MainLayout'
@@ -32,11 +32,14 @@ function App() {
         <ToastProvider>
             <BrowserRouter>
                 <Routes>
-                    {/* Rota de Login (fora do PrivateRoute) */}
+                    {/* Rota raiz redireciona instantaneamente para login */}
+                    <Route path="/" element={<Navigate to="/login" replace />} />
+
+                    {/* Rota de Login */}
                     <Route path="/login" element={<Login />} />
 
-                    {/* Rotas Protegidas */}
-                    <Route path="/" element={<PrivateRoute><MainLayout /></PrivateRoute>}>
+                    {/* Rotas Protegidas - prefixo /app */}
+                    <Route path="/app" element={<PrivateRoute><MainLayout /></PrivateRoute>}>
                         <Route index element={<Dashboard />} />
 
                         {/* CURRÍCULOS */}

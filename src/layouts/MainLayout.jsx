@@ -19,53 +19,53 @@ import clsx from 'clsx';
 import { supabase } from '../lib/supabase';
 
 const navigation = [
-    { name: 'DASHBOARD', to: '/', icon: LayoutDashboard, exact: true },
-    { name: 'CURRÍCULOS', to: '/curriculos', icon: ClipboardList },
+    { name: 'DASHBOARD', to: '/app', icon: LayoutDashboard, exact: true },
+    { name: 'CURRÍCULOS', to: '/app/curriculos', icon: ClipboardList },
     {
         name: 'ESTOQUE',
         icon: Layers,
         children: [
-            { name: 'Controle de Estoque', to: '/estoque/controle' },
-            { name: 'Equip. Controlados', to: '/estoque/equipamentos' },
+            { name: 'Controle de Estoque', to: '/app/estoque/controle' },
+            { name: 'Equip. Controlados', to: '/app/estoque/equipamentos' },
         ],
     },
     {
         name: 'DEPARTAMENTO PESSOAL',
         icon: Users,
         children: [
-            { name: 'Funcionários', to: '/dp/funcionarios' }, // Mantido no DP
-            { name: 'Cargos e Salários', to: '/dp/cargos-salarios' },
-            { name: 'Folha de Pagamento', to: '/dp/folha' },
+            { name: 'Funcionários', to: '/app/dp/funcionarios' },
+            { name: 'Cargos e Salários', to: '/app/dp/cargos-salarios' },
+            { name: 'Folha de Pagamento', to: '/app/dp/folha' },
         ],
     },
     {
         name: 'SUPERVISÃO',
         icon: UserCheck,
         children: [
-            { name: 'Gestão de Postos', to: '/supervisao/gestao-postos' },
-            { name: 'Postos de Trabalho', to: '/supervisao/postos' }, // Movido para Supervisão
-            { name: 'Escalas', to: '/supervisao/escalas' },
-            { name: 'Serviços Extras', to: '/supervisao/servicos-extras' },
+            { name: 'Gestão de Postos', to: '/app/supervisao/gestao-postos' },
+            { name: 'Postos de Trabalho', to: '/app/supervisao/postos' },
+            { name: 'Escalas', to: '/app/supervisao/escalas' },
+            { name: 'Serviços Extras', to: '/app/supervisao/servicos-extras' },
         ],
     },
     {
         name: 'FINANCEIRO',
         icon: Banknote,
         children: [
-            { name: 'Contratos', to: '/financeiro/contratos' },
-            { name: 'Faturamentos', to: '/financeiro/faturamentos' },
-            { name: 'Recebimentos', to: '/financeiro/recebimentos' },
-            { name: 'Tributos', to: '/financeiro/tributos' },
+            { name: 'Contratos', to: '/app/financeiro/contratos' },
+            { name: 'Faturamentos', to: '/app/financeiro/faturamentos' },
+            { name: 'Recebimentos', to: '/app/financeiro/recebimentos' },
+            { name: 'Tributos', to: '/app/financeiro/tributos' },
         ],
     },
     {
         name: 'CONFIGURAÇÕES',
         icon: Settings,
         children: [
-            { name: 'Usuários', to: '/config/usuarios' },
-            { name: 'Empresas', to: '/config/empresas' },
-            { name: 'Contas Correntes', to: '/config/contas' },
-            { name: 'Cartões de Crédito', to: '/config/cartoes' },
+            { name: 'Usuários', to: '/app/config/usuarios' },
+            { name: 'Empresas', to: '/app/config/empresas' },
+            { name: 'Contas Correntes', to: '/app/config/contas' },
+            { name: 'Cartões de Crédito', to: '/app/config/cartoes' },
         ],
     },
 ];

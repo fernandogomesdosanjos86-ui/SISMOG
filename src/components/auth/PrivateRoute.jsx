@@ -1,32 +1,82 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
 /**
- * Componente de proteção de rotas
- * Redireciona para /login se o usuário não estiver autenticado
- * ou se o status do usuário não for 'ativo'
+ * Componente de proteção de rotas (Ultra Otimizado)
+ * Verifica localStorage antes de fazer chamadas de rede
  */
+
+// Cache global para evitar múltiplas verificações durante a mesma sessão
+let cachedUserStatus = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+// Verifica rapidamente se há tokens no localStorage (sem await)
+const hasLocalSession = () => {
+    try {
+        // O Supabase guarda a sessão em uma chave específica no localStorage
+        const keys = Object.keys(localStorage);
+        const supabaseKey = keys.find(key =>
+            key.startsWith('sb-') && key.endsWith('-auth-token')
+        );
+        if (!supabaseKey) return false;
+
+        const stored = localStorage.getItem(supabaseKey);
+        if (!stored) return false;
+
+        const parsed = JSON.parse(stored);
+        // Verifica se há um access_token válido
+        return !!(parsed?.access_token || parsed?.currentSession?.access_token);
+    } catch {
+        return false;
+    }
+};
+
 export default function PrivateRoute({ children }) {
-    const [loading, setLoading] = useState(true);
+    // Verificação síncrona inicial - se não há sessão local, não precisa esperar
+    const [loading, setLoading] = useState(() => hasLocalSession());
     const [authenticated, setAuthenticated] = useState(false);
     const [userActive, setUserActive] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
     const location = useLocation();
+    const checkingRef = useRef(false);
 
     useEffect(() => {
+        // Se já determinamos que não há sessão local, não precisa fazer nada
+        if (!hasLocalSession()) {
+            setLoading(false);
+            setAuthenticated(false);
+            setUserActive(false);
+            return;
+        }
+
         const checkAuth = async () => {
+            if (checkingRef.current) return;
+            checkingRef.current = true;
+
             try {
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (!session) {
                     setAuthenticated(false);
                     setUserActive(false);
+                    cachedUserStatus = null;
                     setLoading(false);
+                    checkingRef.current = false;
                     return;
                 }
 
                 setAuthenticated(true);
+
+                // Verificar cache antes de fazer query
+                const now = Date.now();
+                if (cachedUserStatus && (now - cacheTimestamp) < CACHE_DURATION) {
+                    setUserActive(cachedUserStatus === 'ativo');
+                    setLoading(false);
+                    checkingRef.current = false;
+                    return;
+                }
 
                 // Verificar status do usuário na tabela usuarios
                 const { data: usuario, error } = await supabase
@@ -40,12 +90,17 @@ export default function PrivateRoute({ children }) {
                     setUserActive(false);
                     setErrorMessage('Erro ao verificar permissões. Tente novamente.');
                     await supabase.auth.signOut();
+                    cachedUserStatus = null;
                     setLoading(false);
+                    checkingRef.current = false;
                     return;
                 }
 
+                // Atualizar cache
+                cachedUserStatus = usuario?.status;
+                cacheTimestamp = now;
+
                 if (usuario?.status !== 'ativo') {
-                    // Usuário não está ativo - fazer logout e redirecionar
                     const mensagens = {
                         'aguardando_aprovacao': 'Sua conta está aguardando aprovação do administrador.',
                         'inativo': 'Sua conta foi desativada. Entre em contato com o administrador.'
@@ -53,6 +108,7 @@ export default function PrivateRoute({ children }) {
                     setErrorMessage(mensagens[usuario?.status] || 'Acesso não autorizado.');
                     setUserActive(false);
                     await supabase.auth.signOut();
+                    cachedUserStatus = null;
                 } else {
                     setUserActive(true);
                 }
@@ -61,6 +117,7 @@ export default function PrivateRoute({ children }) {
                 setErrorMessage('Erro ao verificar autenticação.');
             } finally {
                 setLoading(false);
+                checkingRef.current = false;
             }
         };
 
@@ -68,30 +125,38 @@ export default function PrivateRoute({ children }) {
 
         // Escutar mudanças de autenticação
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (!session) {
+            if (event === 'TOKEN_REFRESHED') return;
+
+            if (event === 'SIGNED_OUT' || !session) {
+                cachedUserStatus = null;
                 setAuthenticated(false);
                 setUserActive(false);
                 setLoading(false);
                 return;
             }
 
-            setAuthenticated(true);
+            if (event === 'SIGNED_IN') {
+                cachedUserStatus = null;
+                setAuthenticated(true);
 
-            // Verificar status do usuário na tabela usuarios
-            const { data: usuario } = await supabase
-                .from('usuarios')
-                .select('status')
-                .eq('id', session.user.id)
-                .single();
+                const { data: usuario } = await supabase
+                    .from('usuarios')
+                    .select('status')
+                    .eq('id', session.user.id)
+                    .single();
 
-            if (usuario?.status === 'ativo') {
-                setUserActive(true);
-            } else {
-                setUserActive(false);
-                await supabase.auth.signOut();
+                cachedUserStatus = usuario?.status;
+                cacheTimestamp = Date.now();
+
+                if (usuario?.status === 'ativo') {
+                    setUserActive(true);
+                } else {
+                    setUserActive(false);
+                    await supabase.auth.signOut();
+                }
+
+                setLoading(false);
             }
-
-            setLoading(false);
         });
 
         return () => subscription.unsubscribe();
@@ -109,7 +174,6 @@ export default function PrivateRoute({ children }) {
     }
 
     if (!authenticated || !userActive) {
-        // Redireciona para login, salvando a URL atual e mensagem de erro
         return <Navigate to="/login" state={{ from: location, errorMessage }} replace />;
     }
 
