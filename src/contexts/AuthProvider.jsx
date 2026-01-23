@@ -9,30 +9,42 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
-    const [loading, setLoading] = useState(true);
+
+    // 1. Instant Kick Strategy (Fail Fast)
+    // Initialize 'loading' based on the synchronous presence of the token in localStorage.
+    // This prevents the "Spinner" flash for unauthenticated users.
+    const [loading, setLoading] = useState(() => {
+        try {
+            if (typeof window === 'undefined') return true; // SSR safety
+
+            const keys = Object.keys(localStorage);
+            const hasSupabaseToken = keys.some(key =>
+                key.startsWith('sb-') && key.endsWith('-auth-token')
+            );
+
+            return hasSupabaseToken;
+        } catch {
+            return true; // Fallback to safe loading
+        }
+    });
 
     useEffect(() => {
         let mounted = true;
 
         async function initializeAuth() {
-            // 1. Fail Fast: Check for local token first
-            const hasLocalToken = !!localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_ID || 'token'}-auth-token`) ||
-                Object.keys(localStorage).some(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
-
-            if (!hasLocalToken) {
-                if (mounted) {
-                    setLoading(false);
-                    setUser(null);
-                    setSession(null);
-                }
+            // Double check: If we started with loading=false, we don't need to run this
+            // unless we want to verify session validity in background (optional but good).
+            // But based on "Fail Fast", if no local token, we are done.
+            if (!loading) {
                 return;
             }
 
             try {
-                // 2. Parallel Execution: Get Session + User Data simultaneously
+                // 2. Parallelism (End of Waterfall)
+                // Retrieve Session/User and Auth User simultaneously
                 const [sessionResult, userResult] = await Promise.all([
                     supabase.auth.getSession(),
-                    supabase.auth.getUser() // Get user directly from auth first to ensure validity
+                    supabase.auth.getUser()
                 ]);
 
                 const currentSession = sessionResult.data.session;
@@ -42,8 +54,8 @@ export function AuthProvider({ children }) {
                     throw new Error('No valid session');
                 }
 
-                // 3. Get Application Specific User Data (Permissions/Status)
-                // Only fetch if we have a valid auth user
+                // 3. Business Security Check (User Active?)
+                // Fetch public.usuarios status
                 const { data: profile, error: profileError } = await supabase
                     .from('usuarios')
                     .select('*')
@@ -52,25 +64,22 @@ export function AuthProvider({ children }) {
 
                 if (profileError || !profile) {
                     console.error("Profile fetch error:", profileError);
-                    // Optional: Decide if you want to logout here or just allow auth without profile
-                    // For strict apps, logout might be better.
                     throw new Error('Profile not found');
                 }
 
-                if (profile.status !== true && profile.status !== 'ativo') { // Check both boolean and string just in case
+                if (profile.status !== true && profile.status !== 'ativo') {
                     throw new Error('User inactive');
                 }
 
                 if (mounted) {
                     setSession(currentSession);
-                    setUser({ ...currentUser, ...profile }); // Merge auth user with profile data
+                    setUser({ ...currentUser, ...profile });
                 }
             } catch (error) {
                 console.error('Auth initialization error:', error);
                 if (mounted) {
                     setSession(null);
                     setUser(null);
-                    // Ensure cleanup on error
                     await supabase.auth.signOut();
                 }
             } finally {
@@ -82,20 +91,16 @@ export function AuthProvider({ children }) {
 
         initializeAuth();
 
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-            // Note: we could optimize this further, but standard handling is usually sufficient here
-            // Re-fetching full profile on every change might be expensive, 
-            // but ensures data consistency on login/refresh.
-
+        // 4. State Listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
             if (mounted) {
                 if (newSession) {
                     setSession(newSession);
-                    // We could refetch user profile here if needed
+                    // Logic to re-fetch profile can be added here if needed
                 } else {
                     setSession(null);
                     setUser(null);
-                    setLoading(false); // Ensure loading stops on logout
+                    setLoading(false);
                 }
             }
         });
@@ -104,7 +109,7 @@ export function AuthProvider({ children }) {
             mounted = false;
             subscription.unsubscribe();
         };
-    }, []);
+    }, []); // Intentionally empty dependency array
 
     const value = {
         user,
@@ -116,7 +121,7 @@ export function AuthProvider({ children }) {
     return (
         <AuthContext.Provider value={value}>
             {!loading ? children : (
-                /* Initial Loading State - Centralized */
+                /* Centralized Loading Spinner */
                 <div className="min-h-screen flex items-center justify-center bg-slate-50">
                     <div className="flex flex-col items-center gap-3">
                         <div className="h-8 w-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
