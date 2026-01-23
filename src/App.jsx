@@ -18,6 +18,7 @@ import Funcionarios from './pages/DepartamentoPessoal/Funcionarios'
 import GestaoPostos from './pages/Supervisao/GestaoPostos'
 import ServicosExtras from './pages/Supervisao/ServicosExtras'
 import Curriculos from './pages/Curriculos/Curriculos'
+import Veiculos from './pages/Frota/Veiculos'
 
 // Componente Genérico para Rotas em Desenvolvimento
 const UnderConstruction = () => (
@@ -32,8 +33,8 @@ function App() {
         <ToastProvider>
             <BrowserRouter>
                 <Routes>
-                    {/* Rota raiz redireciona instantaneamente para login */}
-                    <Route path="/" element={<Navigate to="/login" replace />} />
+                    {/* Rota raiz redireciona para /app (o PrivateRoute vai mandar para login se precisar) */}
+                    <Route path="/" element={<Navigate to="/app" replace />} />
 
                     {/* Rota de Login */}
                     <Route path="/login" element={<Login />} />
@@ -64,6 +65,9 @@ function App() {
                         <Route path="financeiro/contratos" element={<Contratos />} />
                         <Route path="financeiro/faturamentos" element={<Faturamentos />} />
                         <Route path="financeiro/recebimentos" element={<Recebimentos />} />
+
+                        {/* FROTA */}
+                        <Route path="frota/veiculos" element={<Veiculos />} />
 
                         {/* CONFIGURAÇÕES */}
                         <Route path="config/usuarios" element={<Usuarios />} />

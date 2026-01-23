@@ -59,6 +59,13 @@ const navigation = [
         ],
     },
     {
+        name: 'FROTA',
+        icon: Car,
+        children: [
+            { name: 'Veículos', to: '/app/frota/veiculos' },
+        ],
+    },
+    {
         name: 'CONFIGURAÇÕES',
         icon: Settings,
         children: [

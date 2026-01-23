@@ -37,14 +37,24 @@ export default function Login() {
     const [error, setError] = useState(null);
     const [successMsg, setSuccessMsg] = useState(null);
 
-    // Capturar mensagem de erro do redirecionamento (usuário inativo/aguardando aprovação)
+    // Capturar mensagem de erro e verificar sessão existente
     useEffect(() => {
+        // Se já tiver mensagem de erro via state
         if (location.state?.errorMessage) {
             setError(location.state.errorMessage);
-            // Limpar o state para não mostrar a mensagem novamente ao recarregar
             window.history.replaceState({}, document.title);
         }
-    }, [location.state]);
+
+        // Verificar se já existe sessão ativa para redirecionar
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                navigate('/app', { replace: true });
+            }
+        };
+
+        checkSession();
+    }, [location.state, navigate]);
 
     // Limpar campos ao trocar de modo
     const toggleMode = (mode) => {

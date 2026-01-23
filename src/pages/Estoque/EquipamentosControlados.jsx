@@ -327,70 +327,76 @@ export default function EquipamentosControlados() {
                 />
             </div>
 
-            {/* Tabs */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="flex border-b border-slate-200">
-                    <button
-                        onClick={() => setActiveTab('estoque')}
-                        className={clsx(
-                            "flex-1 px-4 py-3 text-sm font-medium transition-colors",
-                            activeTab === 'estoque'
-                                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                        )}
-                    >
-                        Estoque
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('postos')}
-                        className={clsx(
-                            "flex-1 px-4 py-3 text-sm font-medium transition-colors",
-                            activeTab === 'postos'
-                                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                        )}
-                    >
-                        Postos de Trabalho
-                    </button>
+            {/* Filters - Card branco separado */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Buscar equipamento..."
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
                 </div>
-
-                {/* Filters */}
-                <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Buscar equipamento..."
-                            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
-                    </div>
+                <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-slate-600 whitespace-nowrap">Categoria:</label>
                     <select
                         value={categoriaFilter}
                         onChange={(e) => setCategoriaFilter(e.target.value)}
-                        className="border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
-                        <option value="">Todas Categorias</option>
+                        <option value="">Todas</option>
                         {CATEGORIAS.map(c => (
                             <option key={c.value} value={c.value}>{c.label}</option>
                         ))}
                     </select>
-                    {activeTab === 'postos' && (
+                </div>
+                {activeTab === 'postos' && (
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-slate-600 whitespace-nowrap">Posto:</label>
                         <select
                             value={postoFilter}
                             onChange={(e) => setPostoFilter(e.target.value)}
-                            className="border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         >
-                            <option value="">Todos os Postos</option>
+                            <option value="">Todos</option>
                             {postosComEquipamentos.map(p => (
                                 <option key={p?.id} value={p?.id}>{p?.posto_trabalho}</option>
                             ))}
                         </select>
-                    )}
-                </div>
+                    </div>
+                )}
+            </div>
 
-                {/* Content */}
+            {/* Tabs - Separadas do filtro */}
+            <div className="flex bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <button
+                    onClick={() => setActiveTab('estoque')}
+                    className={clsx(
+                        "flex-1 px-4 py-3 text-sm font-medium transition-colors border-b-2",
+                        activeTab === 'estoque'
+                            ? 'text-blue-600 border-blue-600 bg-blue-50/50'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 border-transparent'
+                    )}
+                >
+                    Estoque
+                </button>
+                <button
+                    onClick={() => setActiveTab('postos')}
+                    className={clsx(
+                        "flex-1 px-4 py-3 text-sm font-medium transition-colors border-b-2",
+                        activeTab === 'postos'
+                            ? 'text-blue-600 border-blue-600 bg-blue-50/50'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 border-transparent'
+                    )}
+                >
+                    Postos de Trabalho
+                </button>
+            </div>
+
+            {/* Content - Container separado */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 {activeTab === 'estoque' ? (
                     <>
                         {/* Desktop Table */}
