@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthProvider';
 import { Lock, Mail, User, ArrowLeft, CheckCircle, Phone, CreditCard } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
@@ -68,6 +69,8 @@ export default function Login() {
         setTelefone('');
     };
 
+    const { login } = useAuth(); // Usar login do contexto
+
     // Submit do formulário
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -77,8 +80,10 @@ export default function Login() {
 
         try {
             if (authMode === 'login') {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                // Usar a função de login centralizada
+                const { error } = await login(email, password);
                 if (error) throw error;
+                // Redirecionamento já é tratado pelo login/context, mas aqui reforçamos
                 navigate('/app');
             } else if (authMode === 'register') {
                 if (password.length < 6) {

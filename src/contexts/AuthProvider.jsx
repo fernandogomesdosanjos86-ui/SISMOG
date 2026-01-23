@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 const AuthContext = createContext({});
@@ -9,13 +9,12 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
+    const isManualLogin = useRef(false);
 
     // 1. Instant Kick Strategy (Fail Fast)
-    // Initialize 'loading' based on the synchronous presence of the token in localStorage.
-    // This prevents the "Spinner" flash for unauthenticated users.
     const [loading, setLoading] = useState(() => {
         try {
-            if (typeof window === 'undefined') return true; // SSR safety
+            if (typeof window === 'undefined') return true;
 
             const keys = Object.keys(localStorage);
             const hasSupabaseToken = keys.some(key =>
@@ -24,24 +23,67 @@ export function AuthProvider({ children }) {
 
             return hasSupabaseToken;
         } catch {
-            return true; // Fallback to safe loading
+            return true;
         }
     });
+
+    // Função centralizada de LOGIN para evitar Race Condition
+    const login = async (email, password) => {
+        try {
+            isManualLogin.current = true; // Seta flag para bloquear listener
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            if (data.session && data.user) {
+                // Busca perfil manualmente para garantir estado completo
+                const { data: profile, error: profileError } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profileError) throw new Error('Erro ao buscar perfil do usuário');
+
+                if (profile.status !== true && profile.status !== 'ativo') {
+                    await supabase.auth.signOut();
+                    throw new Error('Usuário inativo ou aguardando aprovação');
+                }
+
+                // Atualização Otimista e Síncrona
+                setSession(data.session);
+                setUser({ ...data.user, ...profile });
+                // Loading false garante liberação imediata das rotas
+                setLoading(false);
+
+                return { data, error: null };
+            }
+        } catch (error) {
+            isManualLogin.current = false; // Libera listener em caso de erro
+            throw error;
+        } finally {
+            // Delay de segurança para garantir que o redirecionamento ocorra
+            // antes do listener tentar sobrescrever algo (embora o flag proteja)
+            setTimeout(() => {
+                isManualLogin.current = false;
+            }, 2000);
+        }
+    };
 
     useEffect(() => {
         let mounted = true;
 
         async function initializeAuth() {
-            // Double check: If we started with loading=false, we don't need to run this
-            // unless we want to verify session validity in background (optional but good).
-            // But based on "Fail Fast", if no local token, we are done.
             if (!loading) {
                 return;
             }
 
             try {
                 // 2. Parallelism (End of Waterfall)
-                // Retrieve Session/User and Auth User simultaneously
                 const [sessionResult, userResult] = await Promise.all([
                     supabase.auth.getSession(),
                     supabase.auth.getUser()
@@ -55,7 +97,6 @@ export function AuthProvider({ children }) {
                 }
 
                 // 3. Business Security Check (User Active?)
-                // Fetch public.usuarios status
                 const { data: profile, error: profileError } = await supabase
                     .from('usuarios')
                     .select('*')
@@ -76,11 +117,13 @@ export function AuthProvider({ children }) {
                     setUser({ ...currentUser, ...profile });
                 }
             } catch (error) {
-                console.error('Auth initialization error:', error);
+                // Silently fail session restore
                 if (mounted) {
                     setSession(null);
                     setUser(null);
-                    await supabase.auth.signOut();
+                    if (error.message !== 'No valid session') {
+                        await supabase.auth.signOut();
+                    }
                 }
             } finally {
                 if (mounted) {
@@ -93,15 +136,23 @@ export function AuthProvider({ children }) {
 
         // 4. State Listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-            if (mounted) {
-                if (newSession) {
-                    setSession(newSession);
-                    // Logic to re-fetch profile can be added here if needed
-                } else {
-                    setSession(null);
-                    setUser(null);
-                    setLoading(false);
-                }
+            if (!mounted) return;
+
+            // RACE CONDITION FIX:
+            // Se for login manual, ignoramos o evento SIGNED_IN do listener
+            // para evitar que ele resete o loading ou estado que já configuramos.
+            if (isManualLogin.current && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+                return;
+            }
+
+            if (event === 'SIGNED_OUT') {
+                setSession(null);
+                setUser(null);
+                setLoading(false);
+            } else if (newSession && !isManualLogin.current) {
+                // Apenas atualiza sessão se não for login manual
+                // Em caso de re-autenticação automática (token refresh)
+                setSession(newSession);
             }
         });
 
@@ -109,12 +160,13 @@ export function AuthProvider({ children }) {
             mounted = false;
             subscription.unsubscribe();
         };
-    }, []); // Intentionally empty dependency array
+    }, []);
 
     const value = {
         user,
         session,
         loading,
+        login, // Expose login function
         signOut: () => supabase.auth.signOut(),
     };
 
