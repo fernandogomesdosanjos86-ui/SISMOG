@@ -1,75 +1,77 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Usuarios from './pages/Usuarios';
-import Empresas from './pages/Empresas';
-import Home from './pages/Home';
-import CargosSalarios from './pages/CargosSalarios';
-import PostosTrabalho from './pages/PostosTrabalho';
-import Contratos from './pages/Contratos';
-import Faturamentos from './pages/Faturamentos';
-import Recebimentos from './pages/Recebimentos';
-import GestaoArmamento from './pages/GestaoArmamento';
-import ContasCorrente from './pages/Financeiro/ContasCorrente';
-import CartoesCredito from './pages/Financeiro/CartoesCredito';
-import Curriculos from './pages/Curriculos';
-import Funcionarios from './pages/Funcionarios';
-import Penalidades from './pages/Penalidades';
-import Supervisao from './pages/Supervisao';
-import Frota from './pages/Frota';
-import Formularios from './pages/Formularios';
-import ControleEstoque from './pages/ControleEstoque';
-import Configuracoes from './pages/Configuracoes';
-import './index.css';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ToastProvider } from './components/ui/Toast'
+import PrivateRoute from './components/auth/PrivateRoute'
+import MainLayout from './layouts/MainLayout'
+import Login from './pages/Auth/Login'
+import Dashboard from './pages/Dashboard/index'
+import Empresas from './pages/Configuracoes/Empresas'
+import Contas from './pages/Configuracoes/Contas'
+import CargosSalarios from './pages/DepartamentoPessoal/CargosSalarios'
+import CartoesCredito from './pages/Configuracoes/CartoesCredito'
+import Usuarios from './pages/Configuracoes/Usuarios'
+import Contratos from './pages/Financeiro/Contratos'
+import Faturamentos from './pages/Financeiro/Faturamentos'
+import Recebimentos from './pages/Financeiro/Recebimentos'
+import EquipamentosControlados from './pages/Estoque/EquipamentosControlados'
+import ControleEstoque from './pages/Estoque/ControleEstoque'
+import Funcionarios from './pages/DepartamentoPessoal/Funcionarios'
+import GestaoPostos from './pages/Supervisao/GestaoPostos'
+import ServicosExtras from './pages/Supervisao/ServicosExtras'
+import Curriculos from './pages/Curriculos/Curriculos'
 
-const ProtectedRoute = ({ children }) => {
-  const { session } = useAuth();
-  if (!session) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-};
+// Componente Genérico para Rotas em Desenvolvimento
+const UnderConstruction = () => (
+    <div className='p-8 text-slate-500 flex flex-col items-center justify-center h-full'>
+        <h1 className='text-2xl font-bold mb-2'>Em Desenvolvimento</h1>
+        <p>Módulo disponível em breve.</p>
+    </div>
+);
 
-const AppRoutes = () => {
-  const { session } = useAuth();
+function App() {
+    return (
+        <ToastProvider>
+            <BrowserRouter>
+                <Routes>
+                    {/* Rota de Login (fora do PrivateRoute) */}
+                    <Route path="/login" element={<Login />} />
 
-  return (
-    <Routes>
-      <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
-      <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-      <Route path="/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
-      <Route path="/empresas" element={<ProtectedRoute><Empresas /></ProtectedRoute>} />
-      <Route path="/cargos-salarios" element={<ProtectedRoute><CargosSalarios /></ProtectedRoute>} />
-      <Route path="/postos-trabalho" element={<ProtectedRoute><PostosTrabalho /></ProtectedRoute>} />
-      <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
-      <Route path="/faturamentos" element={<ProtectedRoute><Faturamentos /></ProtectedRoute>} />
-      <Route path="/recebimentos" element={<ProtectedRoute><Recebimentos /></ProtectedRoute>} />
-      <Route path="/financeiro/contas" element={<ProtectedRoute><ContasCorrente /></ProtectedRoute>} />
-      <Route path="/financeiro/cartoes" element={<ProtectedRoute><CartoesCredito /></ProtectedRoute>} />
-      <Route path="/curriculos" element={<ProtectedRoute><Curriculos /></ProtectedRoute>} />
-      <Route path="/funcionarios" element={<ProtectedRoute><Funcionarios /></ProtectedRoute>} />
-      <Route path="/penalidades" element={<ProtectedRoute><Penalidades /></ProtectedRoute>} />
-      <Route path="/supervisao" element={<ProtectedRoute><Supervisao /></ProtectedRoute>} />
-      <Route path="/frota" element={<ProtectedRoute><Frota /></ProtectedRoute>} />
-      <Route path="/formularios" element={<ProtectedRoute><Formularios /></ProtectedRoute>} />
-      <Route path="/equipamentos-controlados" element={<ProtectedRoute><GestaoArmamento /></ProtectedRoute>} />
-      <Route path="/estoque" element={<ProtectedRoute><ControleEstoque /></ProtectedRoute>} />
-      <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
-      {/* Fallback route */}
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
-  );
-};
+                    {/* Rotas Protegidas */}
+                    <Route path="/" element={<PrivateRoute><MainLayout /></PrivateRoute>}>
+                        <Route index element={<Dashboard />} />
 
-const App = () => {
-  return (
-    <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </AuthProvider>
-  );
-};
+                        {/* CURRÍCULOS */}
+                        <Route path="curriculos" element={<Curriculos />} />
 
-export default App;
+                        {/* ESTOQUE */}
+                        <Route path="estoque/controle" element={<ControleEstoque />} />
+                        <Route path="estoque/equipamentos" element={<EquipamentosControlados />} />
+
+                        {/* DEPARTAMENTO PESSOAL */}
+                        <Route path="dp/funcionarios" element={<Funcionarios />} />
+                        <Route path="dp/cargos-salarios" element={<CargosSalarios />} />
+                        <Route path="dp/folha" element={<UnderConstruction />} />
+
+                        {/* SUPERVISÃO */}
+                        <Route path="supervisao/gestao-postos" element={<GestaoPostos />} />
+                        <Route path="supervisao/postos" element={<UnderConstruction />} />
+                        <Route path="supervisao/escalas" element={<UnderConstruction />} />
+                        <Route path="supervisao/servicos-extras" element={<ServicosExtras />} />
+
+                        {/* FINANCEIRO */}
+                        <Route path="financeiro/contratos" element={<Contratos />} />
+                        <Route path="financeiro/faturamentos" element={<Faturamentos />} />
+                        <Route path="financeiro/recebimentos" element={<Recebimentos />} />
+
+                        {/* CONFIGURAÇÕES */}
+                        <Route path="config/usuarios" element={<Usuarios />} />
+                        <Route path="config/empresas" element={<Empresas />} />
+                        <Route path="config/contas" element={<Contas />} />
+                        <Route path="config/cartoes" element={<CartoesCredito />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </ToastProvider>
+    )
+}
+
+export default App
