@@ -28,7 +28,8 @@ const MainLayout = () => {
                 </div>
 
                 {/* Content Area */}
-                <main className="flex-1 p-3 md:p-6 w-full max-w-[1600px] mx-auto">
+                <main className="flex-1 p-3 md:p-5 w-full max-w-[1600px] mx-auto">
+
                     <Outlet />
                 </main>
             </div>

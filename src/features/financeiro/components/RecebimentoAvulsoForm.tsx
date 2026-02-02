@@ -147,11 +147,23 @@ const RecebimentoAvulsoForm: FC<RecebimentoAvulsoFormProps> = ({ onSuccess, init
                 </span>
             </div>
 
-            <div className="flex justify-end pt-4">
-                <button type="submit" disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3">
+                <button
+                    type="button"
+                    onClick={closeModal}
+                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center"
+                >
                     {loading ? 'Salvando...' : (initialData ? 'Salvar Alterações' : 'Criar Recebimento')}
                 </button>
             </div>
+
         </form>
     );
 };

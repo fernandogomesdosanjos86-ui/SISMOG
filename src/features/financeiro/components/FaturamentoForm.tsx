@@ -141,11 +141,23 @@ const FaturamentoForm: FC<FaturamentoFormProps> = ({ initialData, onSuccess }) =
                 <textarea name="observacoes" value={formData.observacoes || ''} onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border" />
             </div>
 
-            <div className="flex justify-end pt-4">
-                <button type="submit" disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3">
+                <button
+                    type="button"
+                    onClick={closeModal}
+                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center"
+                >
                     {loading ? 'Salvando...' : 'Salvar Alterações'}
                 </button>
             </div>
+
         </form>
     );
 };

@@ -148,22 +148,23 @@ const DestinarForm: FC<Props> = ({ onSuccess }) => {
                 </select>
             </div>
 
-            <div className="flex justify-end pt-4 border-t mt-4">
+            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 border-t mt-4 gap-3">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="mr-3 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                 >
                     Cancelar
                 </button>
                 <button
                     type="submit"
                     disabled={loading || !selectedEquipamento || !selectedPosto}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center"
                 >
                     {loading ? 'Processando...' : 'Destinar'}
                 </button>
             </div>
+
         </form>
     );
 };

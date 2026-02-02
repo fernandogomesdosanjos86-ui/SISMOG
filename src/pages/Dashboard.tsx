@@ -3,7 +3,8 @@ import { type FC } from 'react';
 
 const Dashboard: FC = () => {
     return (
-        <div className="p-6">
+        <div className="">
+
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>

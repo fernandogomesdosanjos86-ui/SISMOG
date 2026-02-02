@@ -10,7 +10,8 @@ import type { Faturamento } from '../../features/financeiro/types';
 import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import FaturamentoForm from '../../features/financeiro/components/FaturamentoForm';
-import { FileText, Play, Eye, Search, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, Play, Search, CheckCircle, AlertCircle } from 'lucide-react';
+
 
 const Faturamentos: FC = () => {
 
@@ -318,7 +319,8 @@ const Faturamentos: FC = () => {
     const totalEmitidoBruto = filteredFaturamentos.filter(f => f.status === 'emitido').reduce((acc, curr) => acc + Number(curr.valor_bruto), 0);
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="space-y-6">
+
             <PageHeader
                 title="Faturamentos"
                 subtitle="Gestão de Faturamentos Mensais"
@@ -426,12 +428,7 @@ const Faturamentos: FC = () => {
                         <p className="text-sm text-gray-600">Venc: {item.data_vencimento ? new Date(item.data_vencimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'}</p>
                         <div className="flex justify-between items-center border-t pt-2 mt-2">
                             <span className="text-green-700 font-bold">R$ {item.valor_liquido.toLocaleString('pt-BR')}</span>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handleView(item); }}
-                                className="p-2 text-blue-600"
-                            >
-                                <Eye size={20} />
-                            </button>
+
                         </div>
                     </div>
                 )}

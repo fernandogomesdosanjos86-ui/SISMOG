@@ -216,7 +216,8 @@ const Recebimentos: React.FC = () => {
     ];
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="space-y-6">
+
             <PageHeader
                 title="Recebimentos"
                 subtitle="Gestão de Recebimentos e Baixas"
