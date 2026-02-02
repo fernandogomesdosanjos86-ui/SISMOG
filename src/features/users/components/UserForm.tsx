@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type FC, type FormEvent } from 'react';
+
 import { useUsers, type User } from '../useUsers';
 import { Save } from 'lucide-react';
 import { useModal } from '../../../context/ModalContext';
@@ -7,7 +8,8 @@ interface UserFormProps {
     user?: User; // Optional for edit mode
 }
 
-const UserForm: React.FC<UserFormProps> = ({ user }) => {
+const UserForm: FC<UserFormProps> = ({ user }) => {
+
     const { createUser, updateUser } = useUsers();
     const { closeModal, showFeedback } = useModal();
     const isEditing = !!user;
@@ -39,7 +41,8 @@ const UserForm: React.FC<UserFormProps> = ({ user }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: FormEvent) => {
+
         e.preventDefault();
         if (!validate()) return;
 

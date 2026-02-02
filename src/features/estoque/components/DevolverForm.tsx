@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC, type FormEvent } from 'react';
+
 import { useModal } from '../../../context/ModalContext';
 import { equipamentosService } from '../../../services/equipamentosService';
 import type { EquipamentoDestinacao, EquipamentoCategoria } from '../types';
@@ -7,7 +8,8 @@ interface Props {
     onSuccess?: () => void;
 }
 
-const DevolverForm: React.FC<Props> = ({ onSuccess }) => {
+const DevolverForm: FC<Props> = ({ onSuccess }) => {
+
     const { closeModal, showFeedback } = useModal();
     const [loading, setLoading] = useState(false);
 
@@ -59,7 +61,8 @@ const DevolverForm: React.FC<Props> = ({ onSuccess }) => {
 
     const currentDestinacao = destinacoes.find(d => d.id === selectedDestinacaoId);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
+
         e.preventDefault();
         if (!selectedDestinacaoId) return;
 

@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, type FC } from 'react';
+
+
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
@@ -10,7 +12,8 @@ import { useModal } from '../../context/ModalContext';
 import FaturamentoForm from '../../features/financeiro/components/FaturamentoForm';
 import { FileText, Play, Eye, Search, CheckCircle, AlertCircle } from 'lucide-react';
 
-const Faturamentos: React.FC = () => {
+const Faturamentos: FC = () => {
+
     const [faturamentos, setFaturamentos] = useState<Faturamento[]>([]);
     const [loading, setLoading] = useState(true);
     const [competenciaFilter, setCompetenciaFilter] = useState(new Date().toISOString().substring(0, 7) + '-01'); // YYYY-MM-01
@@ -53,7 +56,8 @@ const Faturamentos: React.FC = () => {
     };
 
     // Details Component
-    const FaturamentoDetails: React.FC<{ faturamento: Faturamento }> = ({ faturamento }) => (
+    const FaturamentoDetails: FC<{ faturamento: Faturamento }> = ({ faturamento }) => (
+
         <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -147,7 +151,8 @@ const Faturamentos: React.FC = () => {
                     {(faturamento.valor_retencao_caucao || 0) > 0 && (
                         <div className="flex justify-between text-orange-600">
                             <span>- Caução ({faturamento.perc_retencao_caucao}%):</span>
-                            <span>R$ {faturamento.valor_retencao_caucao.toLocaleString('pt-BR')}</span>
+                            <span>R$ {(faturamento.valor_retencao_caucao || 0).toLocaleString('pt-BR')}</span>
+
                         </div>
                     )}
                     {/* Simplified retentions display for brevity */}

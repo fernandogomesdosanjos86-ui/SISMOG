@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
@@ -8,7 +9,8 @@ import type { Recebimento } from '../../features/financeiro/types';
 import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import RecebimentoAvulsoForm from '../../features/financeiro/components/RecebimentoAvulsoForm';
-import { Plus, Eye, Search, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Search, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+
 
 const Recebimentos: React.FC = () => {
     const [recebimentos, setRecebimentos] = useState<Recebimento[]>([]);

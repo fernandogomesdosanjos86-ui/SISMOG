@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type FC } from 'react';
+
 import { useUsers, type User } from '../useUsers';
 import { Search, Mail, Shield, Building2 } from 'lucide-react';
 import { useModal } from '../../../context/ModalContext';
@@ -8,7 +9,8 @@ import { PageHeader, AddButton, ResponsiveTable, StatusBadge } from '../../../co
 import UserForm from './UserForm';
 
 // Component to display user details in the modal
-const UserDetails: React.FC<{ user: User }> = ({ user }) => (
+const UserDetails: FC<{ user: User }> = ({ user }) => (
+
     <div className="space-y-6">
         {/* Avatar and Name */}
         <div className="flex items-center gap-4">
@@ -63,7 +65,8 @@ const UserDetails: React.FC<{ user: User }> = ({ user }) => (
 );
 
 // Permission badge component
-const PermissionBadge: React.FC<{ permissao: User['permissao'] }> = ({ permissao }) => (
+const PermissionBadge: FC<{ permissao: User['permissao'] }> = ({ permissao }) => (
+
     <span className={`px-2 py-1 text-xs rounded-full font-semibold ${permissao === 'Adm' ? 'bg-purple-100 text-purple-800' :
         permissao === 'Gestor' ? 'bg-orange-100 text-orange-800' :
             'bg-blue-100 text-blue-800'
@@ -77,7 +80,8 @@ const PermissionBadge: React.FC<{ permissao: User['permissao'] }> = ({ permissao
 // Mobile Card for User
 // Mobile Card for User
 // Mobile Card for User
-const UserCard: React.FC<{ user: User }> = ({ user }) => (
+const UserCard: FC<{ user: User }> = ({ user }) => (
+
     <div className="space-y-3">
         <div className="flex items-center justify-between">
             <div>
@@ -219,9 +223,9 @@ const UserList = () => {
                     {
                         key: 'cpf',
                         header: 'CPF',
-                        headerClassName: 'hidden md:table-cell',
                         className: 'hidden md:table-cell', // Hide on mobile if needed, matching ResponsiveTable logic? Actually ResponsiveTable handles responsiveness.
                         render: (user) => <span className="text-gray-600 font-mono text-sm">{user.cpf}</span>
+
                     },
                     {
                         key: 'permissao',
@@ -231,9 +235,9 @@ const UserList = () => {
                     {
                         key: 'setor',
                         header: 'Setor',
-                        headerClassName: 'hidden lg:table-cell',
                         className: 'hidden lg:table-cell',
                         render: (user) => <span className="text-gray-600">{user.setor || '-'}</span>
+
                     },
                     {
                         key: 'ativo',

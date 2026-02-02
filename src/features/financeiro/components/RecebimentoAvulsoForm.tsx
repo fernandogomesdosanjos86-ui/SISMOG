@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC, type FormEvent, type ChangeEvent } from 'react';
+
 import type { Recebimento } from '../types';
 import { financeiroService } from '../../../services/financeiroService';
 import { useModal } from '../../../context/ModalContext';
@@ -8,7 +9,8 @@ interface RecebimentoAvulsoFormProps {
     initialData?: Recebimento;
 }
 
-const RecebimentoAvulsoForm: React.FC<RecebimentoAvulsoFormProps> = ({ onSuccess, initialData }) => {
+const RecebimentoAvulsoForm: FC<RecebimentoAvulsoFormProps> = ({ onSuccess, initialData }) => {
+
     const { closeModal, showFeedback } = useModal();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Partial<Recebimento>>({
@@ -46,7 +48,8 @@ const RecebimentoAvulsoForm: React.FC<RecebimentoAvulsoFormProps> = ({ onSuccess
         }
     }, [initialData]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+
         const { name, value, type } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -54,7 +57,8 @@ const RecebimentoAvulsoForm: React.FC<RecebimentoAvulsoFormProps> = ({ onSuccess
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
+
         e.preventDefault();
         setLoading(true);
         try {

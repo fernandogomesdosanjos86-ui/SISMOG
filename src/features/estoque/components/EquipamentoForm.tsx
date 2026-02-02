@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState, type FC, type FormEvent } from 'react';
+
 import { useModal } from '../../../context/ModalContext';
 import { equipamentosService } from '../../../services/equipamentosService';
 import type { Equipamento, EquipamentoCategoria, EquipamentoStatus } from '../types';
@@ -8,7 +9,8 @@ interface Props {
     onSuccess?: () => void;
 }
 
-const EquipamentoForm: React.FC<Props> = ({ initialData, onSuccess }) => {
+const EquipamentoForm: FC<Props> = ({ initialData, onSuccess }) => {
+
     const { closeModal, showFeedback } = useModal();
     const [loading, setLoading] = useState(false);
 
@@ -19,7 +21,8 @@ const EquipamentoForm: React.FC<Props> = ({ initialData, onSuccess }) => {
     const [quantidade, setQuantidade] = useState(initialData?.quantidade || 1);
     const [status, setStatus] = useState<EquipamentoStatus>(initialData?.status || 'Ativo');
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
+
         e.preventDefault();
         setLoading(true);
         try {

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC, type FormEvent } from 'react';
+
 import { useModal } from '../../../context/ModalContext';
 import { equipamentosService } from '../../../services/equipamentosService';
 import { financeiroService } from '../../../services/financeiroService';
@@ -9,7 +10,8 @@ interface Props {
     onSuccess?: () => void;
 }
 
-const DestinarForm: React.FC<Props> = ({ onSuccess }) => {
+const DestinarForm: FC<Props> = ({ onSuccess }) => {
+
     const { closeModal, showFeedback } = useModal();
     const [loading, setLoading] = useState(false);
 
@@ -53,7 +55,8 @@ const DestinarForm: React.FC<Props> = ({ onSuccess }) => {
         setQuantidade(1);
     }, [selectedCategoria]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
+
         e.preventDefault();
         if (!selectedEquipamento || !selectedPosto) return;
 

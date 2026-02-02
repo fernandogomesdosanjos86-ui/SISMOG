@@ -22,8 +22,9 @@ export const equipamentosService = {
         // Calculate available stock
         return equipamentos.map(eq => {
             const totalDestinado = destinacoes
-                .filter(d => d.equipamento_id === eq.id)
-                .reduce((acc, curr) => acc + curr.quantidade, 0);
+                .filter((d: { equipamento_id: any; }) => d.equipamento_id === eq.id)
+                .reduce((acc: any, curr: { quantidade: any; }) => acc + curr.quantidade, 0);
+
 
             return {
                 ...eq,

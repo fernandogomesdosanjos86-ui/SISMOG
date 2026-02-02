@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC, type FormEvent, type ChangeEvent } from 'react';
+
 import type { Contrato } from '../types';
 import { financeiroService } from '../../../services/financeiroService';
 import { useModal } from '../../../context/ModalContext';
@@ -8,7 +9,8 @@ interface ContratoFormProps {
     onSuccess?: () => void;
 }
 
-const ContratoForm: React.FC<ContratoFormProps> = ({ initialData, onSuccess }) => {
+const ContratoForm: FC<ContratoFormProps> = ({ initialData, onSuccess }) => {
+
     const { closeModal, showFeedback } = useModal();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Partial<Contrato>>({
@@ -46,7 +48,8 @@ const ContratoForm: React.FC<ContratoFormProps> = ({ initialData, onSuccess }) =
         return date.toLocaleDateString('pt-BR');
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
+
         e.preventDefault();
         setLoading(true);
         try {
@@ -67,7 +70,8 @@ const ContratoForm: React.FC<ContratoFormProps> = ({ initialData, onSuccess }) =
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+
         const { name, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
 

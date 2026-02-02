@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC, type FormEvent, type ChangeEvent } from 'react';
+
 import type { Faturamento } from '../types';
 import { financeiroService } from '../../../services/financeiroService';
 import { useModal } from '../../../context/ModalContext';
@@ -8,7 +9,8 @@ interface FaturamentoFormProps {
     onSuccess?: () => void;
 }
 
-const FaturamentoForm: React.FC<FaturamentoFormProps> = ({ initialData, onSuccess }) => {
+const FaturamentoForm: FC<FaturamentoFormProps> = ({ initialData, onSuccess }) => {
+
     const { closeModal, showFeedback } = useModal();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Faturamento>(initialData);
@@ -50,7 +52,8 @@ const FaturamentoForm: React.FC<FaturamentoFormProps> = ({ initialData, onSucces
         };
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+
         const { name, value, type } = e.target;
         const numValue = type === 'number' ? parseFloat(value) : value;
 
@@ -61,12 +64,14 @@ const FaturamentoForm: React.FC<FaturamentoFormProps> = ({ initialData, onSucces
         });
     };
 
-    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
+
         e.preventDefault();
         setLoading(true);
         try {

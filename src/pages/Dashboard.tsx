@@ -1,6 +1,7 @@
-import React from 'react';
+import { type FC } from 'react';
 
-const Dashboard = () => {
+
+const Dashboard: FC = () => {
     return (
         <div className="p-6">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
