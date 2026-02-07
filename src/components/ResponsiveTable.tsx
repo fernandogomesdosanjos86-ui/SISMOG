@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { TableSkeleton, CardSkeleton } from './SkeletonLoader';
 
 interface ResponsiveTableProps<T> {
     data: T[];
@@ -15,6 +16,8 @@ interface ResponsiveTableProps<T> {
     keyExtractor: (item: T) => string;
     getRowClassName?: (item: T) => string;
     getRowBorderColor?: (item: T) => string;
+    loading?: boolean;
+    skeletonRows?: number;
 }
 
 /**
@@ -30,7 +33,18 @@ function ResponsiveTable<T>({
     keyExtractor,
     getRowClassName,
     getRowBorderColor,
+    loading = false,
+    skeletonRows = 5,
 }: ResponsiveTableProps<T>) {
+    if (loading) {
+        return (
+            <>
+                <div className="hidden md:block"><TableSkeleton rows={skeletonRows} columns={columns.length} /></div>
+                <div className="md:hidden"><CardSkeleton count={skeletonRows} /></div>
+            </>
+        );
+    }
+
     if (data.length === 0) {
         return (
             <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
@@ -64,8 +78,8 @@ function ResponsiveTable<T>({
                                     <td
                                         key={String(col.key)}
                                         className={`px-6 py-4 whitespace-nowrap ${col.className || ''} ${index === 0 && getRowBorderColor
-                                                ? `border-l-4 ${getRowBorderColor(item)}`
-                                                : ''
+                                            ? `border-l-4 ${getRowBorderColor(item)}`
+                                            : ''
                                             }`}
                                     >
                                         {col.render ? col.render(item) : String((item as any)[col.key] ?? '-')}

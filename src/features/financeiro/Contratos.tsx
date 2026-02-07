@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -6,43 +6,26 @@ import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
 import CompanyBadge from '../../components/CompanyBadge';
 import type { Contrato } from '../../features/financeiro/types';
-import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import ContratoForm from '../../features/financeiro/components/ContratoForm';
+import ContratoDetails from '../../features/financeiro/components/ContratoDetails';
 import { Plus, Search, FileText, AlertTriangle, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useContratos } from './hooks/useContratos';
 
 const Contratos: React.FC = () => {
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
-    const [contratos, setContratos] = useState<Contrato[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { contratos, isLoading, refetch, delete: deleteContrato } = useContratos();
     const [companyFilter, setCompanyFilter] = useState<'TODOS' | 'SEMOG' | 'FEMOG'>('TODOS');
     const [statusFilter, setStatusFilter] = useState<'TODOS' | 'ativo' | 'inativo'>('TODOS');
     const [searchTerm, setSearchTerm] = useState('');
-
-    const fetchContratos = async () => {
-        try {
-            setLoading(true);
-            const data = await financeiroService.getContratos();
-            // Default sort: Alphabetical by Contratante
-            const sortedData = (data || []).sort((a, b) => a.contratante.localeCompare(b.contratante));
-            setContratos(sortedData);
-        } catch (error) {
-            console.error(error);
-            showFeedback('error', 'Erro ao carregar contratos');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchContratos();
-    }, []);
+    const debouncedSearch = useDebounce(searchTerm, 300);
 
     const handleCreate = () => {
         openFormModal(
             'Novo Contrato',
-            <ContratoForm onSuccess={fetchContratos} />
+            <ContratoForm onSuccess={refetch} />
         );
     };
 
@@ -56,7 +39,7 @@ const Contratos: React.FC = () => {
                 onEdit: () => {
                     openFormModal(
                         'Editar Contrato',
-                        <ContratoForm initialData={contrato} onSuccess={fetchContratos} />
+                        <ContratoForm initialData={contrato} onSuccess={refetch} />
                     );
                 },
                 onDelete: () => {
@@ -65,9 +48,8 @@ const Contratos: React.FC = () => {
                         `Tem certeza que deseja excluir o contrato de "${contrato.contratante}"?`,
                         async () => {
                             try {
-                                await financeiroService.deleteContrato(contrato.id);
+                                await deleteContrato(contrato.id);
                                 showFeedback('success', 'Contrato excluído com sucesso!');
-                                fetchContratos();
                             } catch (error) {
                                 console.error(error);
                                 showFeedback('error', 'Erro ao excluir contrato.');
@@ -104,7 +86,7 @@ const Contratos: React.FC = () => {
     const filteredContratos = contratos.filter(c => {
         const matchesCompany = companyFilter === 'TODOS' || c.empresa === companyFilter;
         const matchesStatus = statusFilter === 'TODOS' || c.status === statusFilter;
-        const searchLower = searchTerm.toLowerCase();
+        const searchLower = debouncedSearch.toLowerCase();
         const matchesSearch = c.contratante.toLowerCase().includes(searchLower) ||
             c.nome_posto.toLowerCase().includes(searchLower);
         return matchesCompany && matchesStatus && matchesSearch;
@@ -277,7 +259,7 @@ const Contratos: React.FC = () => {
                 )}
             />
 
-            {loading && (
+            {isLoading && (
                 <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
@@ -285,70 +267,5 @@ const Contratos: React.FC = () => {
         </div>
     );
 };
-
-// Details Component
-const ContratoDetails: React.FC<{ contrato: Contrato }> = ({ contrato }) => (
-    <div className="space-y-4">
-        <div className="flex items-center justify-between border-b pb-4">
-            <div>
-                <h3 className="text-lg font-bold text-gray-900">{contrato.contratante}</h3>
-                <p className="text-sm text-gray-500">{contrato.nome_posto}</p>
-            </div>
-            <CompanyBadge company={contrato.empresa} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-            <div>
-                <p className="text-sm font-medium text-gray-500">Status</p>
-                <StatusBadge active={contrato.status === 'ativo'} />
-            </div>
-            <div>
-                <p className="text-sm font-medium text-gray-500">Valor Mensal</p>
-                <span className="text-lg font-semibold text-green-700">{formatCurrency(contrato.valor_mensal)}</span>
-            </div>
-            <div>
-                <p className="text-sm font-medium text-gray-500">Início</p>
-                <p className="text-gray-900">{new Date(contrato.data_inicio).toLocaleDateString('pt-BR')}</p>
-            </div>
-            <div>
-                <p className="text-sm font-medium text-gray-500">Duração</p>
-                <p className="text-gray-900">{contrato.duracao_meses} meses</p>
-            </div>
-        </div>
-
-        <div className="border-t pt-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Detalhes Financeiros</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="flex justify-between">
-                    <span className="text-gray-500">Dia Faturamento:</span>
-                    <span>{contrato.dia_faturamento}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-gray-500">Dia Vencimento:</span>
-                    <span>{contrato.dia_vencimento}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-gray-500">Vence no mês:</span>
-                    <span>{contrato.vencimento_mes_corrente ? 'Sim' : 'Não'}</span>
-                </div>
-            </div>
-        </div>
-
-        {/* Retentions View */}
-        {(contrato.retencao_iss || contrato.retencao_pis || contrato.retencao_cofins || contrato.retencao_csll || contrato.retencao_irpj || contrato.retencao_inss) && (
-            <div className="border-t pt-4">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Retenções</h4>
-                <div className="flex flex-wrap gap-2">
-                    {contrato.retencao_iss && <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs border">ISS ({contrato.perc_iss}%)</span>}
-                    {contrato.retencao_pis && <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs border">PIS</span>}
-                    {contrato.retencao_cofins && <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs border">COFINS</span>}
-                    {contrato.retencao_csll && <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs border">CSLL</span>}
-                    {contrato.retencao_irpj && <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs border">IRPJ</span>}
-                    {contrato.retencao_inss && <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs border">INSS</span>}
-                </div>
-            </div>
-        )}
-    </div>
-);
 
 export default Contratos;

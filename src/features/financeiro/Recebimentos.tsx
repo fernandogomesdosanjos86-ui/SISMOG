@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -6,37 +6,21 @@ import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
 import CompanyBadge from '../../components/CompanyBadge';
 import type { Recebimento } from '../../features/financeiro/types';
-import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import RecebimentoAvulsoForm from '../../features/financeiro/components/RecebimentoAvulsoForm';
+import RecebimentoDetails from '../../features/financeiro/components/RecebimentoDetails';
 import { Plus, Search, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
-
+import { useRecebimentos } from './hooks/useRecebimentos';
 
 const Recebimentos: React.FC = () => {
-    const [recebimentos, setRecebimentos] = useState<Recebimento[]>([]);
-    const [loading, setLoading] = useState(true);
     const [competenciaFilter, setCompetenciaFilter] = useState(new Date().toISOString().substring(0, 7)); // YYYY-MM
     const [companyFilter, setCompanyFilter] = useState<'TODOS' | 'SEMOG' | 'FEMOG'>('TODOS');
     const [statusFilter, setStatusFilter] = useState<'TODOS' | 'pendente' | 'recebido'>('TODOS');
     const [searchTerm, setSearchTerm] = useState('');
     const { openFormModal, openConfirmModal, openViewModal, showFeedback } = useModal();
 
-    const fetchRecebimentos = async () => {
-        try {
-            setLoading(true);
-            const data = await financeiroService.getRecebimentos();
-            setRecebimentos(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchRecebimentos();
-    }, []);
+    const { recebimentos, isLoading, refetch, register, delete: deleteRecebimento } = useRecebimentos();
 
     // Filter Logic
     const filteredRecebimentos = recebimentos.filter(r => {
@@ -67,7 +51,7 @@ const Recebimentos: React.FC = () => {
     const handleCreateAvulso = () => {
         openFormModal(
             'Novo Recebimento Avulso',
-            <RecebimentoAvulsoForm onSuccess={fetchRecebimentos} />
+            <RecebimentoAvulsoForm onSuccess={refetch} />
         );
     };
 
@@ -77,9 +61,8 @@ const Recebimentos: React.FC = () => {
             `Confirma o recebimento de ${formatCurrency(item.valor_recebimento_liquido)}? A ação não pode ser desfeita.`,
             async () => {
                 try {
-                    await financeiroService.registrarRecebimento(item.id);
+                    await register(item.id);
                     showFeedback('success', 'Recebimento registrado com sucesso!');
-                    fetchRecebimentos();
                 } catch (error) {
                     console.error(error);
                     showFeedback('error', 'Erro ao registrar recebimento.');
@@ -88,48 +71,7 @@ const Recebimentos: React.FC = () => {
         );
     };
 
-    // Details Component
-    const RecebimentoDetails: React.FC<{ recebimento: Recebimento }> = ({ recebimento }) => (
-        <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Status</p>
-                    <div className="mt-1">
-                        <span className={`px-2 py-1 text-xs rounded-full uppercase font-bold tracking-wide ${recebimento.status === 'recebido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                            {recebimento.status}
-                        </span>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Tipo</p>
-                    <span className={`capitalize px-2 py-0.5 rounded text-xs ${recebimento.tipo === 'avulso' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100'}`}>{recebimento.tipo}</span>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Origem/Descrição</p>
-                    <p className="text-base text-gray-900">{recebimento.tipo === 'faturamento' ? `Fatura: ${recebimento.faturamentos?.contratos?.contratante}` : recebimento.descricao}</p>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Empresa</p>
-                    <p className="text-base text-gray-900">{recebimento.empresa}</p>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Valor Líquido</p>
-                    <p className="text-base font-bold text-green-700">{formatCurrency(recebimento.valor_recebimento_liquido)}</p>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Vencimento/Data</p>
-                    <p className="text-base text-gray-900">{recebimento.data_recebimento ? new Date(recebimento.data_recebimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'}</p>
-                </div>
-            </div>
-            {recebimento.tipo === 'faturamento' && recebimento.tem_retencao_caucao && (
-                <div className="bg-yellow-50 p-2 rounded text-sm text-yellow-800 border border-yellow-200">
-                    Retenção Caução: {formatCurrency(recebimento.valor_retencao_caucao)} ({recebimento.perc_retencao_caucao}%)
-                </div>
-            )}
-        </div>
-    );
-
-    // ... inside Recebimentos component logic
+    // handleView logic
     const handleView = (item: Recebimento) => {
         const isRecebido = item.status === 'recebido';
 
@@ -139,7 +81,7 @@ const Recebimentos: React.FC = () => {
             {
                 canEdit: item.status === 'pendente',
                 editText: 'Editar',
-                onEdit: item.status === 'pendente' ? () => openFormModal('Editar Recebimento', <RecebimentoAvulsoForm initialData={item} onSuccess={fetchRecebimentos} />) : undefined,
+                onEdit: item.status === 'pendente' ? () => openFormModal('Editar Recebimento', <RecebimentoAvulsoForm initialData={item} onSuccess={refetch} />) : undefined,
                 canDelete: true,
                 deleteText: 'Excluir',
                 onDelete: async () => {
@@ -148,9 +90,8 @@ const Recebimentos: React.FC = () => {
                         'Deseja excluir este recebimento? Ação irreversível.',
                         async () => {
                             try {
-                                await financeiroService.deleteRecebimento(item.id);
+                                await deleteRecebimento(item.id);
                                 showFeedback('success', 'Recebimento excluído com sucesso!');
-                                fetchRecebimentos();
                             } catch (e) {
                                 console.error(e);
                                 showFeedback('error', 'Erro ao excluir recebimento.');
@@ -337,7 +278,7 @@ const Recebimentos: React.FC = () => {
             />
 
             {
-                loading && (
+                isLoading && (
                     <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>

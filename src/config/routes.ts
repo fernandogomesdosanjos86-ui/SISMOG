@@ -13,5 +13,9 @@ export const APP_ROUTES = {
     ESTOQUE: {
         ROOT: '#estoque',
         EQUIPAMENTOS: '/estoque/equipamentos',
+    },
+    RH: {
+        ROOT: '#rh',
+        CARGOS_SALARIOS: '/rh/cargos-salarios',
     }
 } as const;

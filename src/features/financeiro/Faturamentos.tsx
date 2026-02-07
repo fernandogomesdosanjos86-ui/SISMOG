@@ -1,5 +1,4 @@
-import { useEffect, useState, type FC } from 'react';
-
+import { useState, type FC } from 'react';
 
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -7,38 +6,25 @@ import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
 import CompanyBadge from '../../components/CompanyBadge';
 import type { Faturamento } from '../../features/financeiro/types';
-import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import FaturamentoForm from '../../features/financeiro/components/FaturamentoForm';
+import FaturamentoDetails from '../../features/financeiro/components/FaturamentoDetails';
 import { FileText, Play, Search, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useFaturamentos } from './hooks/useFaturamentos';
 
 
 const Faturamentos: FC = () => {
 
-    const [faturamentos, setFaturamentos] = useState<Faturamento[]>([]);
-    const [loading, setLoading] = useState(true);
     const [competenciaFilter, setCompetenciaFilter] = useState(new Date().toISOString().substring(0, 7) + '-01'); // YYYY-MM-01
     const [companyFilter, setCompanyFilter] = useState<'TODOS' | 'SEMOG' | 'FEMOG'>('TODOS');
     const [statusFilter, setStatusFilter] = useState<'TODOS' | 'pendente' | 'emitido'>('TODOS');
     const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearch = useDebounce(searchTerm, 300);
     const { openFormModal, openViewModal, openConfirmModal, showFeedback, closeModal } = useModal();
 
-    const fetchFaturamentos = async (month: string) => {
-        try {
-            setLoading(true);
-            const data = await financeiroService.getFaturamentos(month);
-            setFaturamentos(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchFaturamentos(competenciaFilter);
-    }, [competenciaFilter]);
+    const { faturamentos, isLoading, refetch, generate, delete: deleteFaturamento, undoEmission, emit } = useFaturamentos(competenciaFilter);
 
     const handleGerar = () => {
         openConfirmModal(
@@ -46,9 +32,8 @@ const Faturamentos: FC = () => {
             `Deseja gerar os faturamentos para a competência ${new Date(competenciaFilter).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' })}?`,
             async () => {
                 try {
-                    const gerados = await financeiroService.generateFaturamentos(competenciaFilter);
+                    const gerados = await generate(competenciaFilter);
                     showFeedback('success', `${gerados.length} faturamentos gerados.`);
-                    fetchFaturamentos(competenciaFilter);
                 } catch (error) {
                     console.error(error);
                     showFeedback('error', 'Erro ao gerar faturamentos.');
@@ -57,117 +42,7 @@ const Faturamentos: FC = () => {
         );
     };
 
-    // Details Component
-    const FaturamentoDetails: FC<{ faturamento: Faturamento }> = ({ faturamento }) => (
-
-        <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Status</p>
-                    <div className="mt-1">
-                        <span className={`px-2 py-1 text-xs rounded-full uppercase font-bold tracking-wide ${faturamento.status === 'emitido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                            {faturamento.status}
-                        </span>
-                    </div>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Contratante</p>
-                    <p className="text-base text-gray-900">{faturamento.contratos?.contratante}</p>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Competência</p>
-                    <p className="text-base text-gray-900 font-mono">
-                        {new Date(faturamento.competencia + 'T00:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                    </p>
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Valor Líquido</p>
-                    <p className="text-base font-bold text-green-700">{formatCurrency(faturamento.valor_liquido)}</p>
-                </div>
-            </div>
-
-            {faturamento.status === 'emitido' && (
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center gap-2 mb-2">
-                        <FileText size={16} className="text-gray-500" />
-                        <span className="font-semibold text-gray-700">Nota Fiscal Emitida</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                        <p><span className="text-gray-500">Número:</span> {faturamento.numero_nf}</p>
-                        <p><span className="text-gray-500">Emissão:</span> {faturamento.data_emissao ? new Date(faturamento.data_emissao).toLocaleDateString() : '-'}</p>
-                    </div>
-                </div>
-            )}
-
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Detalhamento</h4>
-                <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-gray-500">Valor Bruto:</span>
-                        <span>{formatCurrency(faturamento.valor_bruto)}</span>
-                    </div>
-                    {(faturamento.acrescimo || 0) > 0 && (
-                        <div className="flex justify-between text-green-600">
-                            <span>+ Acréscimos:</span>
-                            <span>{formatCurrency(faturamento.acrescimo)}</span>
-                        </div>
-                    )}
-                    {/* Detailed Retentions */}
-                    {(faturamento.valor_retencao_pis || 0) > 0 && (
-                        <div className="flex justify-between text-gray-600">
-                            <span>- PIS ({faturamento.retencao_pis ? 'Sim' : 'Não'}):</span>
-                            <span>{formatCurrency(faturamento.valor_retencao_pis)}</span>
-                        </div>
-                    )}
-                    {(faturamento.valor_retencao_cofins || 0) > 0 && (
-                        <div className="flex justify-between text-gray-600">
-                            <span>- COFINS ({faturamento.retencao_cofins ? 'Sim' : 'Não'}):</span>
-                            <span>{formatCurrency(faturamento.valor_retencao_cofins)}</span>
-                        </div>
-                    )}
-                    {(faturamento.valor_retencao_irpj || 0) > 0 && (
-                        <div className="flex justify-between text-gray-600">
-                            <span>- IRPJ ({faturamento.retencao_irpj ? 'Sim' : 'Não'}):</span>
-                            <span>{formatCurrency(faturamento.valor_retencao_irpj)}</span>
-                        </div>
-                    )}
-                    {(faturamento.valor_retencao_csll || 0) > 0 && (
-                        <div className="flex justify-between text-gray-600">
-                            <span>- CSLL ({faturamento.retencao_csll ? 'Sim' : 'Não'}):</span>
-                            <span>{formatCurrency(faturamento.valor_retencao_csll)}</span>
-                        </div>
-                    )}
-                    {(faturamento.valor_retencao_inss || 0) > 0 && (
-                        <div className="flex justify-between text-gray-600">
-                            <span>- INSS ({faturamento.retencao_inss ? 'Sim' : 'Não'}):</span>
-                            <span>{formatCurrency(faturamento.valor_retencao_inss)}</span>
-                        </div>
-                    )}
-                    {(faturamento.valor_retencao_iss || 0) > 0 && (
-                        <div className="flex justify-between text-gray-600">
-                            <span>- ISS ({faturamento.perc_iss}%):</span>
-                            <span>{formatCurrency(faturamento.valor_retencao_iss)}</span>
-                        </div>
-                    )}
-                    {(faturamento.valor_retencao_caucao || 0) > 0 && (
-                        <div className="flex justify-between text-orange-600">
-                            <span>- Caução ({faturamento.perc_retencao_caucao}%):</span>
-                            <span>{formatCurrency(faturamento.valor_retencao_caucao || 0)}</span>
-
-                        </div>
-                    )}
-                    {/* Simplified retentions display for brevity */}
-                    <div className="flex justify-between border-t border-gray-200 pt-1 font-medium">
-                        <span>Líquido:</span>
-                        <span>{formatCurrency(faturamento.valor_liquido)}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
-    // ... inside Faturamentos component logic
+    // handleView logic
     const handleView = (item: Faturamento) => {
         const isEmitido = item.status === 'emitido';
 
@@ -182,7 +57,7 @@ const Faturamentos: FC = () => {
                 onEdit: isEmitido ? undefined : () => {
                     openFormModal(
                         'Editar Faturamento',
-                        <FaturamentoForm initialData={item} onSuccess={() => fetchFaturamentos(competenciaFilter)} />
+                        <FaturamentoForm initialData={item} onSuccess={refetch} />
                     );
                 },
                 onDelete: async () => {
@@ -197,12 +72,11 @@ const Faturamentos: FC = () => {
                         async () => {
                             try {
                                 if (isEmitido) {
-                                    await financeiroService.desfazerFaturamento(item.id);
+                                    await undoEmission(item.id);
                                 } else {
-                                    await financeiroService.deleteFaturamento(item.id);
+                                    await deleteFaturamento(item.id);
                                 }
                                 showFeedback('success', 'Operação realizada com sucesso!');
-                                fetchFaturamentos(competenciaFilter);
                             } catch (e) {
                                 console.error(e);
                                 showFeedback('error', 'Erro ao processar solicitação.');
@@ -245,10 +119,9 @@ const Faturamentos: FC = () => {
                             onClick={async () => {
                                 if (!numeroNf) return showFeedback('error', 'Informe o número da NF');
                                 try {
-                                    await financeiroService.emitirNota(item.id, numeroNf);
+                                    await emit({ id: item.id, nfNumber: numeroNf });
                                     showFeedback('success', 'Nota emitida e recebimento gerado!');
                                     closeModal();
-                                    fetchFaturamentos(competenciaFilter);
                                 } catch (e) {
                                     console.error(e);
                                     showFeedback('error', 'Erro ao emitir nota');
@@ -304,7 +177,7 @@ const Faturamentos: FC = () => {
     const filteredFaturamentos = faturamentos.filter(f => {
         const matchesCompany = companyFilter === 'TODOS' || f.contratos?.empresa === companyFilter;
         const matchesStatus = statusFilter === 'TODOS' || f.status === statusFilter;
-        const searchLower = searchTerm.toLowerCase();
+        const searchLower = debouncedSearch.toLowerCase();
         const matchesSearch = (f.contratos?.contratante || '').toLowerCase().includes(searchLower) ||
             (f.contratos?.nome_posto || '').toLowerCase().includes(searchLower);
         return matchesCompany && matchesStatus && matchesSearch;
@@ -437,7 +310,7 @@ const Faturamentos: FC = () => {
                 )}
             />
             {
-                loading && (
+                isLoading && (
                     <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
