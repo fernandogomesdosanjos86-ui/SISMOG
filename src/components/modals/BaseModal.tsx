@@ -20,7 +20,6 @@ export const BaseModal: React.FC<BaseModalProps> = ({ title, children, footer, o
     return (
         <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <div className={`bg-white rounded-xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col animate-modal-enter`}>
                 {/* Header */}

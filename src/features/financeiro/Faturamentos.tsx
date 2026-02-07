@@ -11,6 +11,7 @@ import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import FaturamentoForm from '../../features/financeiro/components/FaturamentoForm';
 import { FileText, Play, Search, CheckCircle, AlertCircle } from 'lucide-react';
+import { formatCurrency } from '../../utils/format';
 
 
 const Faturamentos: FC = () => {
@@ -82,7 +83,7 @@ const Faturamentos: FC = () => {
                 </div>
                 <div>
                     <p className="text-sm font-medium text-gray-500">Valor Líquido</p>
-                    <p className="text-base font-bold text-green-700">R$ {faturamento.valor_liquido?.toLocaleString('pt-BR')}</p>
+                    <p className="text-base font-bold text-green-700">{formatCurrency(faturamento.valor_liquido)}</p>
                 </div>
             </div>
 
@@ -104,62 +105,62 @@ const Faturamentos: FC = () => {
                 <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                         <span className="text-gray-500">Valor Bruto:</span>
-                        <span>R$ {faturamento.valor_bruto.toLocaleString('pt-BR')}</span>
+                        <span>{formatCurrency(faturamento.valor_bruto)}</span>
                     </div>
                     {(faturamento.acrescimo || 0) > 0 && (
                         <div className="flex justify-between text-green-600">
                             <span>+ Acréscimos:</span>
-                            <span>R$ {faturamento.acrescimo.toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.acrescimo)}</span>
                         </div>
                     )}
                     {/* Detailed Retentions */}
                     {(faturamento.valor_retencao_pis || 0) > 0 && (
                         <div className="flex justify-between text-gray-600">
                             <span>- PIS ({faturamento.retencao_pis ? 'Sim' : 'Não'}):</span>
-                            <span>R$ {faturamento.valor_retencao_pis.toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.valor_retencao_pis)}</span>
                         </div>
                     )}
                     {(faturamento.valor_retencao_cofins || 0) > 0 && (
                         <div className="flex justify-between text-gray-600">
                             <span>- COFINS ({faturamento.retencao_cofins ? 'Sim' : 'Não'}):</span>
-                            <span>R$ {faturamento.valor_retencao_cofins.toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.valor_retencao_cofins)}</span>
                         </div>
                     )}
                     {(faturamento.valor_retencao_irpj || 0) > 0 && (
                         <div className="flex justify-between text-gray-600">
                             <span>- IRPJ ({faturamento.retencao_irpj ? 'Sim' : 'Não'}):</span>
-                            <span>R$ {faturamento.valor_retencao_irpj.toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.valor_retencao_irpj)}</span>
                         </div>
                     )}
                     {(faturamento.valor_retencao_csll || 0) > 0 && (
                         <div className="flex justify-between text-gray-600">
                             <span>- CSLL ({faturamento.retencao_csll ? 'Sim' : 'Não'}):</span>
-                            <span>R$ {faturamento.valor_retencao_csll.toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.valor_retencao_csll)}</span>
                         </div>
                     )}
                     {(faturamento.valor_retencao_inss || 0) > 0 && (
                         <div className="flex justify-between text-gray-600">
                             <span>- INSS ({faturamento.retencao_inss ? 'Sim' : 'Não'}):</span>
-                            <span>R$ {faturamento.valor_retencao_inss.toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.valor_retencao_inss)}</span>
                         </div>
                     )}
                     {(faturamento.valor_retencao_iss || 0) > 0 && (
                         <div className="flex justify-between text-gray-600">
                             <span>- ISS ({faturamento.perc_iss}%):</span>
-                            <span>R$ {faturamento.valor_retencao_iss.toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.valor_retencao_iss)}</span>
                         </div>
                     )}
                     {(faturamento.valor_retencao_caucao || 0) > 0 && (
                         <div className="flex justify-between text-orange-600">
                             <span>- Caução ({faturamento.perc_retencao_caucao}%):</span>
-                            <span>R$ {(faturamento.valor_retencao_caucao || 0).toLocaleString('pt-BR')}</span>
+                            <span>{formatCurrency(faturamento.valor_retencao_caucao || 0)}</span>
 
                         </div>
                     )}
                     {/* Simplified retentions display for brevity */}
                     <div className="flex justify-between border-t border-gray-200 pt-1 font-medium">
                         <span>Líquido:</span>
-                        <span>R$ {faturamento.valor_liquido.toLocaleString('pt-BR')}</span>
+                        <span>{formatCurrency(faturamento.valor_liquido)}</span>
                     </div>
                 </div>
             </div>
@@ -171,7 +172,7 @@ const Faturamentos: FC = () => {
         const isEmitido = item.status === 'emitido';
 
         openViewModal(
-            `Faturamento: ${item.contratos?.contratante}`,
+            'Detalhes do Faturamento',
             <FaturamentoDetails faturamento={item} />,
             {
                 canEdit: !isEmitido,
@@ -229,7 +230,7 @@ const Faturamentos: FC = () => {
             (
                 <div className="space-y-4">
                     <p>Confirma a emissão da nota para <strong>{item.contratos?.contratante}</strong>?</p>
-                    <p className="text-sm text-gray-500">Valor Líquido: R$ {item.valor_liquido.toLocaleString('pt-BR')}</p>
+                    <p className="text-sm text-gray-500">Valor Líquido: {formatCurrency(item.valor_liquido)}</p>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Número da NF</label>
                         <input
@@ -284,12 +285,12 @@ const Faturamentos: FC = () => {
         {
             key: 'valor_bruto',
             header: 'Fat. Bruto',
-            render: (i: Faturamento) => `R$ ${i.valor_bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+            render: (i: Faturamento) => formatCurrency(i.valor_bruto)
         },
         {
             key: 'valor_liquido',
             header: 'Faturamento Líquido',
-            render: (i: Faturamento) => <span className="font-bold text-green-700">R$ {i.valor_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            render: (i: Faturamento) => <span className="font-bold text-green-700">{formatCurrency(i.valor_liquido)}</span>
         },
         {
             key: 'status',
@@ -325,14 +326,14 @@ const Faturamentos: FC = () => {
                 title="Faturamentos"
                 subtitle="Gestão de Faturamentos Mensais"
                 action={
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         <input
                             type="month"
-                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
                             value={competenciaFilter.substring(0, 7)}
                             onChange={(e) => setCompetenciaFilter(e.target.value + '-01')}
                         />
-                        <PrimaryButton onClick={handleGerar}>
+                        <PrimaryButton onClick={handleGerar} className="w-full sm:w-auto justify-center">
                             <Play size={16} className="mr-2" />
                             Gerar Mês
                         </PrimaryButton>
@@ -345,7 +346,7 @@ const Faturamentos: FC = () => {
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
                     <div>
                         <p className="text-sm text-gray-500 font-medium">Total Bruto</p>
-                        <p className="text-2xl font-bold text-gray-800">R$ {totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalBruto)}</p>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
                         <FileText size={24} />
@@ -354,7 +355,7 @@ const Faturamentos: FC = () => {
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100 flex items-center justify-between">
                     <div>
                         <p className="text-sm text-yellow-600 font-medium">Pendente Bruto</p>
-                        <p className="text-2xl font-bold text-gray-800">R$ {totalPendenteBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalPendenteBruto)}</p>
                     </div>
                     <div className="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
                         <AlertCircle size={24} />
@@ -363,7 +364,7 @@ const Faturamentos: FC = () => {
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
                     <div>
                         <p className="text-sm text-green-600 font-medium">Emitido Bruto</p>
-                        <p className="text-2xl font-bold text-gray-800">R$ {totalEmitidoBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalEmitidoBruto)}</p>
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">
                         <CheckCircle size={24} />
@@ -372,7 +373,7 @@ const Faturamentos: FC = () => {
             </div>
 
             {/* Filters - Top Bar (Search + Competencia) */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
@@ -383,14 +384,13 @@ const Faturamentos: FC = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex items-center gap-2 min-w-fit">
-                    <span className="text-sm font-medium text-gray-700">Status:</span>
+                <div className="w-full md:w-auto">
                     <select
-                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-full"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
                     >
-                        <option value="TODOS">Todos</option>
+                        <option value="TODOS">Todos os Status</option>
                         <option value="pendente">Pendentes</option>
                         <option value="emitido">Emitidos</option>
                     </select>
@@ -425,20 +425,25 @@ const Faturamentos: FC = () => {
                             <span className="font-semibold text-gray-800">{item.contratos?.contratante}</span>
                             <StatusBadge active={item.status === 'emitido'} activeLabel="Emitido" inactiveLabel="Pendente" />
                         </div>
-                        <p className="text-sm text-gray-600">Venc: {item.data_vencimento ? new Date(item.data_vencimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'}</p>
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                            <CompanyBadge company={item.contratos?.empresa as any} />
+                            <span>Emissão: {item.data_emissao ? new Date(item.data_emissao).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-'}</span>
+                        </div>
                         <div className="flex justify-between items-center border-t pt-2 mt-2">
-                            <span className="text-green-700 font-bold">R$ {item.valor_liquido.toLocaleString('pt-BR')}</span>
+                            <span className="text-green-700 font-bold">{formatCurrency(item.valor_liquido)}</span>
 
                         </div>
                     </div>
                 )}
             />
-            {loading && (
-                <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-            )}
-        </div>
+            {
+                loading && (
+                    <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

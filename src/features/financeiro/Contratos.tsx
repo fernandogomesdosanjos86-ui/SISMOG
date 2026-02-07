@@ -10,6 +10,7 @@ import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import ContratoForm from '../../features/financeiro/components/ContratoForm';
 import { Plus, Search, FileText, AlertTriangle, AlertCircle } from 'lucide-react';
+import { formatCurrency } from '../../utils/format';
 
 const Contratos: React.FC = () => {
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
@@ -47,14 +48,14 @@ const Contratos: React.FC = () => {
 
     const handleView = (contrato: Contrato) => {
         openViewModal(
-            `Contrato: ${contrato.contratante}`,
+            'Detalhes do Contrato',
             <ContratoDetails contrato={contrato} />,
             {
                 canEdit: true,
                 canDelete: true,
                 onEdit: () => {
                     openFormModal(
-                        `Editar Contrato: ${contrato.contratante}`,
+                        'Editar Contrato',
                         <ContratoForm initialData={contrato} onSuccess={fetchContratos} />
                     );
                 },
@@ -144,7 +145,7 @@ const Contratos: React.FC = () => {
         {
             key: 'valor_mensal',
             header: 'Valor',
-            render: (item: Contrato) => `R$ ${item.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+            render: (item: Contrato) => formatCurrency(item.valor_mensal)
         },
         {
             key: 'prazo',
@@ -171,7 +172,7 @@ const Contratos: React.FC = () => {
             <PageHeader
                 title="Contratos"
                 subtitle="Gestão de Contratos de Serviços"
-                action={<PrimaryButton onClick={handleCreate}><Plus size={20} className="mr-2" />Novo Contrato</PrimaryButton>}
+                action={<PrimaryButton onClick={handleCreate} className="w-full sm:w-auto justify-center"><Plus size={20} className="mr-2" />Novo Contrato</PrimaryButton>}
             />
 
             {/* KPI Cards */}
@@ -206,7 +207,7 @@ const Contratos: React.FC = () => {
             </div>
 
             {/* Filters - Top Bar (Search + Status) */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
@@ -217,14 +218,13 @@ const Contratos: React.FC = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex items-center gap-2 min-w-fit">
-                    <span className="text-sm font-medium text-gray-700">Status:</span>
+                <div className="w-full md:w-auto">
                     <select
-                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-full"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
                     >
-                        <option value="TODOS">Todos</option>
+                        <option value="TODOS">Todos os Status</option>
                         <option value="ativo">Ativos</option>
                         <option value="inativo">Inativos</option>
                     </select>
@@ -264,7 +264,7 @@ const Contratos: React.FC = () => {
                         </div>
                         <p className="text-sm text-gray-600">{item.nome_posto}</p>
                         <div className="flex justify-between items-center mt-1">
-                            <span className="text-blue-600 font-medium">R$ {item.valor_mensal.toLocaleString('pt-BR')}</span>
+                            <span className="text-blue-600 font-medium">{formatCurrency(item.valor_mensal)}</span>
                             {(() => {
                                 const remaining = calculateTerm(item.data_inicio, item.duracao_meses);
                                 let colorClass = 'text-green-600';
@@ -304,7 +304,7 @@ const ContratoDetails: React.FC<{ contrato: Contrato }> = ({ contrato }) => (
             </div>
             <div>
                 <p className="text-sm font-medium text-gray-500">Valor Mensal</p>
-                <span className="text-lg font-semibold text-green-700">R$ {contrato.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <span className="text-lg font-semibold text-green-700">{formatCurrency(contrato.valor_mensal)}</span>
             </div>
             <div>
                 <p className="text-sm font-medium text-gray-500">Início</p>

@@ -10,6 +10,7 @@ import { financeiroService } from '../../services/financeiroService';
 import { useModal } from '../../context/ModalContext';
 import RecebimentoAvulsoForm from '../../features/financeiro/components/RecebimentoAvulsoForm';
 import { Plus, Search, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { formatCurrency } from '../../utils/format';
 
 
 const Recebimentos: React.FC = () => {
@@ -73,7 +74,7 @@ const Recebimentos: React.FC = () => {
     const handleRegistrar = (item: Recebimento) => {
         openConfirmModal(
             'Registrar Recebimento',
-            `Confirma o recebimento de R$ ${item.valor_recebimento_liquido.toLocaleString('pt-BR')}? A ação não pode ser desfeita.`,
+            `Confirma o recebimento de ${formatCurrency(item.valor_recebimento_liquido)}? A ação não pode ser desfeita.`,
             async () => {
                 try {
                     await financeiroService.registrarRecebimento(item.id);
@@ -113,7 +114,7 @@ const Recebimentos: React.FC = () => {
                 </div>
                 <div>
                     <p className="text-sm font-medium text-gray-500">Valor Líquido</p>
-                    <p className="text-base font-bold text-green-700">R$ {recebimento.valor_recebimento_liquido.toLocaleString('pt-BR')}</p>
+                    <p className="text-base font-bold text-green-700">{formatCurrency(recebimento.valor_recebimento_liquido)}</p>
                 </div>
                 <div>
                     <p className="text-sm font-medium text-gray-500">Vencimento/Data</p>
@@ -122,7 +123,7 @@ const Recebimentos: React.FC = () => {
             </div>
             {recebimento.tipo === 'faturamento' && recebimento.tem_retencao_caucao && (
                 <div className="bg-yellow-50 p-2 rounded text-sm text-yellow-800 border border-yellow-200">
-                    Retenção Caução: R$ {recebimento.valor_retencao_caucao.toLocaleString('pt-BR')} ({recebimento.perc_retencao_caucao}%)
+                    Retenção Caução: {formatCurrency(recebimento.valor_retencao_caucao)} ({recebimento.perc_retencao_caucao}%)
                 </div>
             )}
         </div>
@@ -206,7 +207,7 @@ const Recebimentos: React.FC = () => {
         {
             key: 'valor',
             header: 'Valor',
-            render: (i: Recebimento) => <span className="font-bold text-green-700">R$ {i.valor_recebimento_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            render: (i: Recebimento) => <span className="font-bold text-green-700">{formatCurrency(i.valor_recebimento_liquido)}</span>
         },
         {
             key: 'status',
@@ -222,14 +223,14 @@ const Recebimentos: React.FC = () => {
                 title="Recebimentos"
                 subtitle="Gestão de Recebimentos e Baixas"
                 action={
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         <input
                             type="month"
-                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
                             value={competenciaFilter}
                             onChange={(e) => setCompetenciaFilter(e.target.value)}
                         />
-                        <PrimaryButton onClick={handleCreateAvulso}>
+                        <PrimaryButton onClick={handleCreateAvulso} className="w-full sm:w-auto justify-center">
                             <Plus size={16} className="mr-2" />
                             Novo Avulso
                         </PrimaryButton>
@@ -242,7 +243,7 @@ const Recebimentos: React.FC = () => {
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
                     <div>
                         <p className="text-sm text-gray-500 font-medium">Total Previsto</p>
-                        <p className="text-2xl font-bold text-gray-800">R$ {totalLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalLiquido)}</p>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
                         <FileText size={24} />
@@ -251,7 +252,7 @@ const Recebimentos: React.FC = () => {
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100 flex items-center justify-between">
                     <div>
                         <p className="text-sm text-yellow-600 font-medium">Pendente</p>
-                        <p className="text-2xl font-bold text-gray-800">R$ {totalPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalPendente)}</p>
                     </div>
                     <div className="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
                         <AlertCircle size={24} />
@@ -260,7 +261,7 @@ const Recebimentos: React.FC = () => {
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
                     <div>
                         <p className="text-sm text-green-600 font-medium">Recebido</p>
-                        <p className="text-2xl font-bold text-gray-800">R$ {totalRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalRecebido)}</p>
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">
                         <CheckCircle size={24} />
@@ -269,7 +270,7 @@ const Recebimentos: React.FC = () => {
             </div>
 
             {/* Filters - Top Bar (Search + Status) */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
@@ -280,14 +281,13 @@ const Recebimentos: React.FC = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex items-center gap-2 min-w-fit">
-                    <span className="text-sm font-medium text-gray-700">Status:</span>
+                <div className="w-full md:w-auto">
                     <select
-                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-full"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
                     >
-                        <option value="TODOS">Todos</option>
+                        <option value="TODOS">Todos os Status</option>
                         <option value="pendente">Pendentes</option>
                         <option value="recebido">Recebidos</option>
                     </select>
@@ -326,22 +326,24 @@ const Recebimentos: React.FC = () => {
                             <StatusBadge active={item.status === 'recebido'} activeLabel="Recebido" inactiveLabel="Pendente" />
                         </div>
                         <div className="flex justify-between items-center text-sm text-gray-500">
-                            <span>{item.empresa || item.faturamentos?.contratos?.empresa}</span>
+                            <CompanyBadge company={(item.empresa || item.faturamentos?.contratos?.empresa) as any} />
                             <span>{item.data_recebimento ? new Date(item.data_recebimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : (item.faturamentos?.data_vencimento ? new Date(item.faturamentos.data_vencimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '-')}</span>
                         </div>
                         <div className="flex justify-between items-center border-t pt-2 mt-2">
-                            <span className="text-green-700 font-bold">R$ {item.valor_recebimento_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                            <span className="text-green-700 font-bold">{formatCurrency(item.valor_recebimento_liquido)}</span>
                         </div>
                     </div>
                 )}
             />
 
-            {loading && (
-                <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-            )}
-        </div>
+            {
+                loading && (
+                    <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

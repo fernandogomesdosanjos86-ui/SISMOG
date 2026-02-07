@@ -14,7 +14,7 @@ import { Plus, Archive, CornerUpLeft, Shield, Box, Crosshair, Search } from 'luc
 import { financeiroService } from '../../services/financeiroService'; // For Posto filter
 
 const EquipamentosControlados: React.FC = () => {
-    const { openFormModal, showFeedback } = useModal();
+    const { openFormModal, openViewModal, openConfirmModal, showFeedback } = useModal();
 
     const [activeTab, setActiveTab] = useState<'Estoque' | 'Postos'>('Estoque');
     const [loading, setLoading] = useState(true);
@@ -69,12 +69,76 @@ const EquipamentosControlados: React.FC = () => {
     const handleDestinar = () => openFormModal('Destinar Equipamento', <DestinarForm onSuccess={fetchData} />);
     const handleDevolver = () => openFormModal('Devolver Equipamento', <DevolverForm onSuccess={fetchData} />);
 
+    // Details Component
+    const EquipamentoDetails: React.FC<{ equipamento: Equipamento }> = ({ equipamento }) => (
+        <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="text-sm font-medium text-gray-500">Status</label>
+                    <div className="mt-1">
+                        <StatusBadge active={equipamento.status === 'Ativo'} />
+                    </div>
+                </div>
+                <div>
+                    <label className="text-sm font-medium text-gray-500">Categoria</label>
+                    <p className="text-base text-gray-900">{equipamento.categoria}</p>
+                </div>
+                <div className="col-span-2">
+                    <label className="text-sm font-medium text-gray-500">Descrição</label>
+                    <p className="text-base font-semibold text-gray-900">{equipamento.descricao}</p>
+                </div>
+                {equipamento.identificacao && (
+                    <div>
+                        <label className="text-sm font-medium text-gray-500">Identificação (Serial)</label>
+                        <p className="text-base text-gray-900 font-mono">{equipamento.identificacao}</p>
+                    </div>
+                )}
+                <div>
+                    <label className="text-sm font-medium text-gray-500">Disponibilidade</label>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-lg font-bold ${equipamento.disponivel === 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            {equipamento.disponivel}
+                        </span>
+                        <span className="text-gray-400">/ {equipamento.quantidade} total</span>
+                    </div>
+                </div>
+            </div>
+            {/* History or allocation info could go here */}
+        </div>
+    );
+
     // Edit/Delete
     const handleRowClick = (item: any) => {
         // Only allow Edit/Delete on Estoque tab for now, or define logic.
         if (activeTab === 'Estoque') {
             const eq = item as Equipamento;
-            openFormModal('Editar Equipamento', <EquipamentoForm initialData={eq} onSuccess={fetchData} />);
+            openViewModal(
+                `Detalhes do Equipamento`,
+                <EquipamentoDetails equipamento={eq} />,
+                {
+                    canEdit: true,
+                    editText: 'Editar',
+                    onEdit: () => openFormModal('Editar Equipamento', <EquipamentoForm initialData={eq} onSuccess={fetchData} />),
+                    canDelete: true,
+                    deleteText: 'Excluir',
+                    onDelete: async () => {
+                        openConfirmModal(
+                            'Excluir Equipamento',
+                            'Tem certeza que deseja excluir este equipamento? Esta ação não pode ser desfeita.',
+                            async () => {
+                                try {
+                                    await equipamentosService.deleteEquipamento(eq.id);
+                                    showFeedback('success', 'Equipamento excluído com sucesso!');
+                                    fetchData();
+                                } catch (error) {
+                                    console.error(error);
+                                    showFeedback('error', 'Erro ao excluir equipamento.');
+                                }
+                            }
+                        );
+                    }
+                }
+            );
         }
     };
 
@@ -131,10 +195,25 @@ const EquipamentosControlados: React.FC = () => {
                 title="Equipamentos Controlados"
                 subtitle="Gestão de Armamento e Munição"
                 action={
-                    <div className="flex gap-2">
-                        <PrimaryButton onClick={handleCreate}><Plus size={16} className="mr-2" />Equipamento</PrimaryButton>
-                        <button onClick={handleDestinar} className="px-4 py-2 bg-orange-600 text-white rounded-lg flex items-center hover:bg-orange-700 transition"><Archive size={16} className="mr-2" />Destinar</button>
-                        <button onClick={handleDevolver} className="px-4 py-2 bg-purple-600 text-white rounded-lg flex items-center hover:bg-purple-700 transition"><CornerUpLeft size={16} className="mr-2" />Devolver</button>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <PrimaryButton onClick={handleCreate} className="w-full sm:w-auto justify-center">
+                            <Plus size={16} className="mr-2" />
+                            Equipamento
+                        </PrimaryButton>
+                        <button
+                            onClick={handleDestinar}
+                            className="w-full sm:w-auto px-4 py-2 bg-orange-600 text-white rounded-lg flex items-center justify-center hover:bg-orange-700 transition"
+                        >
+                            <Archive size={16} className="mr-2" />
+                            Destinar
+                        </button>
+                        <button
+                            onClick={handleDevolver}
+                            className="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-lg flex items-center justify-center hover:bg-purple-700 transition"
+                        >
+                            <CornerUpLeft size={16} className="mr-2" />
+                            Devolver
+                        </button>
                     </div>
                 }
             />
@@ -160,7 +239,7 @@ const EquipamentosControlados: React.FC = () => {
                 </div>
 
                 <select
-                    className="p-2 border rounded-lg"
+                    className="p-2 border rounded-lg w-full md:w-auto"
                     value={categoriaFilter}
                     onChange={e => setCategoriaFilter(e.target.value as any)}
                 >
@@ -172,7 +251,7 @@ const EquipamentosControlados: React.FC = () => {
 
                 {activeTab === 'Postos' && (
                     <select
-                        className="p-2 border rounded-lg"
+                        className="p-2 border rounded-lg w-full md:w-auto"
                         value={postoFilter}
                         onChange={e => setPostoFilter(e.target.value)}
                     >
@@ -207,10 +286,22 @@ const EquipamentosControlados: React.FC = () => {
                     keyExtractor={i => i.id}
                     onRowClick={handleRowClick}
                     renderCard={i => (
-                        <div className="flex flex-col gap-1 p-2 border-l-4 border-blue-500">
-                            <div className="flex justify-between font-bold"><span>{i.descricao}</span><span>{i.disponivel}/{i.quantidade}</span></div>
-                            <div className="text-sm text-gray-600">{i.categoria} {i.identificacao && `- ${i.identificacao}`}</div>
-                            <StatusBadge active={i.status === 'Ativo'} />
+                        <div className="flex flex-col gap-2 relative border-l-4 pl-3 border-l-blue-500">
+                            <div className="flex justify-between items-center">
+                                <span className="font-semibold text-gray-800">{i.descricao}</span>
+                                <StatusBadge active={i.status === 'Ativo'} />
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-gray-500">
+                                <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">{i.categoria}</span>
+                                <span className={i.disponivel === 0 ? 'text-red-600 font-bold' : 'text-green-600 font-medium'}>
+                                    Disp: {i.disponivel}/{i.quantidade}
+                                </span>
+                            </div>
+                            {i.identificacao && (
+                                <div className="text-xs text-gray-400 mt-1 font-mono">
+                                    Serial: {i.identificacao}
+                                </div>
+                            )}
                         </div>
                     )}
                 />
@@ -220,10 +311,16 @@ const EquipamentosControlados: React.FC = () => {
                     columns={columnsPostos}
                     keyExtractor={i => i.id}
                     renderCard={i => (
-                        <div className="flex flex-col gap-1 p-2 border-l-4 border-orange-500">
-                            <div className="font-bold">{i.contratos?.nome_posto}</div>
-                            <div className="text-sm">{i.equipamentos?.descricao} (Qtd: {i.quantidade})</div>
-                            <div className="text-xs text-gray-500">{i.equipamentos?.categoria}</div>
+                        <div className="flex flex-col gap-2 relative border-l-4 pl-3 border-l-orange-500">
+                            <div className="flex justify-between items-start">
+                                <span className="font-semibold text-gray-800 line-clamp-2">{i.contratos?.nome_posto}</span>
+                                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 whitespace-nowrap">Qtd: {i.quantidade}</span>
+                            </div>
+                            <div className="text-sm text-gray-600">{i.equipamentos?.descricao}</div>
+                            <div className="text-xs text-gray-500 flex items-center justify-between">
+                                <span>{i.equipamentos?.categoria}</span>
+                                {i.equipamentos?.identificacao && <span className="font-mono">{i.equipamentos.identificacao}</span>}
+                            </div>
                         </div>
                     )}
                 />

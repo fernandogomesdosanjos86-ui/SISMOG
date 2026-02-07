@@ -3,6 +3,7 @@ import { useState, useEffect, type FC, type FormEvent, type ChangeEvent } from '
 import type { Recebimento } from '../types';
 import { financeiroService } from '../../../services/financeiroService';
 import { useModal } from '../../../context/ModalContext';
+import CurrencyInput from '../../../components/CurrencyInput';
 
 interface RecebimentoAvulsoFormProps {
     onSuccess?: () => void;
@@ -102,63 +103,84 @@ const RecebimentoAvulsoForm: FC<RecebimentoAvulsoFormProps> = ({ onSuccess, init
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-                <label className="block text-sm font-medium text-gray-700">Empresa</label>
-                <select name="empresa" value={formData.empresa} onChange={handleChange} disabled={initialData?.tipo === 'faturamento'} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500">
-                    <option value="SEMOG">SEMOG</option>
-                    <option value="FEMOG">FEMOG</option>
-                </select>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Descrição</label>
-                <input required name="descricao" value={formData.descricao} onChange={handleChange} disabled={initialData?.tipo === 'faturamento'} placeholder="Ex: Devolução de Caução" className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500" />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Valor do Recebimento</label>
-                    <input type="number" step="0.01" required name="valor_base" value={formData.valor_base} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Acréscimos</label>
-                    <input type="number" step="0.01" name="acrescimo" value={formData.acrescimo} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Descontos</label>
-                    <input type="number" step="0.01" name="desconto" value={formData.desconto} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-1 border-b">Dados Gerais</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Empresa</label>
+                        <select name="empresa" value={formData.empresa} onChange={handleChange} disabled={initialData?.tipo === 'faturamento'} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 focus:border-blue-500 focus:ring-blue-500">
+                            <option value="SEMOG">SEMOG</option>
+                            <option value="FEMOG">FEMOG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Descrição</label>
+                        <input required name="descricao" value={formData.descricao} onChange={handleChange} disabled={initialData?.tipo === 'faturamento'} placeholder="Ex: Devolução de Caução" className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 focus:border-blue-500 focus:ring-blue-500" />
+                    </div>
                 </div>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700">Data Recebimento (Previsão)</label>
-                <input type="date" required name="data_recebimento" value={formData.data_recebimento} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-1 border-b">Valores</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <CurrencyInput
+                            label="Valor do Recebimento"
+                            value={formData.valor_base || 0}
+                            onChange={(val) => setFormData(prev => ({ ...prev, valor_base: val }))}
+                        />
+                    </div>
+                    <div>
+                        <CurrencyInput
+                            label="Acréscimos"
+                            value={formData.acrescimo || 0}
+                            onChange={(val) => setFormData(prev => ({ ...prev, acrescimo: val }))}
+                        />
+                    </div>
+                    <div>
+                        <CurrencyInput
+                            label="Descontos"
+                            value={formData.desconto || 0}
+                            onChange={(val) => setFormData(prev => ({ ...prev, desconto: val }))}
+                        />
+                    </div>
+                </div>
+                <div className="bg-gray-50 p-3 rounded text-right mt-4 border border-gray-100">
+                    <span className="text-sm font-medium text-gray-500 mr-2 uppercase tracking-wide">Total Líquido:</span>
+                    <span className="text-xl font-bold text-green-700">
+                        R$ {((formData.valor_base || 0) + (formData.acrescimo || 0) - (formData.desconto || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                </div>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700">Observações</label>
-                <textarea name="observacoes" value={formData.observacoes} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border" />
+                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-1 border-b">Datas e Detalhes</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Data Recebimento (Previsão)</label>
+                        <input type="date" required name="data_recebimento" value={formData.data_recebimento} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Observações</label>
+                        <textarea name="observacoes" rows={3} value={formData.observacoes} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
+                    </div>
+                </div>
             </div>
 
-            <div className="bg-gray-50 p-3 rounded text-right">
-                <span className="text-sm font-medium text-gray-500 mr-2">Total Líquido:</span>
-                <span className="text-lg font-bold text-gray-900">
-                    R$ {((formData.valor_base || 0) + (formData.acrescimo || 0) - (formData.desconto || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </span>
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3">
+            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3 border-t border-gray-200 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
                 >
                     Cancelar
                 </button>
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center"
+                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center transition-colors"
                 >
                     {loading ? 'Salvando...' : (initialData ? 'Salvar Alterações' : 'Criar Recebimento')}
                 </button>

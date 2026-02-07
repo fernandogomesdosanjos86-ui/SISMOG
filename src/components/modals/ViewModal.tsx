@@ -18,10 +18,10 @@ export const ViewModal: React.FC = () => {
             onClose={closeModal}
             size="lg"
             footer={
-                <div className="flex justify-end gap-3">
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
                     <button
                         onClick={closeModal}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg transition-colors font-medium"
+                        className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg transition-colors font-medium"
                     >
                         Fechar
                     </button>
@@ -39,7 +39,7 @@ export const ViewModal: React.FC = () => {
                                     closeModal();
                                     action.onClick();
                                 }}
-                                className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${bgClass}`}
+                                className={`w-full sm:w-auto justify-center sm:justify-start px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${bgClass}`}
                             >
                                 {action.icon}
                                 {action.label}
@@ -56,7 +56,7 @@ export const ViewModal: React.FC = () => {
                                     modal.onEdit?.();
                                 }
                             }}
-                            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${modal.actionPermissions?.canEdit === false
+                            className={`w-full sm:w-auto justify-center sm:justify-start px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${modal.actionPermissions?.canEdit === false
                                 ? 'bg-blue-300 text-white cursor-not-allowed opacity-70'
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                                 }`}
@@ -74,7 +74,7 @@ export const ViewModal: React.FC = () => {
                                     modal.onDelete?.();
                                 }
                             }}
-                            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${modal.actionPermissions?.canDelete === false
+                            className={`w-full sm:w-auto justify-center sm:justify-start px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${modal.actionPermissions?.canDelete === false
                                 ? 'bg-red-300 text-white cursor-not-allowed opacity-70'
                                 : 'bg-red-600 text-white hover:bg-red-700'
                                 }`}
