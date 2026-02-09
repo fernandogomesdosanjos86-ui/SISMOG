@@ -181,10 +181,6 @@ const Faturamentos: FC = () => {
         const matchesSearch = (f.contratos?.contratante || '').toLowerCase().includes(searchLower) ||
             (f.contratos?.nome_posto || '').toLowerCase().includes(searchLower);
         return matchesCompany && matchesStatus && matchesSearch;
-    }).sort((a, b) => {
-        if (!a.data_vencimento) return 1;
-        if (!b.data_vencimento) return -1;
-        return new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime();
     });
 
     // KPI Calculations

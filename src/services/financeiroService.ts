@@ -50,7 +50,8 @@ export const financeiroService = {
         let query = supabase
             .from('faturamentos')
             .select('*, contratos(id, empresa, contratante, nome_posto)')
-            .order('competencia', { ascending: false });
+            .order('competencia', { ascending: false })
+            .order('data_emissao', { ascending: true });
 
         if (month) {
             query = query.eq('competencia', month);

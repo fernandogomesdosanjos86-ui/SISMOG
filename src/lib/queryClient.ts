@@ -41,9 +41,14 @@ export const queryKeys = {
         destinacoes: () => [...queryKeys.equipamentos.all, 'destinacoes'] as const,
     },
     // RH
-    cargosSalarios: {
-        all: ['cargosSalarios'] as const,
-        list: () => [...queryKeys.cargosSalarios.all, 'list'] as const,
-        detail: (id: string) => [...queryKeys.cargosSalarios.all, 'detail', id] as const,
+    cargos: {
+        all: ['cargos'] as const,
+        list: () => [...queryKeys.cargos.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.cargos.all, 'detail', id] as const,
+    },
+    funcionarios: {
+        all: ['funcionarios'] as const,
+        list: () => [...queryKeys.funcionarios.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.funcionarios.all, 'detail', id] as const,
     },
 } as const;

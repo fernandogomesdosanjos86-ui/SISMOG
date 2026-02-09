@@ -15,3 +15,22 @@ export interface CargoSalario {
     created_at?: string;
     updated_at?: string;
 }
+
+export interface Funcionario {
+    id: string;
+    empresa: 'FEMOG' | 'SEMOG';
+    nome: string;
+    cpf: string;
+    cargo_id: string;
+    tipo_contrato: string;
+    banco: string;
+    agencia: string;
+    conta: string;
+    pix: string;
+    status: 'ativo' | 'inativo';
+    created_at?: string;
+    updated_at?: string;
+    cargos_salarios?: CargoSalario; // Joined relation
+}
+
+export type FuncionarioFormData = Omit<Funcionario, 'id' | 'created_at' | 'updated_at' | 'cargos_salarios'>;

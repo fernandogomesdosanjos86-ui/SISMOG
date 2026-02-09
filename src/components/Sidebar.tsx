@@ -54,26 +54,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const navItems = [
     { icon: Home, label: 'Dashboard', path: APP_ROUTES.HOME },
-    { icon: FileText, label: 'Relatórios', path: APP_ROUTES.REPORTS },
-    { icon: BarChart2, label: 'Análises', path: APP_ROUTES.ANALYTICS },
-    {
-      icon: Settings,
-      label: 'Configurações',
-      path: '#', // Parent item
-      children: [
-        { icon: Users, label: 'Usuários', path: APP_ROUTES.USERS },
-      ]
-    },
-    {
-      icon: DollarSign,
-      label: 'Financeiro',
-      path: APP_ROUTES.FINANCEIRO.ROOT,
-      children: [
-        { icon: FileText, label: 'Contratos', path: APP_ROUTES.FINANCEIRO.CONTRATOS },
-        { icon: BarChart2, label: 'Faturamentos', path: APP_ROUTES.FINANCEIRO.FATURAMENTOS },
-        { icon: Users, label: 'Recebimentos', path: APP_ROUTES.FINANCEIRO.RECEBIMENTOS }
-      ]
-    },
     {
       icon: Box,
       label: 'Estoque',
@@ -87,9 +67,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       label: 'Dep. Pessoal',
       path: APP_ROUTES.RH.ROOT,
       children: [
-        { icon: FileText, label: 'Cargos e Salários', path: APP_ROUTES.RH.CARGOS_SALARIOS }
+        { icon: FileText, label: 'Cargos e Salários', path: APP_ROUTES.RH.CARGOS_SALARIOS },
+        { icon: Users, label: 'Funcionários', path: APP_ROUTES.RH.FUNCIONARIOS }
       ]
     },
+    {
+      icon: DollarSign,
+      label: 'Financeiro',
+      path: APP_ROUTES.FINANCEIRO.ROOT,
+      children: [
+        { icon: FileText, label: 'Contratos', path: APP_ROUTES.FINANCEIRO.CONTRATOS },
+        { icon: BarChart2, label: 'Faturamentos', path: APP_ROUTES.FINANCEIRO.FATURAMENTOS },
+        { icon: Users, label: 'Recebimentos', path: APP_ROUTES.FINANCEIRO.RECEBIMENTOS }
+      ]
+    },
+    {
+      icon: Settings,
+      label: 'Configurações',
+      path: '#', // Parent item
+      children: [
+        { icon: Users, label: 'Usuários', path: APP_ROUTES.USERS },
+      ]
+    },
+    { icon: FileText, label: 'Relatórios', path: APP_ROUTES.REPORTS },
+    { icon: BarChart2, label: 'Análises', path: APP_ROUTES.ANALYTICS },
   ];
   return (
     <>

@@ -122,7 +122,7 @@ const CargosSalarios: React.FC = () => {
     ];
 
     const renderCard = (cargo: CargoSalario) => (
-        <div className="space-y-3">
+        <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${cargo.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
             <div className="flex justify-between items-start">
                 <div>
                     <h3 className="font-medium text-gray-900">{cargo.cargo}</h3>
@@ -206,6 +206,7 @@ const CargosSalarios: React.FC = () => {
                 renderCard={renderCard}
                 keyExtractor={(item) => item.id}
                 loading={loading}
+                getRowBorderColor={(item) => item.empresa === 'FEMOG' ? 'border-blue-500' : 'border-orange-500'}
             />
         </div>
     );

@@ -7,14 +7,14 @@ export function useCargosSalarios() {
     const queryClient = useQueryClient();
 
     const query = useQuery({
-        queryKey: queryKeys.cargosSalarios.list(),
+        queryKey: queryKeys.cargos.list(),
         queryFn: () => rhService.getCargosSalarios(),
     });
 
     const createMutation = useMutation({
         mutationFn: (data: Omit<CargoSalario, 'id'>) => rhService.createCargoSalario(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.cargosSalarios.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cargos.all });
         },
     });
 
@@ -22,14 +22,14 @@ export function useCargosSalarios() {
         mutationFn: ({ id, data }: { id: string; data: Partial<CargoSalario> }) =>
             rhService.updateCargoSalario(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.cargosSalarios.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cargos.all });
         },
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => rhService.deleteCargoSalario(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.cargosSalarios.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cargos.all });
         },
     });
 

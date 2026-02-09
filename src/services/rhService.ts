@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { CargoSalario } from '../features/rh/types';
+import type { CargoSalario, Funcionario, FuncionarioFormData } from '../features/rh/types';
 
 export const rhService = {
     async getCargosSalarios() {
@@ -39,6 +39,49 @@ export const rhService = {
     async deleteCargoSalario(id: string) {
         const { error } = await supabase
             .from('cargos_salarios')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    },
+
+    // --- Funcionários ---
+    async getFuncionarios() {
+        const { data, error } = await supabase
+            .from('funcionarios')
+            .select('*, cargos_salarios(cargo, uf)')
+            .order('nome', { ascending: true });
+
+        if (error) throw error;
+        return data as Funcionario[];
+    },
+
+    async createFuncionario(funcionario: FuncionarioFormData) {
+        const { data, error } = await supabase
+            .from('funcionarios')
+            .insert(funcionario)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Funcionario;
+    },
+
+    async updateFuncionario(id: string, funcionario: Partial<Funcionario>) {
+        const { data, error } = await supabase
+            .from('funcionarios')
+            .update(funcionario)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Funcionario;
+    },
+
+    async deleteFuncionario(id: string) {
+        const { error } = await supabase
+            .from('funcionarios')
             .delete()
             .eq('id', id);
 

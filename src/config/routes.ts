@@ -17,5 +17,6 @@ export const APP_ROUTES = {
     RH: {
         ROOT: '#rh',
         CARGOS_SALARIOS: '/rh/cargos-salarios',
+        FUNCIONARIOS: '/rh/funcionarios',
     }
 } as const;
