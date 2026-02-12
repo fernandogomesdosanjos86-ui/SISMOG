@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supervisaoService } from '../../../services/supervisaoService';
 import { queryKeys } from '../../../lib/queryClient';
-import type { PostoTrabalho, PostoFormData } from '../types';
+import type { PostoFormData } from '../types';
 import { useModal } from '../../../context/ModalContext';
 
 export function usePostos() {

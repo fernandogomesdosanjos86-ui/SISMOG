@@ -23,7 +23,7 @@ export const servicosExtrasService = {
         return data as ServicoExtra[];
     },
 
-    async getCargoValorHora(cargoId: string, turno: 'Diurno' | 'Noturno', empresa: 'FEMOG' | 'SEMOG') {
+    async getCargoValorHora(cargoId: string, turno: 'Diurno' | 'Noturno', _empresa: 'FEMOG' | 'SEMOG') {
         const { data, error } = await supabase
             .from('cargos_salarios')
             .select('*')

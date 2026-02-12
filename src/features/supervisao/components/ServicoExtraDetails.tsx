@@ -10,7 +10,7 @@ interface ServicoExtraDetailsProps {
     onDelete: (id: string) => void;
 }
 
-const ServicoExtraDetails: React.FC<ServicoExtraDetailsProps> = ({ employeeName, services, onEdit, onDelete }) => {
+const ServicoExtraDetails: React.FC<ServicoExtraDetailsProps> = ({ services, onEdit, onDelete }) => {
     const { openConfirmModal } = useModal();
 
     const totalValue = services.reduce((acc, curr) => acc + curr.valor, 0);
@@ -189,7 +189,7 @@ const ServicoExtraDetails: React.FC<ServicoExtraDetailsProps> = ({ employeeName,
                             </div>
                         )}
 
-                        {!expandedId === item.id && (
+                        {expandedId !== item.id && (
                             <p className="text-center text-xs text-gray-400 mt-2">Toque para ver detalhes</p>
                         )}
                     </div>

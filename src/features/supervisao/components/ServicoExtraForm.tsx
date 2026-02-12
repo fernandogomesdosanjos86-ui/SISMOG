@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { usePostos } from '../hooks/usePostos';
 import { useFuncionarios } from '../../rh/hooks/useFuncionarios';
-import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../services/supabase';
 import type { ServicoExtraFormData } from '../types';
-import { servicosExtrasService } from '../../../services/servicosExtrasService';
 
 interface ServicoExtraFormProps {
     onSuccess: () => void;
