@@ -17,6 +17,8 @@ const Recebimentos = lazy(() => import('./features/financeiro/Recebimentos'));
 const EquipamentosControlados = lazy(() => import('./features/estoque/EquipamentosControlados'));
 const CargosSalarios = lazy(() => import('./features/rh/CargosSalarios'));
 const Funcionarios = lazy(() => import('./features/rh/Funcionarios'));
+const GestaoPostos = lazy(() => import('./features/supervisao/GestaoPostos'));
+const ServicosExtras = lazy(() => import('./features/supervisao/ServicosExtras'));
 
 
 function App() {
@@ -41,8 +43,11 @@ function App() {
             {/* RH */}
             <Route path={APP_ROUTES.RH.CARGOS_SALARIOS} element={<CargosSalarios />} />
             <Route path={APP_ROUTES.RH.FUNCIONARIOS} element={<Funcionarios />} />
-          </Route>
 
+            {/* Supervisão */}
+            <Route path={APP_ROUTES.SUPERVISAO.POSTOS} element={<GestaoPostos />} />
+            <Route path={APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS} element={<ServicosExtras />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<NotFound />} />

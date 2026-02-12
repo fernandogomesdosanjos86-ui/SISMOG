@@ -27,7 +27,11 @@ export interface Funcionario {
     agencia: string;
     conta: string;
     pix: string;
-    status: 'ativo' | 'inativo';
+    status: 'ativo' | 'inativo' | 'ferias' | 'afastado';
+    // Joined fields
+    cargo?: {
+        cargo: string;
+    };
     created_at?: string;
     updated_at?: string;
     cargos_salarios?: CargoSalario; // Joined relation

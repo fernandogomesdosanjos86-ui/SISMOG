@@ -72,6 +72,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       ]
     },
     {
+      icon: Users, // Using Users icon temporarily, can change if needed
+      label: 'Supervisão',
+      path: APP_ROUTES.SUPERVISAO.ROOT,
+      children: [
+        { icon: FileText, label: 'Gestão de Postos', path: APP_ROUTES.SUPERVISAO.POSTOS },
+        { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS }
+      ]
+    },
+    {
       icon: DollarSign,
       label: 'Financeiro',
       path: APP_ROUTES.FINANCEIRO.ROOT,

@@ -51,4 +51,15 @@ export const queryKeys = {
         list: () => [...queryKeys.funcionarios.all, 'list'] as const,
         detail: (id: string) => [...queryKeys.funcionarios.all, 'detail', id] as const,
     },
+    // Supervisão
+    postos: {
+        all: ['postos'] as const,
+        list: () => [...queryKeys.postos.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.postos.all, 'detail', id] as const,
+        alocacoes: (id: string) => [...queryKeys.postos.all, 'alocacoes', id] as const,
+    },
+    servicosExtras: {
+        all: ['servicosExtras'] as const,
+        list: (month: number, year: number) => [...queryKeys.servicosExtras.all, 'list', month, year] as const,
+    },
 } as const;

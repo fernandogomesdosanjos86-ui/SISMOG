@@ -18,5 +18,10 @@ export const APP_ROUTES = {
         ROOT: '#rh',
         CARGOS_SALARIOS: '/rh/cargos-salarios',
         FUNCIONARIOS: '/rh/funcionarios',
-    }
+    },
+    SUPERVISAO: {
+        ROOT: '#supervisao',
+        POSTOS: '/supervisao/postos',
+        SERVICOS_EXTRAS: '/supervisao/servicos-extras',
+    },
 } as const;
