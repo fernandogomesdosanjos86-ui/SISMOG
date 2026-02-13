@@ -13,6 +13,7 @@ export const APP_ROUTES = {
     ESTOQUE: {
         ROOT: '#estoque',
         EQUIPAMENTOS: '/estoque/equipamentos',
+        GESTAO_ESTOQUE: '/estoque/gestao',
     },
     RH: {
         ROOT: '#rh',

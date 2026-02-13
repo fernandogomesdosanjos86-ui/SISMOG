@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase } from 'lucide-react';
+import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useModal } from '../context/ModalContext';
@@ -59,7 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       label: 'Estoque',
       path: APP_ROUTES.ESTOQUE.ROOT,
       children: [
-        { icon: FileText, label: 'Equip. Controlados', path: APP_ROUTES.ESTOQUE.EQUIPAMENTOS }
+        { icon: FileText, label: 'Equip. Controlados', path: APP_ROUTES.ESTOQUE.EQUIPAMENTOS },
+        { icon: Package, label: 'Gestão de Estoque', path: APP_ROUTES.ESTOQUE.GESTAO_ESTOQUE }
       ]
     },
     {

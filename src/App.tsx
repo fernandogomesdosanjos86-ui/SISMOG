@@ -15,6 +15,7 @@ const Contratos = lazy(() => import('./features/financeiro/Contratos'));
 const Faturamentos = lazy(() => import('./features/financeiro/Faturamentos'));
 const Recebimentos = lazy(() => import('./features/financeiro/Recebimentos'));
 const EquipamentosControlados = lazy(() => import('./features/estoque/EquipamentosControlados'));
+const GestaoEstoque = lazy(() => import('./features/estoque/gestao/GestaoEstoque'));
 const CargosSalarios = lazy(() => import('./features/rh/CargosSalarios'));
 const Funcionarios = lazy(() => import('./features/rh/Funcionarios'));
 const GestaoPostos = lazy(() => import('./features/supervisao/GestaoPostos'));
@@ -39,6 +40,7 @@ function App() {
 
             {/* Estoque */}
             <Route path={APP_ROUTES.ESTOQUE.EQUIPAMENTOS} element={<EquipamentosControlados />} />
+            <Route path={APP_ROUTES.ESTOQUE.GESTAO_ESTOQUE} element={<GestaoEstoque />} />
 
             {/* RH */}
             <Route path={APP_ROUTES.RH.CARGOS_SALARIOS} element={<CargosSalarios />} />

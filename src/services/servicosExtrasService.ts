@@ -51,21 +51,12 @@ export const servicosExtrasService = {
         const durationMs = saida.getTime() - entrada.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
 
-        // 3. Calculate value
-        let rawValue = durationHours * valorHora;
+        // 3. Calculate value (Math.round to avoid floating point issues like 20.83*12=249.9599...)
+        const roundedValue = Math.round(durationHours * valorHora * 100) / 100;
 
-        // 4. Apply rounding rule: cents >= 0.96 round up
-        const cents = rawValue % 1;
-        let finalValue = rawValue;
-        if (cents >= 0.96) {
-            finalValue = Math.ceil(rawValue);
-        } else {
-            // Keep distinct cents if <= 0.95 (formatting happens at display, but we store exact for now? 
-            // Requirement says: "mantém o valor com centavos". 
-            // To match example 174.95 -> 174.95, we just don't round up.
-            // We'll truncate to 2 decimals for storage consistency
-            finalValue = Math.floor(rawValue * 100) / 100;
-        }
+        // 4. Apply rounding rule: cents >= 0.96 round up to next integer
+        const cents = Math.round((roundedValue % 1) * 100) / 100;
+        const finalValue = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
 
         const payload = {
             ...data,
@@ -117,9 +108,9 @@ export const servicosExtrasService = {
         const saida = new Date(data.saida);
         const durationHours = (saida.getTime() - entrada.getTime()) / (1000 * 60 * 60);
 
-        let rawValue = durationHours * valorHora;
-        const cents = rawValue % 1;
-        let finalValue = cents >= 0.96 ? Math.ceil(rawValue) : Math.floor(rawValue * 100) / 100;
+        const roundedValue = Math.round(durationHours * valorHora * 100) / 100;
+        const cents = Math.round((roundedValue % 1) * 100) / 100;
+        const finalValue = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
 
         const payload = {
             ...data,
