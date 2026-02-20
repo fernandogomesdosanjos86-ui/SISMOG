@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
+import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import { useModal } from '../../context/ModalContext';
 import { usePostos } from './hooks/usePostos';
@@ -156,13 +157,9 @@ const GestaoPostos: React.FC = () => {
                 title="Gestão de Postos"
                 subtitle="Gerencie os postos de trabalho e alocação de funcionários."
                 action={
-                    <button
-                        onClick={handleCreate}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        <Plus size={20} />
-                        Novo Posto
-                    </button>
+                    <PrimaryButton onClick={handleCreate} className="w-full sm:w-auto justify-center">
+                        <Plus size={20} className="mr-2" />Novo Posto
+                    </PrimaryButton>
                 }
             />
 

@@ -150,52 +150,79 @@ const PostoDetails: React.FC<PostoDetailsProps> = ({ posto }) => {
                         Nenhum funcionário alocado neste posto.
                     </div>
                 ) : (
-                    <div className="overflow-hidden border rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome / Cargo</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Escala / Turno</th>
-                                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {alocacoes.map((item) => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{item.funcionario?.nome}</div>
-                                            <div className="text-xs text-gray-500">{item.funcionario?.cargo?.cargo || '-'}</div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{item.escala}</div>
-                                            <div className="text-xs text-gray-500">{item.turno}</div>
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-center">
+                    <>
+                        {/* Cards — Mobile */}
+                        <div className="sm:hidden space-y-3">
+                            {alocacoes.map((item) => (
+                                <div key={item.id} className="bg-white border rounded-lg p-4 flex items-start justify-between gap-3 shadow-sm">
+                                    <div className="space-y-1 min-w-0">
+                                        <p className="text-sm font-semibold text-gray-900 truncate">{item.funcionario?.nome}</p>
+                                        <p className="text-xs text-gray-500">{item.funcionario?.cargo?.cargo || '-'}</p>
+                                        <div className="flex flex-wrap gap-2 pt-1">
+                                            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{item.escala}</span>
+                                            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{item.turno}</span>
                                             {item.he ? (
-                                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                    Extra
-                                                </span>
+                                                <span className="text-xs bg-yellow-100 text-yellow-800 font-semibold px-2 py-0.5 rounded-full">Extra</span>
                                             ) : (
-                                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                    Oficial
-                                                </span>
+                                                <span className="text-xs bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">Oficial</span>
                                             )}
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                                            <button
-                                                onClick={() => handleDelete(item.id, item.funcionario?.nome || '')}
-                                                className="text-red-600 hover:text-red-900 transition-colors"
-                                                title="Remover"
-                                            >
-                                                <Trash size={18} />
-                                            </button>
-                                        </td>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDelete(item.id, item.funcionario?.nome || '')}
+                                        className="text-red-500 hover:text-red-700 flex-shrink-0 p-1"
+                                        title="Remover"
+                                    >
+                                        <Trash size={18} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Table — Desktop */}
+                        <div className="hidden sm:block overflow-hidden border rounded-lg">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome / Cargo</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Escala / Turno</th>
+                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {alocacoes.map((item) => (
+                                        <tr key={item.id} className="hover:bg-gray-50">
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">{item.funcionario?.nome}</div>
+                                                <div className="text-xs text-gray-500">{item.funcionario?.cargo?.cargo || '-'}</div>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">{item.escala}</div>
+                                                <div className="text-xs text-gray-500">{item.turno}</div>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                {item.he ? (
+                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Extra</span>
+                                                ) : (
+                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Oficial</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => handleDelete(item.id, item.funcionario?.nome || '')}
+                                                    className="text-red-600 hover:text-red-900 transition-colors"
+                                                    title="Remover"
+                                                >
+                                                    <Trash size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </div>
         </div>

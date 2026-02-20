@@ -51,9 +51,12 @@ const DevolverForm: FC<Props> = ({ onSuccess }) => {
 
     // Reset dependant fields
     useEffect(() => {
-        setSelectedCategoria('Armamentos');
+        const categoriasDisponiveis = selectedPostoId
+            ? Array.from(new Set(destinacoes.filter(d => d.contrato_id === selectedPostoId).map(d => d.equipamentos?.categoria)))
+            : [];
+        setSelectedCategoria((categoriasDisponiveis[0] as EquipamentoCategoria) || 'Armamentos');
         setSelectedDestinacaoId('');
-    }, [selectedPostoId]);
+    }, [selectedPostoId, destinacoes]);
 
     useEffect(() => {
         setSelectedDestinacaoId('');

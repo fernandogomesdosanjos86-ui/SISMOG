@@ -74,11 +74,11 @@ const GestaoEstoque: React.FC = () => {
                 title="Gestão de Estoque"
                 subtitle="Produtos e Movimentações"
                 action={
-                    <div className="flex gap-2 w-full sm:w-auto">
-                        <PrimaryButton onClick={handleNovoProduto} className="flex-1 sm:flex-initial justify-center">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <PrimaryButton onClick={handleNovoProduto} className="w-full sm:w-auto justify-center">
                             <Plus size={18} className="mr-2" />Novo Produto
                         </PrimaryButton>
-                        <PrimaryButton onClick={handleNovaMovimentacao} className="flex-1 sm:flex-initial justify-center bg-green-600 hover:bg-green-700">
+                        <PrimaryButton onClick={handleNovaMovimentacao} className="w-full sm:w-auto justify-center bg-green-600 hover:bg-green-700">
                             <RefreshCw size={18} className="mr-2" />Nova Movimentação
                         </PrimaryButton>
                     </div>

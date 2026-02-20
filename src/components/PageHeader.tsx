@@ -17,7 +17,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action }) => {
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{title}</h1>
                 <p className="text-gray-500 mt-1">{subtitle}</p>
             </div>
-            {action && <div className="flex-shrink-0">{action}</div>}
+            {action && <div className="w-full sm:w-auto sm:flex-shrink-0">{action}</div>}
         </div>
     );
 };
