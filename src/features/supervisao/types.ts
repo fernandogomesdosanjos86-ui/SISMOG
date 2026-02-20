@@ -16,7 +16,7 @@ export interface AlocacaoFuncionario {
     id: string;
     posto_id: string;
     funcionario_id: string;
-    escala: '12x36' | '5x2' | '5x1' | 'Outro';
+    escala: '12x36' | '5x2' | '6x1' | 'Outro';
     turno: 'Diurno' | 'Noturno';
     he: boolean;
     created_at: string;

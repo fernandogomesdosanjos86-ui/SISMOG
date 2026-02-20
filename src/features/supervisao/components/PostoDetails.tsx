@@ -102,7 +102,7 @@ const PostoDetails: React.FC<PostoDetailsProps> = ({ posto }) => {
                         >
                             <option value="12x36">12x36</option>
                             <option value="5x2">5x2</option>
-                            <option value="5x1">5x1</option>
+                            <option value="6x1">6x1</option>
                             <option value="Outro">Outro</option>
                         </select>
                     </div>
