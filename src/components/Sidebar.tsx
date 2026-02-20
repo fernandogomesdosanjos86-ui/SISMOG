@@ -52,7 +52,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     });
   };
 
-  const navItems = [
+  type NavItem = {
+    icon: any;
+    label: string;
+    path: string;
+    children?: { icon: any; label: string; path: string; }[];
+    hasAccess?: (user: any) => boolean;
+  };
+
+  const navItems: NavItem[] = [
     { icon: Home, label: 'Dashboard', path: APP_ROUTES.HOME },
     {
       icon: Box,
@@ -85,7 +93,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       icon: DollarSign,
       label: 'Financeiro',
       path: APP_ROUTES.FINANCEIRO.ROOT,
-      requiredPermissions: ['ADM', 'Gestão (Financeiro)', 'Gestão (Direção)'],
+      hasAccess: (user: any) => {
+        const p = user?.user_metadata?.permissao?.toLowerCase();
+        const s = user?.user_metadata?.setor?.toLowerCase();
+        if (p === 'adm') return true;
+        if (p === 'gestor' && (s === 'financeiro' || s === 'direção')) return true;
+        return false;
+      },
       children: [
         { icon: FileText, label: 'Contratos', path: APP_ROUTES.FINANCEIRO.CONTRATOS },
         { icon: BarChart2, label: 'Faturamentos', path: APP_ROUTES.FINANCEIRO.FATURAMENTOS },
@@ -145,8 +159,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               const hasChildren = item.children && item.children.length > 0;
               const isExpanded = expandedMenus[item.label];
               const isActiveParent = hasChildren && item.children?.some(child => location.pathname === child.path);
-              const userPermission = (user?.user_metadata?.permissao || '').toLowerCase();
-              const isLocked = item.requiredPermissions && !item.requiredPermissions.some(p => p.toLowerCase() === userPermission);
+              const isLocked = item.hasAccess ? !item.hasAccess(user) : false;
 
               return (
                 <li key={item.label}>
@@ -226,6 +239,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <p className="text-xs text-blue-200/70 truncate flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                 {user?.user_metadata?.permissao || 'Visitante'}
+                {user?.user_metadata?.permissao?.toLowerCase() === 'gestor' && user?.user_metadata?.setor
+                  ? ` ${user.user_metadata.setor}`
+                  : ''}
               </p>
             </div>
           </div>

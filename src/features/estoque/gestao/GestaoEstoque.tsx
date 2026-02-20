@@ -68,7 +68,7 @@ const GestaoEstoque: React.FC = () => {
     ];
 
     return (
-        <div className="p-4 max-w-7xl mx-auto space-y-4">
+        <div className="space-y-4">
             {/* Header */}
             <PageHeader
                 title="Gestão de Estoque"
