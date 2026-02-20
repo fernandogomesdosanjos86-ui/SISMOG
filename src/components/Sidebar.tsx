@@ -145,8 +145,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               const hasChildren = item.children && item.children.length > 0;
               const isExpanded = expandedMenus[item.label];
               const isActiveParent = hasChildren && item.children?.some(child => location.pathname === child.path);
-              const userPermission = user?.user_metadata?.permissao || '';
-              const isLocked = item.requiredPermissions && !item.requiredPermissions.includes(userPermission);
+              const userPermission = (user?.user_metadata?.permissao || '').toLowerCase();
+              const isLocked = item.requiredPermissions && !item.requiredPermissions.some(p => p.toLowerCase() === userPermission);
 
               return (
                 <li key={item.label}>
