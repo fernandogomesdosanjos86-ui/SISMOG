@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package } from 'lucide-react';
+import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useModal } from '../context/ModalContext';
@@ -85,6 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       icon: DollarSign,
       label: 'Financeiro',
       path: APP_ROUTES.FINANCEIRO.ROOT,
+      requiredPermissions: ['ADM', 'Gestão (Financeiro)', 'Gestão (Direção)'],
       children: [
         { icon: FileText, label: 'Contratos', path: APP_ROUTES.FINANCEIRO.CONTRATOS },
         { icon: BarChart2, label: 'Faturamentos', path: APP_ROUTES.FINANCEIRO.FATURAMENTOS },
@@ -144,27 +145,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               const hasChildren = item.children && item.children.length > 0;
               const isExpanded = expandedMenus[item.label];
               const isActiveParent = hasChildren && item.children?.some(child => location.pathname === child.path);
+              const userPermission = user?.user_metadata?.permissao || '';
+              const isLocked = item.requiredPermissions && !item.requiredPermissions.includes(userPermission);
 
               return (
                 <li key={item.label}>
                   {hasChildren ? (
                     <div>
                       <button
-                        onClick={() => toggleMenu(item.label)}
+                        onClick={() => !isLocked && toggleMenu(item.label)}
                         className={`
                           w-full flex items-center justify-between px-6 py-3 transition-colors duration-200
-                          ${isActiveParent ? 'text-blue-100' : 'text-blue-200/70 hover:bg-white/5 hover:text-white'}
+                          ${isLocked
+                            ? 'text-blue-200/30 cursor-not-allowed'
+                            : isActiveParent ? 'text-blue-100' : 'text-blue-200/70 hover:bg-white/5 hover:text-white'
+                          }
                         `}
+                        title={isLocked ? 'Acesso restrito' : undefined}
                       >
                         <div className="flex items-center gap-3">
                           <item.icon size={20} />
                           <span className="font-medium">{item.label}</span>
                         </div>
-                        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        {isLocked ? <Lock size={14} /> : isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                       </button>
 
                       {/* Submenu */}
-                      <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className={`overflow-hidden transition-all duration-300 ${!isLocked && isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                         <ul className="bg-black/10 pb-2">
                           {item.children?.map((child) => (
                             <li key={child.path}>
