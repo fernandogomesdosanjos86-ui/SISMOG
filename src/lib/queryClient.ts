@@ -62,6 +62,10 @@ export const queryKeys = {
         all: ['servicosExtras'] as const,
         list: (month: number, year: number) => [...queryKeys.servicosExtras.all, 'list', month, year] as const,
     },
+    apontamentos: {
+        all: ['apontamentos'] as const,
+        list: (month: number, year: number) => [...queryKeys.apontamentos.all, 'list', month, year] as const,
+    },
     // Gestão de Estoque
     estoqueProdutos: {
         all: ['estoqueProdutos'] as const,

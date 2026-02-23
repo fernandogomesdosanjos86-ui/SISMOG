@@ -86,7 +86,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       path: APP_ROUTES.SUPERVISAO.ROOT,
       children: [
         { icon: FileText, label: 'Gestão de Postos', path: APP_ROUTES.SUPERVISAO.POSTOS },
-        { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS }
+        { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS },
+        { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS }
       ]
     },
     {

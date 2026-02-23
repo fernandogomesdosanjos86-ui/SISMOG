@@ -53,3 +53,24 @@ export interface ServicoExtra {
 }
 
 export type ServicoExtraFormData = Omit<ServicoExtra, 'id' | 'created_at' | 'updated_at' | 'duracao' | 'valor_hora' | 'valor' | 'posto' | 'funcionario' | 'cargo'>;
+
+export type TipoApontamento = 'Abono' | 'Ausência' | 'Atestado' | 'Curso' | 'Penalidade' | 'Troca Presença' | 'Troca Ausência';
+
+export interface Apontamento {
+    id: string;
+    empresa: 'FEMOG' | 'SEMOG';
+    posto_id: string;
+    funcionario_id: string;
+    apontamento: TipoApontamento;
+    data: string; // YYYY-MM-DD
+    frequencia_pts: number;
+    beneficios_pts: number;
+    observacao?: string;
+    created_at: string;
+    updated_at: string;
+    // Joined fields
+    posto?: { nome: string };
+    funcionario?: { nome: string };
+}
+
+export type ApontamentoFormData = Omit<Apontamento, 'id' | 'created_at' | 'updated_at' | 'frequencia_pts' | 'beneficios_pts' | 'posto' | 'funcionario'>;

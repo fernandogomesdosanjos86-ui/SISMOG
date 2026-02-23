@@ -24,5 +24,6 @@ export const APP_ROUTES = {
         ROOT: '#supervisao',
         POSTOS: '/supervisao/postos',
         SERVICOS_EXTRAS: '/supervisao/servicos-extras',
+        APONTAMENTOS: '/supervisao/apontamentos',
     },
 } as const;
