@@ -152,7 +152,7 @@ const HistoricoModal: React.FC<{
                 </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="hidden sm:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -165,28 +165,71 @@ const HistoricoModal: React.FC<{
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {movimentacoes.map(m => (
-                            <tr key={m.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 text-sm font-medium">{m.produto?.codigo}</td>
-                                <td className="px-4 py-3 text-sm">
-                                    <span className={`px-2 py-1 text-xs rounded-full font-bold ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                                        }`}>{m.tipo}</span>
-                                </td>
-                                <td className="px-4 py-3 text-sm text-center font-bold">{m.quantidade}</td>
-                                <td className="px-4 py-3 text-sm">{new Date(m.data).toLocaleDateString('pt-BR')}</td>
-                                <td className="px-4 py-3 text-sm text-gray-500">{m.observacao || '-'}</td>
-                                <td className="px-4 py-3 text-sm text-right">
-                                    <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-900 p-1" title="Excluir">
-                                        <Trash size={16} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                        {movimentacoes.map(m => {
+                            // Extract just the date part (YYYY-MM-DD) avoiding timezone shifts
+                            const dateStr = m.data.split('T')[0];
+                            const [year, month, day] = dateStr.split('-');
+                            const formattedDate = `${day}/${month}/${year}`;
+
+                            return (
+                                <tr key={m.id} className="hover:bg-gray-50">
+                                    <td className="px-4 py-3 text-sm font-medium">{m.produto?.codigo}</td>
+                                    <td className="px-4 py-3 text-sm">
+                                        <span className={`px-2 py-1 text-xs rounded-full font-bold ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                            }`}>{m.tipo}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-center font-bold">{m.quantidade}</td>
+                                    <td className="px-4 py-3 text-sm">{formattedDate}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-500">{m.observacao || '-'}</td>
+                                    <td className="px-4 py-3 text-sm text-right">
+                                        <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-900 p-1" title="Excluir">
+                                            <Trash size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                         {movimentacoes.length === 0 && (
                             <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Nenhuma movimentação</td></tr>
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="sm:hidden space-y-3">
+                {movimentacoes.map(m => {
+                    const dateStr = m.data.split('T')[0];
+                    const [year, month, day] = dateStr.split('-');
+                    const formattedDate = `${day}/${month}/${year}`;
+
+                    return (
+                        <div key={m.id} className="bg-white border text-sm border-gray-200 p-3 rounded-xl shadow-sm relative">
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <p className="font-bold text-gray-900">{m.produto?.codigo}</p>
+                                    <p className="text-xs text-gray-400">{formattedDate}</p>
+                                </div>
+                                <span className={`px-2 py-1 text-xs rounded-full font-bold ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                    }`}>{m.tipo}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center mt-3">
+                                <p className="text-gray-600"><span className="font-semibold">{m.quantidade}</span> itens</p>
+                                <button onClick={() => handleDelete(m.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg" title="Excluir">
+                                    <Trash size={16} />
+                                </button>
+                            </div>
+
+                            {m.observacao && (
+                                <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-2 mt-2">{m.observacao}</p>
+                            )}
+                        </div>
+                    );
+                })}
+                {movimentacoes.length === 0 && (
+                    <div className="py-8 text-center text-gray-400 border border-dashed rounded-xl">Nenhuma movimentação</div>
+                )}
             </div>
         </div>
     );

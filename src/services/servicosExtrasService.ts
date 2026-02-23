@@ -58,8 +58,20 @@ export const servicosExtrasService = {
         const cents = Math.round((roundedValue % 1) * 100) / 100;
         const finalValue = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
 
+        // Convert input dates to ISO Strings preserving the local time
+        // The datetime-local string looks like "2026-02-23T05:00". If passed directly, Postgres assumes UTC, and fetching back substracts 3h.
+        // Convert to Date, it will treat it as local time, then getting ISOString will subtract 3h to save to UTC.
+        // Wait, if it saves as UTC and comes back as UTC, `new Date(item.entrada).toLocaleTimeString()` will convert back correctly?
+        // Let's actually append the timezone offset to the string before parsing or just rely on creating a Date object.
+        // Actually, the simplest fix is appending ":00-03:00" to make it explicit, but local `new Date(data.entrada).toISOString()` naturally converts Local to UTC.
+        // Let's explicitly format it as ISO string.
+        const entradaISO = new Date(data.entrada).toISOString();
+        const saidaISO = new Date(data.saida).toISOString();
+
         const payload = {
             ...data,
+            entrada: entradaISO,
+            saida: saidaISO,
             duracao: Number(durationHours.toFixed(2)),
             valor_hora: valorHora,
             valor: finalValue
@@ -112,8 +124,13 @@ export const servicosExtrasService = {
         const cents = Math.round((roundedValue % 1) * 100) / 100;
         const finalValue = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
 
+        const entradaISO = new Date(data.entrada).toISOString();
+        const saidaISO = new Date(data.saida).toISOString();
+
         const payload = {
             ...data,
+            entrada: entradaISO,
+            saida: saidaISO,
             duracao: Number(durationHours.toFixed(2)),
             valor_hora: valorHora,
             valor: finalValue

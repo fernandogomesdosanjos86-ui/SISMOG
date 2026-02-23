@@ -69,14 +69,10 @@ const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialD
                     const cargo = cargos.find(c => c.id === formData.cargo_id);
                     const rate = formData.turno === 'Diurno' ? (cargo?.valor_he_diurno || 0) : (cargo?.valor_he_noturno || 0);
 
-                    // Value
-                    let rawValue = duration * rate;
-                    let total = rawValue;
-                    if ((rawValue % 1) >= 0.96) {
-                        total = Math.ceil(rawValue);
-                    } else {
-                        total = Math.floor(rawValue * 100) / 100;
-                    }
+                    // Value (with robust floating point rounding)
+                    const roundedValue = Math.round(duration * rate * 100) / 100;
+                    const cents = Math.round((roundedValue % 1) * 100) / 100;
+                    const total = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
 
                     setCalculatedValues({
                         duracao: Number(duration.toFixed(2)),
