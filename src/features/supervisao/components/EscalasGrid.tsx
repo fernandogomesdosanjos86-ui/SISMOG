@@ -1,9 +1,11 @@
+import React from 'react';
 import jsPDF from 'jspdf';
 import { Save, ChevronDown, ChevronRight, Download, Trash2 } from 'lucide-react';
 import { useEscalas } from '../hooks/useEscalas';
 import { getDaysInMonth, getWeekday } from '../utils/escalaLogics';
 import type { PostoTrabalho } from '../types';
 import { useModal } from '../../../context/ModalContext';
+import EscalaRow from './EscalaRow';
 
 interface EscalasGridProps {
     posto: PostoTrabalho;
@@ -43,7 +45,7 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
 
 
     // Grid Interactivity Handlers
-    const toggleDay = (funcionarioId: string, dayNum: number) => {
+    const toggleDay = React.useCallback((funcionarioId: string, dayNum: number) => {
         const item = localEscalas.find(e => e.funcionario_id === funcionarioId);
         if (!item) return;
 
@@ -55,7 +57,17 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
         }
 
         handleUpdateFuncionario(funcionarioId, { dias: currentDias });
-    };
+    }, [localEscalas, handleUpdateFuncionario]);
+
+    const sortedEscalas = React.useMemo(() => {
+        return [...localEscalas].sort((a, b) => {
+            const cargoCmp = (a.funcionario?.cargo?.cargo || '').localeCompare(b.funcionario?.cargo?.cargo || '', 'pt-BR');
+            if (cargoCmp !== 0) return cargoCmp;
+            const turnoCmp = (a.turno || '').localeCompare(b.turno || '', 'pt-BR');
+            if (turnoCmp !== 0) return turnoCmp;
+            return (a.funcionario?.nome || '').localeCompare(b.funcionario?.nome || '', 'pt-BR');
+        });
+    }, [localEscalas]);
 
     const getThemeColor = (emp: string) => emp === 'FEMOG' ? 'text-blue-600' : emp === 'SEMOG' ? 'text-orange-600' : 'text-gray-600';
     const empColor = getThemeColor(posto.empresa);
@@ -95,13 +107,7 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                 ]
             ];
 
-            const sortedEscalas = [...localEscalas].sort((a, b) => {
-                const cargoCmp = (a.funcionario?.cargo?.cargo || '').localeCompare(b.funcionario?.cargo?.cargo || '', 'pt-BR');
-                if (cargoCmp !== 0) return cargoCmp;
-                const turnoCmp = (a.turno || '').localeCompare(b.turno || '', 'pt-BR');
-                if (turnoCmp !== 0) return turnoCmp;
-                return (a.funcionario?.nome || '').localeCompare(b.funcionario?.nome || '', 'pt-BR');
-            });
+
 
             const body = sortedEscalas.map((esc, index) => {
                 const isExtra = esc.tipo?.trim().toLowerCase() === 'extra';
@@ -340,84 +346,17 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {[...localEscalas]
-                                        .sort((a, b) => {
-                                            // 1. Sort by Cargo
-                                            const cargoA = a.funcionario?.cargo?.cargo || '';
-                                            const cargoB = b.funcionario?.cargo?.cargo || '';
-                                            const cargoCmp = cargoA.localeCompare(cargoB, 'pt-BR');
-                                            if (cargoCmp !== 0) return cargoCmp;
-
-                                            // 2. Sort by Turno
-                                            const turnoA = a.turno || '';
-                                            const turnoB = b.turno || '';
-                                            const turnoCmp = turnoA.localeCompare(turnoB, 'pt-BR');
-                                            if (turnoCmp !== 0) return turnoCmp;
-
-                                            // 3. Sort by Nome
-                                            const nomeA = a.funcionario?.nome || '';
-                                            const nomeB = b.funcionario?.nome || '';
-                                            return nomeA.localeCompare(nomeB, 'pt-BR');
-                                        })
-                                        .map((esc) => {
-                                            const activeDays = esc.dias || [];
-                                            const is12x36 = esc.escala === '12x36';
-                                            const isExtra = esc.tipo?.trim().toLowerCase() === 'extra';
-
-                                            return (
-                                                <tr key={esc.funcionario_id} className="border-b border-gray-200 bg-white hover:bg-blue-50/20 transition-colors group">
-                                                    <td className="p-2 border-r border-gray-200 sticky left-0 z-10 bg-white group-hover:bg-blue-50/20 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
-                                                        <div className={`font-bold text-[11px] leading-tight ${isExtra ? 'text-red-600' : 'text-gray-800'}`}>
-                                                            {esc.funcionario?.nome || 'Func. Sem Nome'}
-                                                        </div>
-                                                        <div className="text-gray-400 text-[10px] mt-0.5 max-w-[170px] truncate">
-                                                            {esc.funcionario?.cargo?.cargo || 'Sem Cargo'} &ndash; {esc.escala} ({esc.turno})
-                                                        </div>
-                                                    </td>
-
-                                                    <td className="p-2 border-r border-gray-200 bg-gray-50/30 hidden md:table-cell">
-                                                        {is12x36 ? (
-                                                            <select
-                                                                value={esc.inicio_12x36 || ''}
-                                                                onChange={(e) => handleUpdateFuncionario(esc.funcionario_id!, { inicio_12x36: Number(e.target.value) as 1 | 2 })}
-                                                                className="w-full text-[11px] border border-gray-200 rounded px-1 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
-                                                            >
-                                                                <option value="" disabled>Selec</option>
-                                                                <option value="1">1</option>
-                                                                <option value="2">2</option>
-                                                            </select>
-                                                        ) : (
-                                                            <div className="text-center text-gray-300 text-[11px]">-</div>
-                                                        )}
-                                                    </td>
-
-
-
-                                                    <td className="p-2 border-r border-gray-200 text-center font-bold text-gray-800 bg-gray-50/30 text-[11px]">
-                                                        {esc.qnt_dias}
-                                                    </td>
-
-                                                    {daysArray.map((dayNum) => {
-                                                        const checked = activeDays.includes(dayNum);
-                                                        const weekStr = getWeekDayName(dayNum);
-                                                        const isWeekend = weekStr === 'D' || weekStr === 'S' && getWeekday(year, month, dayNum) === 6;
-
-                                                        return (
-                                                            <td key={dayNum} className={`border-r border-gray-100 p-0 hover:bg-blue-50 transition-colors hidden md:table-cell ${isWeekend ? 'bg-orange-50/20' : ''}`}>
-                                                                <label className="w-full h-full min-h-[44px] flex items-center justify-center cursor-pointer m-0">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={checked}
-                                                                        onChange={() => toggleDay(esc.funcionario_id!, dayNum)}
-                                                                        className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus:ring-2 bg-white cursor-pointer"
-                                                                    />
-                                                                </label>
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            );
-                                        })}
+                                    {sortedEscalas.map((esc) => (
+                                        <EscalaRow
+                                            key={esc.funcionario_id}
+                                            esc={esc}
+                                            daysArray={daysArray}
+                                            year={year}
+                                            month={month}
+                                            toggleDay={toggleDay}
+                                            handleUpdateFuncionario={handleUpdateFuncionario}
+                                        />
+                                    ))}
                                 </tbody>
                             </table>
                         </div>

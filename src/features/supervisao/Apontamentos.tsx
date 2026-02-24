@@ -8,6 +8,7 @@ import { useApontamentos } from './hooks/useApontamentos';
 import ApontamentoForm from './components/ApontamentoForm';
 import ApontamentoDetails from './components/ApontamentoDetails';
 import type { Apontamento } from './types';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const formatScore = (score: number) => {
     if (score > 0) return <span className="text-green-600 font-bold">+{score}</span>;
@@ -23,6 +24,7 @@ const Apontamentos: React.FC = () => {
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const [companyFilter, setCompanyFilter] = useState<'TODOS' | 'FEMOG' | 'SEMOG'>('TODOS');
 
     // Fetch Data
@@ -44,8 +46,8 @@ const Apontamentos: React.FC = () => {
         // 1. First filter
         const filtered = apontamentos.filter(a => {
             const matchesCompany = companyFilter === 'TODOS' || a.empresa === companyFilter;
-            const matchesSearch = (a.funcionario?.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (a.posto?.nome || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = (a.funcionario?.nome || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                (a.posto?.nome || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase());
             return matchesCompany && matchesSearch;
         });
 
@@ -68,7 +70,7 @@ const Apontamentos: React.FC = () => {
 
         // Convert to array and sort by name
         return Object.values(groups).sort((a, b) => a.funcionario_nome.localeCompare(b.funcionario_nome));
-    }, [apontamentos, searchTerm, companyFilter]);
+    }, [apontamentos, debouncedSearchTerm, companyFilter]);
 
     // KPIs
     const totalApontamentos = apontamentos.length;
