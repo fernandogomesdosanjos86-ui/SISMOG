@@ -66,6 +66,11 @@ export const queryKeys = {
         all: ['apontamentos'] as const,
         list: (month: number, year: number) => [...queryKeys.apontamentos.all, 'list', month, year] as const,
     },
+    escalas: {
+        all: ['escalas'] as const,
+        list: (postoId: string, competencia: string) => [...queryKeys.escalas.all, 'list', postoId, competencia] as const,
+        postosComEscala: (competencia: string) => [...queryKeys.escalas.all, 'postosComEscala', competencia] as const,
+    },
     // Gestão de Estoque
     estoqueProdutos: {
         all: ['estoqueProdutos'] as const,

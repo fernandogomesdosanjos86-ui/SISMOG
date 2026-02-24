@@ -25,5 +25,6 @@ export const APP_ROUTES = {
         POSTOS: '/supervisao/postos',
         SERVICOS_EXTRAS: '/supervisao/servicos-extras',
         APONTAMENTOS: '/supervisao/apontamentos',
+        ESCALAS: '/supervisao/escalas',
     },
 } as const;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock } from 'lucide-react';
+import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useModal } from '../context/ModalContext';
@@ -87,7 +87,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       children: [
         { icon: FileText, label: 'Gestão de Postos', path: APP_ROUTES.SUPERVISAO.POSTOS },
         { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS },
-        { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS }
+        { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS },
+        { icon: Calendar, label: 'Escalas', path: APP_ROUTES.SUPERVISAO.ESCALAS }
       ]
     },
     {

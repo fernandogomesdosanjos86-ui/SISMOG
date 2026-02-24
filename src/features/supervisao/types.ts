@@ -74,3 +74,26 @@ export interface Apontamento {
 }
 
 export type ApontamentoFormData = Omit<Apontamento, 'id' | 'created_at' | 'updated_at' | 'frequencia_pts' | 'beneficios_pts' | 'posto' | 'funcionario'>;
+
+export interface Escala {
+    id: string;
+    competencia: string; // YYYY-MM
+    empresa: 'FEMOG' | 'SEMOG';
+    posto_id: string;
+    funcionario_id: string;
+    escala: '12x36' | '5x2' | '6x1' | 'Outro';
+    turno: 'Diurno' | 'Noturno';
+    inicio_12x36?: 1 | 2; // For 12x36 par/impar
+    tipo?: string; // Fixo, Cobre folga, Extra, etc
+    dias: number[]; // e.g [1, 2, 5, 20] -> Dias numéricos do mês
+    qnt_dias: number;
+    created_at: string;
+    updated_at: string;
+    // Joined (Read-only frontend fields via Alocacoes / Funcionarios)
+    funcionario?: {
+        nome: string;
+        cargo?: {
+            cargo: string;
+        }
+    };
+}
