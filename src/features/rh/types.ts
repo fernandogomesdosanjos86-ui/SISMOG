@@ -38,3 +38,42 @@ export interface Funcionario {
 }
 
 export type FuncionarioFormData = Omit<Funcionario, 'id' | 'created_at' | 'updated_at' | 'cargos_salarios'>;
+
+export type NivelPenalidade = 'Advertência Verbal' | 'Advertência Escrita' | 'Suspensão';
+
+export interface Penalidade {
+    id: string;
+    data: string; // YYYY-MM-DD
+    empresa: 'FEMOG' | 'SEMOG';
+    funcionario_id: string;
+    penalidade: NivelPenalidade;
+    descricao?: string;
+    arquivo_url?: string;
+    created_at?: string;
+    // Joined
+    funcionario?: {
+        nome: string;
+    };
+}
+
+export type PenalidadeFormData = Omit<Penalidade, 'id' | 'created_at' | 'funcionario'>;
+
+export type TipoGratificacao = 'Folha de Pagamento' | 'Incentivo';
+
+export interface Gratificacao {
+    id: string;
+    data: string; // YYYY-MM-DD
+    empresa: 'FEMOG' | 'SEMOG';
+    funcionario_id: string;
+    tipo: TipoGratificacao;
+    gratificacao_percentual?: number;
+    incentivo_valor?: number;
+    observacao?: string;
+    created_at?: string;
+    // Joined
+    funcionario?: {
+        nome: string;
+    };
+}
+
+export type GratificacaoFormData = Omit<Gratificacao, 'id' | 'created_at' | 'funcionario'>;

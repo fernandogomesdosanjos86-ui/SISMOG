@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar } from 'lucide-react';
+import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar, AlertTriangle, Award, Car } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useModal } from '../context/ModalContext';
@@ -77,7 +77,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       path: APP_ROUTES.RH.ROOT,
       children: [
         { icon: FileText, label: 'Cargos e Salários', path: APP_ROUTES.RH.CARGOS_SALARIOS },
-        { icon: Users, label: 'Funcionários', path: APP_ROUTES.RH.FUNCIONARIOS }
+        { icon: Users, label: 'Funcionários', path: APP_ROUTES.RH.FUNCIONARIOS },
+        { icon: AlertTriangle, label: 'Penalidades', path: APP_ROUTES.RH.PENALIDADES },
+        { icon: Award, label: 'Gratificações', path: APP_ROUTES.RH.GRATIFICACOES }
       ]
     },
     {
@@ -89,6 +91,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS },
         { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS },
         { icon: Calendar, label: 'Escalas', path: APP_ROUTES.SUPERVISAO.ESCALAS }
+      ]
+    },
+    {
+      icon: Car,
+      label: 'Gestão de Frota',
+      path: APP_ROUTES.FROTA.ROOT,
+      children: [
+        { icon: FileText, label: 'Veículos', path: APP_ROUTES.FROTA.VEICULOS }
       ]
     },
     {

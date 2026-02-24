@@ -81,4 +81,12 @@ export const queryKeys = {
         all: ['estoqueMovimentacoes'] as const,
         list: () => [...queryKeys.estoqueMovimentacoes.all, 'list'] as const,
     },
+    frota: {
+        veiculos: ['frota', 'veiculos'] as const,
+    },
+    gratificacoes: {
+        all: ['gratificacoes'] as const,
+        list: () => [...queryKeys.gratificacoes.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.gratificacoes.all, 'detail', id] as const,
+    },
 } as const;

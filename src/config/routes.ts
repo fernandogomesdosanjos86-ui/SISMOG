@@ -19,6 +19,8 @@ export const APP_ROUTES = {
         ROOT: '#rh',
         CARGOS_SALARIOS: '/rh/cargos-salarios',
         FUNCIONARIOS: '/rh/funcionarios',
+        PENALIDADES: '/rh/penalidades',
+        GRATIFICACOES: '/rh/gratificacoes',
     },
     SUPERVISAO: {
         ROOT: '#supervisao',
@@ -27,4 +29,8 @@ export const APP_ROUTES = {
         APONTAMENTOS: '/supervisao/apontamentos',
         ESCALAS: '/supervisao/escalas',
     },
+    FROTA: {
+        ROOT: '#frota',
+        VEICULOS: '/frota/veiculos',
+    }
 } as const;

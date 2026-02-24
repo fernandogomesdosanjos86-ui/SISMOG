@@ -22,7 +22,9 @@ const GestaoPostos = lazy(() => import('./features/supervisao/GestaoPostos'));
 const ServicosExtras = lazy(() => import('./features/supervisao/ServicosExtras'));
 const Apontamentos = lazy(() => import('./features/supervisao/Apontamentos'));
 const Escalas = lazy(() => import('./features/supervisao/Escalas'));
-
+const Penalidades = lazy(() => import('./features/rh/Penalidades'));
+const Gratificacoes = lazy(() => import('./features/rh/Gratificacoes'));
+const Veiculos = lazy(() => import('./features/frota/Veiculos'));
 
 function App() {
   return (
@@ -47,12 +49,17 @@ function App() {
             {/* RH */}
             <Route path={APP_ROUTES.RH.CARGOS_SALARIOS} element={<CargosSalarios />} />
             <Route path={APP_ROUTES.RH.FUNCIONARIOS} element={<Funcionarios />} />
+            <Route path={APP_ROUTES.RH.PENALIDADES} element={<Penalidades />} />
+            <Route path={APP_ROUTES.RH.GRATIFICACOES} element={<Gratificacoes />} />
 
             {/* Supervisão */}
             <Route path={APP_ROUTES.SUPERVISAO.POSTOS} element={<GestaoPostos />} />
             <Route path={APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS} element={<ServicosExtras />} />
             <Route path={APP_ROUTES.SUPERVISAO.APONTAMENTOS} element={<Apontamentos />} />
             <Route path={APP_ROUTES.SUPERVISAO.ESCALAS} element={<Escalas />} />
+
+            {/* Gestão de Frota */}
+            <Route path={APP_ROUTES.FROTA.VEICULOS} element={<Veiculos />} />
           </Route>
         </Route>
 

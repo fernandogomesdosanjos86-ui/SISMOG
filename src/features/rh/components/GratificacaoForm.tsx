@@ -1,0 +1,237 @@
+import React, { useState } from 'react';
+import { useModal } from '../../../context/ModalContext';
+import { useFuncionarios } from '../hooks/useFuncionarios';
+import { useGratificacoes } from '../hooks/useGratificacoes';
+import type { Gratificacao, GratificacaoFormData, TipoGratificacao } from '../types';
+
+interface GratificacaoFormProps {
+    initialData?: Gratificacao;
+    onSuccess?: () => void;
+}
+
+const GratificacaoForm: React.FC<GratificacaoFormProps> = ({ initialData, onSuccess }) => {
+    const { closeModal, showFeedback } = useModal();
+    const { create, update, isCreating, isUpdating } = useGratificacoes();
+    const { funcionarios, isLoading: isLoadingFunc } = useFuncionarios();
+
+    const [formData, setFormData] = useState<GratificacaoFormData>({
+        empresa: initialData?.empresa || 'FEMOG',
+        funcionario_id: initialData?.funcionario_id || '',
+        data: initialData?.data || new Date().toISOString().split('T')[0],
+        tipo: initialData?.tipo || 'Folha de Pagamento',
+        gratificacao_percentual: initialData?.gratificacao_percentual,
+        incentivo_valor: initialData?.incentivo_valor,
+        observacao: initialData?.observacao || '',
+    });
+
+    const activeFuncionarios = funcionarios.filter(f => f.status === 'ativo' && f.empresa === formData.empresa);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value === '' ? undefined : Number(value) }));
+    };
+
+    const handleTipoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const novoTipo = e.target.value as TipoGratificacao;
+        setFormData(prev => ({
+            ...prev,
+            tipo: novoTipo,
+            gratificacao_percentual: undefined,
+            incentivo_valor: undefined
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!formData.funcionario_id || !formData.data || !formData.tipo) {
+            showFeedback('error', 'Preencha os campos obrigatórios.');
+            return;
+        }
+
+        if (formData.tipo === 'Folha de Pagamento' && (formData.gratificacao_percentual === undefined || formData.gratificacao_percentual <= 0)) {
+            showFeedback('error', 'Informe um percentual válido para gratificação em folha.');
+            return;
+        }
+
+        if (formData.tipo === 'Incentivo' && (formData.incentivo_valor === undefined || formData.incentivo_valor <= 0)) {
+            showFeedback('error', 'Informe um valor válido para o incentivo.');
+            return;
+        }
+
+        try {
+            if (initialData) {
+                await update({ id: initialData.id, data: formData });
+            } else {
+                await create(formData);
+            }
+            if (onSuccess) onSuccess();
+            closeModal();
+            showFeedback('success', 'Registro salvo com sucesso!');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+                <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, empresa: 'FEMOG', funcionario_id: '' }))}
+                    className={`p-3 rounded-lg border text-center transition-colors ${formData.empresa === 'FEMOG'
+                        ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
+                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                        }`}
+                >
+                    FEMOG
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, empresa: 'SEMOG', funcionario_id: '' }))}
+                    className={`p-3 rounded-lg border text-center transition-colors ${formData.empresa === 'SEMOG'
+                        ? 'bg-orange-50 border-orange-500 text-orange-700 font-medium'
+                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                        }`}
+                >
+                    SEMOG
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Funcionário *</label>
+                    <select
+                        name="funcionario_id"
+                        value={formData.funcionario_id}
+                        onChange={handleChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        required
+                        disabled={isLoadingFunc}
+                    >
+                        <option value="">Selecione um funcionário</option>
+                        {activeFuncionarios.map(func => (
+                            <option key={func.id} value={func.id}>
+                                {func.nome} ({func.cpf})
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Data *</label>
+                        <input
+                            type="date"
+                            name="data"
+                            value={formData.data}
+                            onChange={handleChange}
+                            className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+                        <select
+                            name="tipo"
+                            value={formData.tipo}
+                            onChange={handleTipoChange}
+                            className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            required
+                        >
+                            <option value="Folha de Pagamento">Folha de Pagamento</option>
+                            <option value="Incentivo">Incentivo</option>
+                        </select>
+                    </div>
+                </div>
+
+                {formData.tipo === 'Folha de Pagamento' && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Percentual da Gratificação (%) *</label>
+                        <div className="relative">
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                name="gratificacao_percentual"
+                                value={formData.gratificacao_percentual || ''}
+                                onChange={handleNumberChange}
+                                className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 pr-10"
+                                placeholder="0.00"
+                                required
+                            />
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span className="text-gray-500 sm:text-sm">%</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {formData.tipo === 'Incentivo' && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Valor do Incentivo (R$) *</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span className="text-gray-500 sm:text-sm">R$</span>
+                            </div>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                name="incentivo_valor"
+                                value={formData.incentivo_valor || ''}
+                                onChange={handleNumberChange}
+                                className="w-full rounded-md border-gray-300 shadow-sm p-2 pl-10 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                placeholder="0.00"
+                                required
+                            />
+                        </div>
+                    </div>
+                )}
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Observação (Opcional)</label>
+                    <textarea
+                        name="observacao"
+                        value={formData.observacao}
+                        onChange={handleChange}
+                        rows={3}
+                        className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        placeholder="Informações adicionais..."
+                    />
+                </div>
+            </div>
+
+            <div className="flex justify-end pt-4 gap-3 border-t border-gray-100">
+                <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    disabled={isCreating || isUpdating}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center shadow-sm"
+                >
+                    {isCreating || isUpdating ? (
+                        <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Salvando...
+                        </>
+                    ) : (
+                        'Salvar Registro'
+                    )}
+                </button>
+            </div>
+        </form>
+    );
+};
+
+export default GratificacaoForm;
