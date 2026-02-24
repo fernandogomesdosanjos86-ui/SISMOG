@@ -25,6 +25,7 @@ const Escalas = lazy(() => import('./features/supervisao/Escalas'));
 const Penalidades = lazy(() => import('./features/rh/Penalidades'));
 const Gratificacoes = lazy(() => import('./features/rh/Gratificacoes'));
 const Veiculos = lazy(() => import('./features/frota/Veiculos'));
+const Abastecimentos = lazy(() => import('./features/frota/Abastecimentos'));
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
 
             {/* Gestão de Frota */}
             <Route path={APP_ROUTES.FROTA.VEICULOS} element={<Veiculos />} />
+            <Route path={APP_ROUTES.FROTA.ABASTECIMENTOS} element={<Abastecimentos />} />
           </Route>
         </Route>
 
