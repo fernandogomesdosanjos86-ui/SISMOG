@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { Escala } from '../features/supervisao/types';
+import { generateDaysForEscala } from '../features/supervisao/utils/escalaLogics';
 
 export const escalasService = {
     /**
@@ -70,8 +71,8 @@ export const escalasService = {
         }
 
         // Extract raw IDs and make unique
-        const uniqueIds = Array.from(new Set(data.map(row => row.posto_id)));
-        return uniqueIds;
+        const uniqueIds = Array.from(new Set(data.map((row: any) => row.posto_id)));
+        return uniqueIds as string[];
     },
 
     /**
@@ -83,14 +84,12 @@ export const escalasService = {
         const allocated = await escalasService.getAlocadosForPosto(postoId);
         if (!allocated || allocated.length === 0) return [];
 
-
+        const year = parseInt(competencia.split('-')[0], 10);
+        const month = parseInt(competencia.split('-')[1], 10);
 
         // Build base scale payloads
         const payloads: Partial<Escala>[] = allocated.map((alloc: any) => {
-            // Note: We need a dynamic way to generate days here or pass from frontend.
-            // Since we use the logic in the frontend usually, let's keep logic simple.
-            // By default, just empty or 0 length if we don't have the frontend utility here.
-            // But wait, the util is in ../features/.../escalaLogics. Let's just create empty or we can import it.
+            const preCalculatedDays = generateDaysForEscala(alloc.escala, undefined, month, year);
             return {
                 competencia,
                 empresa,
@@ -99,8 +98,8 @@ export const escalasService = {
                 escala: alloc.escala,
                 turno: alloc.turno,
                 tipo: alloc.he ? 'Extra' : 'Fixo',
-                dias: [], // Defaults to empty, the user can Auto-Select via the grid rules if needed, or we rebuild the days.
-                qnt_dias: 0
+                dias: preCalculatedDays,
+                qnt_dias: preCalculatedDays.length
             };
         });
 

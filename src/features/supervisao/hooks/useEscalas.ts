@@ -6,7 +6,7 @@ import { escalasService } from '../../../services/escalasService';
 import type { Escala } from '../types';
 import { generateDaysForEscala } from '../utils/escalaLogics';
 
-export function useEscalas(postoId: string | null, competencia: string, empresa: 'FEMOG' | 'SEMOG') {
+export function useEscalas(postoId: string | null, competencia: string, _empresa: 'FEMOG' | 'SEMOG') {
     const queryClient = useQueryClient();
     const { showFeedback } = useModal();
 

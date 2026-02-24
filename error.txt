@@ -1,0 +1,3 @@
+src/features/supervisao/Escalas.tsx(2,10): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/features/supervisao/Escalas.tsx(63,11): error TS6133: 'getThemeColor' is declared but its value is never read.
+src/features/supervisao/hooks/useEscalas.ts(9,73): error TS6133: 'empresa' is declared but its value is never read.

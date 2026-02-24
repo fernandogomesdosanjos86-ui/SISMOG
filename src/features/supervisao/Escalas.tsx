@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Building2, Search } from 'lucide-react';
+import { Building2, Search } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import { usePostos } from './hooks/usePostos';
 import { usePostosComEscala } from './hooks/usePostosComEscala';
@@ -60,7 +60,6 @@ const Escalas: React.FC = () => {
         />);
     };
 
-    const getThemeColor = (emp: string) => emp === 'FEMOG' ? 'text-blue-600' : emp === 'SEMOG' ? 'text-orange-600' : 'text-gray-600';
 
     return (
         <div className="space-y-6">
