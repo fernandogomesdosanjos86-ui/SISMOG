@@ -1,7 +1,6 @@
 import React from 'react';
 import { Trash, Edit, FileText } from 'lucide-react';
 import type { Penalidade } from '../types';
-import { useModal } from '../../../context/ModalContext';
 import { format, parseISO } from 'date-fns';
 
 interface PenalidadeDetailsProps {
@@ -12,7 +11,6 @@ interface PenalidadeDetailsProps {
 }
 
 const PenalidadeDetails: React.FC<PenalidadeDetailsProps> = ({ employeeName, penalidades, onEdit, onDelete }) => {
-    const { openConfirmModal } = useModal();
 
     const handleDelete = (item: Penalidade) => {
         onDelete(item);
