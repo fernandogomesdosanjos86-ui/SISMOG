@@ -115,7 +115,7 @@ const Tarefas = () => {
         },
         {
             key: 'titulo',
-            header: 'Título da Tarefa',
+            header: 'Título',
             render: (i: Tarefa) => <span className="font-semibold text-gray-900">{i.titulo}</span>
         },
         {
@@ -129,7 +129,7 @@ const Tarefas = () => {
         },
         {
             key: 'destinatarios',
-            header: 'Responsável(eis)',
+            header: 'Responsáveis',
             render: (i: Tarefa) => {
                 if (!i.destinatarios || i.destinatarios.length === 0) return <span className="text-gray-400 text-sm">Nenhum</span>;
                 return (
@@ -161,9 +161,11 @@ const Tarefas = () => {
                 title="Quadro de Tarefas"
                 subtitle="Acompanhamento e delegação de missões corporativas"
                 action={
-                    <PrimaryButton onClick={() => openFormModal('Nova Tarefa (Ordem de Serviço)', <TarefaForm onSuccess={refetch} />)}>
-                        <Plus size={20} className="mr-2" /> Nova Tarefa
-                    </PrimaryButton>
+                    <div className="w-full sm:w-auto">
+                        <PrimaryButton onClick={() => openFormModal('Nova Tarefa (Ordem de Serviço)', <TarefaForm onSuccess={refetch} />)} className="w-full justify-center">
+                            <Plus size={20} className="mr-2" /> Nova Tarefa
+                        </PrimaryButton>
+                    </div>
                 }
             />
 

@@ -2,6 +2,8 @@ import React from 'react';
 import { FileText, Activity, DollarSign } from 'lucide-react';
 import type { Faturamento } from '../types';
 import { formatCurrency } from '../../../utils/format';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface FaturamentoDetailsProps {
     faturamento: Faturamento;
@@ -12,7 +14,7 @@ const FaturamentoDetails: React.FC<FaturamentoDetailsProps> = ({ faturamento }) 
         <div className="flex items-start justify-between border-b border-gray-100 pb-5">
             <div>
                 <h3 className="text-xl font-bold text-gray-900">{faturamento.contratos?.contratante}</h3>
-                <p className="text-sm text-gray-500 mt-1 capitalize">Competência: {new Date(faturamento.competencia + 'T00:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+                <p className="text-sm text-gray-500 mt-1 capitalize">Competência: {format(parseISO(faturamento.competencia), "MMMM 'de' yyyy", { locale: ptBR })}</p>
             </div>
         </div>
 
@@ -44,7 +46,7 @@ const FaturamentoDetails: React.FC<FaturamentoDetailsProps> = ({ faturamento }) 
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                     <p><span className="text-gray-500">Número:</span> {faturamento.numero_nf}</p>
-                    <p><span className="text-gray-500">Emissão:</span> {faturamento.data_emissao ? new Date(faturamento.data_emissao).toLocaleDateString() : '-'}</p>
+                    <p><span className="text-gray-500">Emissão:</span> {faturamento.data_emissao ? format(parseISO(faturamento.data_emissao), 'dd/MM/yyyy') : '-'}</p>
                 </div>
             </div>
         )}

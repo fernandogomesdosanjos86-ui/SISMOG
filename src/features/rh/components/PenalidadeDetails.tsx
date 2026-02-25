@@ -2,7 +2,7 @@ import React from 'react';
 import { Trash, Edit, FileText } from 'lucide-react';
 import type { Penalidade } from '../types';
 import { useModal } from '../../../context/ModalContext';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 interface PenalidadeDetailsProps {
     employeeName: string;
@@ -15,11 +15,7 @@ const PenalidadeDetails: React.FC<PenalidadeDetailsProps> = ({ employeeName, pen
     const { openConfirmModal } = useModal();
 
     const handleDelete = (item: Penalidade) => {
-        openConfirmModal(
-            'Excluir Penalidade',
-            `Tem certeza que deseja excluir esta penalidade de ${item.penalidade}?`,
-            () => onDelete(item)
-        );
+        onDelete(item);
     };
 
     return (
@@ -47,7 +43,7 @@ const PenalidadeDetails: React.FC<PenalidadeDetailsProps> = ({ employeeName, pen
                         {penalidades.map((item: Penalidade) => (
                             <tr key={item.id} className="hover:bg-gray-50">
                                 <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                                    {format(new Date(item.data + 'T12:00:00'), 'dd/MM/yyyy')}
+                                    {format(parseISO(item.data), 'dd/MM/yyyy')}
                                 </td>
                                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                                     <span className={`px-2.5 py-1 text-xs font-medium rounded-md w-fit whitespace-nowrap ${item.penalidade.includes('Suspensão') ? 'bg-red-100 text-red-800' :

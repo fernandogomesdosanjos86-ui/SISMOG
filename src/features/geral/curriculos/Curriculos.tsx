@@ -132,9 +132,11 @@ const Curriculos = () => {
                 title="Currículos"
                 subtitle="Banco de talentos e histórico de candidatos"
                 action={
-                    <PrimaryButton onClick={() => openFormModal('Novo Currículo', <CurriculoForm onSuccess={refetch} />)}>
-                        <Plus size={20} className="mr-2" /> Novo Currículo
-                    </PrimaryButton>
+                    <div className="w-full sm:w-auto">
+                        <PrimaryButton onClick={() => openFormModal('Novo Currículo', <CurriculoForm onSuccess={refetch} />)} className="w-full justify-center">
+                            <Plus size={20} className="mr-2" /> Novo Currículo
+                        </PrimaryButton>
+                    </div>
                 }
             />
 
