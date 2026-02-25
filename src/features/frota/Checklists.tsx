@@ -87,7 +87,7 @@ const Checklists: React.FC = () => {
 
     const handleView = (checklist: Checklist) => {
         openViewModal(
-            'Visão Detalhada - Checklist',
+            'Detalhes do Checklist',
             <ChecklistDetails checklist={checklist} />,
             {
                 canEdit: true,

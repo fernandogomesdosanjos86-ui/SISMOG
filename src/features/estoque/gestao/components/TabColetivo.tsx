@@ -41,7 +41,7 @@ const TabColetivo: React.FC<TabColetivoProps> = ({ onRefresh, deleteMov, searchT
         try {
             const movs = await estoqueGestaoService.getMovimentacoesPorPosto(item.id);
             openViewModal(
-                `Histórico: ${item.nome}`,
+                'Detalhes da Distribuição',
                 <HistoricoPostoModal
                     nome={item.nome}
                     empresa={item.empresa}
@@ -154,7 +154,7 @@ const HistoricoPostoModal: React.FC<{
                                 <tr key={m.id} className="hover:bg-gray-50">
                                     <td className="px-4 py-3 text-sm font-medium">{m.produto?.codigo}</td>
                                     <td className="px-4 py-3 text-sm">
-                                        <span className={`px-2 py-1 text-xs rounded-full font-bold ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                                             }`}>{m.tipo}</span>
                                     </td>
                                     <td className="px-4 py-3 text-sm text-center font-bold">{m.quantidade}</td>
@@ -189,7 +189,7 @@ const HistoricoPostoModal: React.FC<{
                                     <p className="font-bold text-gray-900">{m.produto?.codigo}</p>
                                     <p className="text-xs text-gray-400">{formattedDate}</p>
                                 </div>
-                                <span className={`px-2 py-1 text-xs rounded-full font-bold ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full font-medium ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                                     }`}>{m.tipo}</span>
                             </div>
 

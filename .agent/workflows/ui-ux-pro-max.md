@@ -4,6 +4,10 @@ description: Visual standards and patterns for creating new SISMOG pages with co
 
 # /ui-ux-pro-max - SISMOG Visual Standards
 
+## 🌍 Infrastructure Context
+- **Backend/Database:** Supabase (Projeto: `SISMOG`). Toda autenticação, fluxo de dados e schema de banco estão neste Supabase.
+- **Deploy/Hosting:** Vercel. Os deploys usam integração contínua (CI/CD) com ferramentas de validação de Build.
+
 ## 📐 Page Structure
 ```
 1. PageHeader (title, subtitle, action buttons)
@@ -129,12 +133,43 @@ export function use[Entity]s() {
     </div>)}
 />
 ```
+```
+
+## 🏷️ Badges (Tags)
+
+**Regra de Padronização Visual:**
+Sempre que precisar renderizar uma "Tag" ou um indicativo de status para o usuário, você **DEVE OBRIGATORIAMENTE** usar um componente padronizado ao invés de codificar um `<span>` solto com cores tailwind (`bg-blue-100`, etc). 
+
+1. **Indicativo de Empresa (FEMOG/SEMOG):**
+   ```tsx
+   import CompanyBadge from '../../components/CompanyBadge';
+   <CompanyBadge company={item.empresa} />
+   ```
+2. **Booleanos / Status Binário (Ativo/Inativo, Aberto/Fechado):**
+   ```tsx
+   import StatusBadge from '../../components/StatusBadge';
+   // Padrão: Bolinha verde (Ativo) / vermelha (Inativo)
+   <StatusBadge active={item.status === 'ativo'} /> 
+   // Customizado: Mudando o texto
+   <StatusBadge active={item.status === 'aberto'} activeLabel="Aberto" inactiveLabel="Fechado" />
+   ```
+3. **Outros Status Textuais Específicos (Emitido, Recebido, Oficial, etc):**
+   Quando a tag não for uma Empresa nem um booleano simples, use um `span` padronizado mantendo sempre as proporções de padding `px-2.5 py-0.5 rounded-full text-xs font-medium` (Se dentro de cards menores, pode usar `px-2 text-[10px]`). Exemplo:
+   ```tsx
+   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+       item.tipo === 'Oficial' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+   }`}>
+       {item.tipo}
+   </span>
+   ```
 
 ## 🪟 Modal Patterns
 
 ### View Modal
+**Regra de Título:** O título do modal deve SEMPRE seguir o padrão "Detalhes do [Entidade]" ou "Detalhes da [Entidade]" (ex: Detalhes do Usuário, Detalhes da Gratificação). Nunca use termos genéricos como "Histórico" ou apenas a entidade.
+
 ```tsx
-openViewModal('Detalhes', <[Entity]Details [entity]={item}/>, {
+openViewModal('Detalhes do [Entidade]', <[Entity]Details [entity]={item}/>, {
     canEdit: true, canDelete: true,
     onEdit: ()=>openFormModal('Editar', <[Entity]Form initialData={item} onSuccess={refetch}/>),
     onDelete: ()=>openConfirmModal('Excluir', 'Confirma?', async()=>{

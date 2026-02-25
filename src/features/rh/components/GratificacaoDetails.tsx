@@ -60,7 +60,7 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName,
                                     {format(new Date(item.data + 'T12:00:00'), 'dd/MM/yyyy')}
                                 </td>
                                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                                    <span className={`px-2.5 py-1 text-xs font-medium rounded-md w-fit whitespace-nowrap ${item.tipo === 'Folha de Pagamento' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${item.tipo === 'Folha de Pagamento' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
                                         }`}>
                                         {item.tipo}
                                     </span>
@@ -95,7 +95,7 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName,
                 {gratificacoes.map((item: Gratificacao) => (
                     <div key={item.id} className="bg-white border text-sm border-gray-200 p-4 rounded-xl shadow-sm relative">
                         <div className="flex justify-between items-start mb-2">
-                            <span className={`px-2 py-1 text-xs rounded-md font-bold ${item.tipo === 'Folha de Pagamento' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${item.tipo === 'Folha de Pagamento' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
                                 }`}>
                                 {item.tipo}
                             </span>

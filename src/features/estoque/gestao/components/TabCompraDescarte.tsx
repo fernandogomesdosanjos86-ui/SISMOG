@@ -45,7 +45,7 @@ const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, is
         },
         {
             key: 'tipo', header: 'Tipo', render: (m: Movimentacao) => (
-                <span className={`px-2 py-1 text-xs rounded-full font-bold ${m.tipo === 'Compra' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.tipo === 'Compra' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>{m.tipo}</span>
             )
         },
@@ -78,7 +78,7 @@ const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, is
             <div className="flex justify-between items-start mb-2">
                 <div>
                     <p className="font-bold text-gray-900 text-sm">{m.produto?.codigo}</p>
-                    <span className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${m.tipo === 'Compra' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full font-medium ${m.tipo === 'Compra' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>{m.tipo}</span>
                 </div>
                 <div className="text-right">

@@ -4,6 +4,10 @@ description: Criação de Novas Páginas - Workflow Completo
 
 # /workflowspagina - Criação de Novas Páginas SISMOG
 
+## 🌍 Infraestrutura do Projeto
+- **Backend (BaaS):** Supabase (Projeto: `SISMOG`). Criação de novas tabelas, RLS e Storage devem considerar o ambiente deste projeto no Supabase. O arquivo de types (`types.ts`) de cada módulo deve corresponder aos dados de lá.
+- **Deploy:** Vercel. Atente-se ao executar validações de Lint e TypeScript, pois o deploy na Vercel irá travar instantaneamente se houver qualquer erro do tipo `any` ou sintaxe irregular durante o `npm run build`.
+
 ## 📋 Pré-requisitos
 - [ ] Nome da Feature (ex: `veiculos`)
 - [ ] Tabela Supabase existente com RLS
@@ -110,8 +114,8 @@ const [Entity]Details = ({ [entity] }) => (
     <div className="space-y-6">
         <div className="flex items-start justify-between border-b border-gray-100 pb-5">
             <div>
-                <h3 className="text-xl font-bold text-gray-900">{[entity].nome}</h3>
-                <p className="text-sm text-gray-500 mt-1">ID: {[entity].id}</p>
+                <h3 className="text-xl font-bold text-gray-900">Detalhes da [Entidade]</h3>
+                <p className="text-sm text-gray-500 mt-1">{[entity].nome}</p>
             </div>
             <CompanyBadge company={[entity].empresa} />
         </div>
@@ -194,7 +198,7 @@ const [Entity]s = () => {
         i.nome?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleView = (item) => openViewModal('Detalhes', <[Entity]Details [entity]={item}/>, {
+    const handleView = (item) => openViewModal('Detalhes da [Entidade]', <[Entity]Details [entity]={item}/>, {
         canEdit: true, canDelete: true,
         onEdit: () => openFormModal('Editar', <[Entity]Form initialData={item} onSuccess={refetch}/>),
         onDelete: () => openConfirmModal('Excluir', 'Confirma?', async () => { await del(item.id); showFeedback('success','Excluído!'); }),

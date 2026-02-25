@@ -9,6 +9,7 @@ import CargosSalariosForm from './components/CargosSalariosForm';
 import CargoSalarioDetails from './components/CargoSalarioDetails';
 import { formatCurrency } from '../../utils/format';
 import PrimaryButton from '../../components/PrimaryButton';
+import CompanyBadge from '../../components/CompanyBadge';
 
 const CargosSalarios: React.FC = () => {
     const { openConfirmModal, openFormModal, openViewModal, closeModal, showFeedback } = useModal();
@@ -107,12 +108,7 @@ const CargosSalarios: React.FC = () => {
         {
             header: 'Empresa',
             key: 'empresa',
-            render: (cargo: CargoSalario) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cargo.empresa === 'FEMOG' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                    }`}>
-                    {cargo.empresa}
-                </span>
-            )
+            render: (cargo: CargoSalario) => <CompanyBadge company={cargo.empresa as any} />
         },
         {
             header: 'HE Diurno / Noturno',
@@ -133,10 +129,7 @@ const CargosSalarios: React.FC = () => {
                     <h3 className="font-medium text-gray-900">{cargo.cargo}</h3>
                     <p className="text-sm text-gray-500">{cargo.uf}</p>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cargo.empresa === 'FEMOG' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                    }`}>
-                    {cargo.empresa}
-                </span>
+                <CompanyBadge company={cargo.empresa as any} />
             </div>
             <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-500">Salário Base:</span>

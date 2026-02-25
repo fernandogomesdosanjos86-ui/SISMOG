@@ -5,6 +5,7 @@ import type { PostoTrabalho, AlocacaoFormData } from '../types';
 import { useModal } from '../../../context/ModalContext';
 import { useFuncionarios } from '../../rh/hooks/useFuncionarios';
 import CompanyBadge from '../../../components/CompanyBadge';
+import StatusBadge from '../../../components/StatusBadge';
 
 interface PostoDetailsProps {
     posto: PostoTrabalho;
@@ -82,7 +83,7 @@ const PostoDetails: React.FC<PostoDetailsProps> = ({ posto }) => {
                         <Activity size={16} className="mr-2" /> Status
                     </div>
                     <div className="mt-1">
-                        <span className={`px-2.5 py-1 text-xs font-bold rounded-md capitalize ${posto.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{posto.status}</span>
+                        <StatusBadge active={posto.status === 'ativo'} />
                     </div>
                 </div>
             </div>

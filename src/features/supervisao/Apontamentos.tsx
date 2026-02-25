@@ -10,6 +10,7 @@ import ApontamentoForm from './components/ApontamentoForm';
 import ApontamentoDetails from './components/ApontamentoDetails';
 import type { Apontamento } from './types';
 import { useDebounce } from '../../hooks/useDebounce';
+import CompanyBadge from '../../components/CompanyBadge';
 
 const formatScore = (score: number) => {
     if (score > 0) return <span className="text-green-600 font-bold">+{score}</span>;
@@ -100,7 +101,7 @@ const Apontamentos: React.FC = () => {
 
     const handleViewDetails = (group: typeof groupedData[0]) => {
         openViewModal(
-            `Extrato: ${group.funcionario_nome}`,
+            'Detalhes do Apontamento',
             <ApontamentoDetails
                 employeeName={group.funcionario_nome}
                 apontamentos={group.items}
@@ -121,11 +122,7 @@ const Apontamentos: React.FC = () => {
         {
             header: 'Empresa',
             key: 'empresa',
-            render: (item: typeof groupedData[0]) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.empresa === 'FEMOG' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
-                    {item.empresa}
-                </span>
-            )
+            render: (item: typeof groupedData[0]) => <CompanyBadge company={item.empresa as any} />
         },
         {
             header: 'Pts Frequência',
@@ -240,9 +237,9 @@ const Apontamentos: React.FC = () => {
                         <div className="flex justify-between items-start mb-2">
                             <div>
                                 <h4 className="font-bold text-gray-900">{item.funcionario_nome}</h4>
-                                <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full ${item.empresa === 'FEMOG' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
-                                    {item.empresa}
-                                </span>
+                                <div className="mt-1">
+                                    <CompanyBadge company={item.empresa as any} />
+                                </div>
                             </div>
                             <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
                                 {item.items.length} reg.

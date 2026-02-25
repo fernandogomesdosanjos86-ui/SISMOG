@@ -9,6 +9,7 @@ import { useServicosExtras } from './hooks/useServicosExtras';
 import ServicoExtraForm from './components/ServicoExtraForm';
 import ServicoExtraDetails from './components/ServicoExtraDetails';
 import type { ServicoExtra } from './types';
+import CompanyBadge from '../../components/CompanyBadge';
 
 const ServicosExtras: React.FC = () => {
     const { openFormModal, openViewModal, closeModal } = useModal();
@@ -98,7 +99,7 @@ const ServicosExtras: React.FC = () => {
 
     const handleViewDetails = (group: typeof groupedData[0]) => {
         openViewModal(
-            `Extrato: ${group.funcionario_nome}`,
+            'Detalhes do Serviço Extra',
             <ServicoExtraDetails
                 employeeName={group.funcionario_nome}
                 services={group.items}
@@ -119,11 +120,7 @@ const ServicosExtras: React.FC = () => {
         {
             header: 'Empresa',
             key: 'empresa',
-            render: (item: typeof groupedData[0]) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.empresa === 'FEMOG' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
-                    {item.empresa}
-                </span>
-            )
+            render: (item: typeof groupedData[0]) => <CompanyBadge company={item.empresa as any} />
         },
         {
             header: 'Total Horas',
@@ -216,9 +213,7 @@ const ServicosExtras: React.FC = () => {
                     <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${item.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
                         <div className="flex justify-between items-center">
                             <span className="font-semibold text-gray-800">{item.funcionario_nome}</span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${item.empresa === 'FEMOG' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
-                                {item.empresa}
-                            </span>
+                            <CompanyBadge company={item.empresa as any} />
                         </div>
                         <div className="flex justify-between items-center text-sm text-gray-500 mt-1">
                             <span>Horas: {item.total_horas.toFixed(2)}h</span>

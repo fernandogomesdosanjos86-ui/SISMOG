@@ -9,6 +9,8 @@ import type { PostoTrabalho } from './types';
 import PostoForm from './components/PostoForm';
 import PostoDetails from './components/PostoDetails';
 import StatCard from '../../components/StatCard';
+import StatusBadge from '../../components/StatusBadge';
+import CompanyBadge from '../../components/CompanyBadge';
 
 const GestaoPostos: React.FC = () => {
     const { postos, isLoading, refetch, delete: deletePosto } = usePostos();
@@ -74,7 +76,7 @@ const GestaoPostos: React.FC = () => {
 
     const handleView = (posto: PostoTrabalho) => {
         openViewModal(
-            `Detalhes do Posto: ${posto.nome}`,
+            'Detalhes do Posto',
             <PostoDetails posto={posto} />,
             {
                 canEdit: true,
@@ -96,12 +98,7 @@ const GestaoPostos: React.FC = () => {
         {
             header: 'Empresa',
             key: 'empresa',
-            render: (item: PostoTrabalho) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.empresa === 'FEMOG' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
-                    }`}>
-                    {item.empresa}
-                </span>
-            )
+            render: (item: PostoTrabalho) => <CompanyBadge company={item.empresa} />
         },
         {
             header: 'Alocações',
@@ -120,12 +117,7 @@ const GestaoPostos: React.FC = () => {
         {
             header: 'Status',
             key: 'status',
-            render: (item: PostoTrabalho) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                    {item.status}
-                </span>
-            )
+            render: (item: PostoTrabalho) => <StatusBadge active={item.status === 'ativo'} />
         }
     ];
 
@@ -133,10 +125,7 @@ const GestaoPostos: React.FC = () => {
         <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${item.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
             <div className="flex justify-between items-start">
                 <h3 className="font-medium text-gray-900">{item.nome}</h3>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                    {item.status}
-                </span>
+                <StatusBadge active={item.status === 'ativo'} />
             </div>
             <div className="flex justify-between text-sm mt-2">
                 <span className="flex gap-3">

@@ -11,7 +11,7 @@ import type { Equipamento, EquipamentoDestinacao, EquipamentoCategoria } from '.
 import EquipamentoForm from './components/EquipamentoForm';
 import DestinarForm from './components/DestinarForm';
 import DevolverForm from './components/DevolverForm';
-import { Plus, Archive, CornerUpLeft, Shield, Box, Crosshair, Search } from 'lucide-react';
+import { Plus, Archive, CornerUpLeft, Shield, Box, Crosshair, Search, Info, Tag, Activity, Hash } from 'lucide-react';
 import { financeiroService } from '../../services/financeiroService'; // For Posto filter
 
 const EquipamentosControlados: React.FC = () => {
@@ -72,39 +72,50 @@ const EquipamentosControlados: React.FC = () => {
 
     // Details Component
     const EquipamentoDetails: React.FC<{ equipamento: Equipamento }> = ({ equipamento }) => (
-        <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-6">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
                 <div>
-                    <label className="text-sm font-medium text-gray-500">Status</label>
-                    <div className="mt-1">
-                        <StatusBadge active={equipamento.status === 'Ativo'} />
+                    <h3 className="text-xl font-bold text-gray-900">{equipamento.descricao}</h3>
+                    <p className="text-sm text-gray-500 mt-1">{equipamento.categoria}</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Activity size={16} className="mr-2" /> Status
                     </div>
+                    <div className="mt-1"><StatusBadge active={equipamento.status === 'Ativo'} /></div>
                 </div>
-                <div>
-                    <label className="text-sm font-medium text-gray-500">Categoria</label>
-                    <p className="text-base text-gray-900">{equipamento.categoria}</p>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Tag size={16} className="mr-2" /> Categoria
+                    </div>
+                    <div className="text-gray-900 font-semibold text-lg">{equipamento.categoria}</div>
                 </div>
-                <div className="col-span-2">
-                    <label className="text-sm font-medium text-gray-500">Descrição</label>
-                    <p className="text-base font-semibold text-gray-900">{equipamento.descricao}</p>
-                </div>
+
                 {equipamento.identificacao && (
-                    <div>
-                        <label className="text-sm font-medium text-gray-500">Identificação (Serial)</label>
-                        <p className="text-base text-gray-900 font-mono">{equipamento.identificacao}</p>
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2 sm:col-span-2 md:col-span-1">
+                        <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                            <Hash size={16} className="mr-2" /> Identificação (Serial)
+                        </div>
+                        <div className="text-gray-900 font-semibold text-lg font-mono">{equipamento.identificacao}</div>
                     </div>
                 )}
-                <div>
-                    <label className="text-sm font-medium text-gray-500">Disponibilidade</label>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-lg font-bold ${equipamento.disponivel === 0 ? 'text-red-600' : 'text-green-600'}`}>
+
+                <div className={`p-4 rounded-xl border flex flex-col gap-2 sm:col-span-2 md:col-span-1 ${equipamento.disponivel === 0 ? 'bg-red-50/50 border-red-100' : 'bg-blue-50/50 border-blue-100'}`}>
+                    <div className={`flex items-center text-sm font-medium mb-1 ${equipamento.disponivel === 0 ? 'text-red-700' : 'text-blue-700'}`}>
+                        <Info size={16} className="mr-2" /> Disponibilidade
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className={`text-2xl font-bold ${equipamento.disponivel === 0 ? 'text-red-600' : 'text-blue-600'}`}>
                             {equipamento.disponivel}
                         </span>
-                        <span className="text-gray-400">/ {equipamento.quantidade} total</span>
+                        <span className={`text-sm font-medium ${equipamento.disponivel === 0 ? 'text-red-400' : 'text-blue-400'}`}>/ {equipamento.quantidade} total</span>
                     </div>
                 </div>
             </div>
-            {/* History or allocation info could go here */}
         </div>
     );
 
@@ -356,7 +367,7 @@ const EquipamentosControlados: React.FC = () => {
                         <div className="flex flex-col gap-2 relative border-l-4 pl-3 border-l-orange-500">
                             <div className="flex justify-between items-start">
                                 <span className="font-semibold text-gray-800 line-clamp-2">{i.contratos?.nome_posto}</span>
-                                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded ml-2 whitespace-nowrap">Qtd: {i.quantidade}</span>
+                                <span className="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full ml-2 whitespace-nowrap">Qtd: {i.quantidade}</span>
                             </div>
                             <div className="text-sm text-gray-600">{i.equipamentos?.descricao}</div>
                             <div className="text-xs text-gray-500 flex items-center justify-between">

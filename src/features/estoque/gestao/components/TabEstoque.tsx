@@ -27,7 +27,7 @@ const TabEstoque: React.FC<TabEstoqueProps> = ({ produtos, isLoading, searchTerm
         },
         {
             key: 'tipo', header: 'Tipo', render: (p: Produto & { em_estoque: number }) => (
-                <span className={`px-2 py-1 text-xs rounded-full font-bold ${p.tipo === 'Individual' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${p.tipo === 'Individual' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                     }`}>{p.tipo}</span>
             )
         },
@@ -44,7 +44,7 @@ const TabEstoque: React.FC<TabEstoqueProps> = ({ produtos, isLoading, searchTerm
         <div className="flex justify-between items-center">
             <div>
                 <p className="font-bold text-gray-900 text-sm">{p.codigo}</p>
-                <span className={`px-2 py-0.5 text-[10px] rounded-full font-bold ${p.tipo === 'Individual' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full font-medium ${p.tipo === 'Individual' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                     }`}>{p.tipo}</span>
             </div>
             <span className={`text-lg font-bold ${p.em_estoque > 0 ? 'text-green-700' : 'text-red-600'}`}>

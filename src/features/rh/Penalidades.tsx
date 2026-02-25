@@ -65,7 +65,7 @@ const Penalidades: React.FC = () => {
 
     const handleViewDetails = (grupo: typeof groupedArray[0]) => {
         openViewModal(
-            `Extrato de Penalidades: ${grupo.funcionario_nome}`,
+            'Detalhes da Penalidade',
             <PenalidadeDetails
                 employeeName={grupo.funcionario_nome}
                 penalidades={grupo.registros}

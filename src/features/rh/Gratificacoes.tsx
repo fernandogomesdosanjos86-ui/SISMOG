@@ -67,7 +67,7 @@ const Gratificacoes: React.FC = () => {
 
     const handleViewDetails = (grupo: typeof groupedArray[0]) => {
         openViewModal(
-            `Extrato de Gratificações: ${grupo.funcionario_nome}`,
+            'Detalhes da Gratificação',
             <GratificacaoDetails
                 employeeName={grupo.funcionario_nome}
                 gratificacoes={grupo.registros}

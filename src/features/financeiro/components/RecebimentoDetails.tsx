@@ -25,7 +25,7 @@ const RecebimentoDetails: React.FC<RecebimentoDetailsProps> = ({ recebimento }) 
                     <Activity size={16} className="mr-2" /> Status
                 </div>
                 <div className="mt-1">
-                    <span className={`px-2.5 py-1 text-xs rounded-md uppercase font-bold tracking-wide ${recebimento.status === 'recebido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    <span className={`capitalize inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium tracking-wide ${recebimento.status === 'recebido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                         {recebimento.status}
                     </span>
                 </div>
@@ -41,7 +41,7 @@ const RecebimentoDetails: React.FC<RecebimentoDetailsProps> = ({ recebimento }) 
                     <Type size={16} className="mr-2" /> Tipo
                 </div>
                 <div className="mt-1">
-                    <span className={`capitalize px-2.5 py-1 rounded-md text-xs font-semibold ${recebimento.tipo === 'avulso' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>{recebimento.tipo}</span>
+                    <span className={`capitalize inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${recebimento.tipo === 'avulso' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>{recebimento.tipo}</span>
                 </div>
             </div>
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">

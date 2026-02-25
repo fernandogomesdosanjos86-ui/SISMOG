@@ -22,7 +22,7 @@ const FaturamentoDetails: React.FC<FaturamentoDetailsProps> = ({ faturamento }) 
                     <Activity size={16} className="mr-2" /> Status
                 </div>
                 <div className="mt-1">
-                    <span className={`px-2.5 py-1 text-xs rounded-md uppercase font-bold tracking-wide ${faturamento.status === 'emitido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium tracking-wide uppercase ${faturamento.status === 'emitido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                         }`}>
                         {faturamento.status}
                     </span>
