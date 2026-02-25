@@ -70,6 +70,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navItems: NavItem[] = [
     { icon: Home, label: 'Dashboard', path: APP_ROUTES.HOME },
     {
+      icon: FileText,
+      label: 'Geral',
+      path: APP_ROUTES.GERAL.ROOT,
+      children: [
+        { icon: AlertTriangle, label: 'Tarefas', path: APP_ROUTES.GERAL.TAREFAS },
+        { icon: FileText, label: 'Currículos', path: APP_ROUTES.GERAL.CURRICULOS }
+      ]
+    },
+    {
       icon: Box,
       label: 'Estoque',
       path: APP_ROUTES.ESTOQUE.ROOT,

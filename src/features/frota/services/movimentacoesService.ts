@@ -1,6 +1,6 @@
 import { supabase } from '../../../services/supabase';
 import type { Movimentacao, MovimentacaoFormData, MovimentacoesFilters, PaginatedResponse } from '../types';
-import { endOfMonth, parseISO } from 'date-fns';
+import { endOfMonth } from 'date-fns';
 
 export const movimentacoesService = {
     getMovimentacoes: async (filters: MovimentacoesFilters): Promise<PaginatedResponse<Movimentacao>> => {
@@ -24,9 +24,16 @@ export const movimentacoesService = {
             .order('data_hora_inicial', { ascending: false });
 
         if (month && year) {
-            const startStr = parseISO(`${year}-${month.padStart(2, '0')}-01T00:00:00Z`);
-            const endStr = endOfMonth(startStr);
-            query = query.gte('data_hora_inicial', startStr.toISOString()).lte('data_hora_inicial', endStr.toISOString());
+            // Use local date parsing to avoid timezone shifts where 1st of month translates to 31st of previous month
+            const monthIdx = parseInt(month, 10) - 1;
+            const yearNum = parseInt(year, 10);
+            const startDt = new Date(yearNum, monthIdx, 1);
+            const endDt = endOfMonth(startDt);
+
+            // Format strings for Supabase GT/LT filtering (ignores TZ issues safely)
+            query = query
+                .gte('data_hora_inicial', startDt.toISOString())
+                .lte('data_hora_inicial', endDt.toISOString());
         }
 
         if (searchTerm) {

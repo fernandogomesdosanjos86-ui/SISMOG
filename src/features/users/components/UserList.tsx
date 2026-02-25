@@ -180,10 +180,11 @@ const UserList = () => {
                 title="Usuários"
                 subtitle="Gestão de Usuários e Permissões"
                 action={
-                    <div onClick={!isAdmin ? handleNewUser : undefined} className={!isAdmin ? 'cursor-not-allowed' : ''}>
+                    <div onClick={!isAdmin ? handleNewUser : undefined} className={`w-full sm:w-auto ${!isAdmin ? 'cursor-not-allowed' : ''}`}>
                         <AddButton
                             onClick={isAdmin ? handleNewUser : undefined}
-                            className={!isAdmin ? 'bg-blue-300 hover:bg-blue-300 cursor-not-allowed opacity-70 border-none shadow-none' : ''}
+                            fullWidth
+                            className={`sm:w-auto ${!isAdmin ? 'bg-blue-300 hover:bg-blue-300 cursor-not-allowed opacity-70 border-none shadow-none' : ''}`}
                         >
                             Novo Usuário
                         </AddButton>

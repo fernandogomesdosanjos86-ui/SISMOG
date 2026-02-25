@@ -35,5 +35,10 @@ export const APP_ROUTES = {
         ABASTECIMENTOS: '/frota/abastecimentos',
         CHECKLISTS: '/frota/checklists',
         MOVIMENTACOES: '/frota/movimentacoes',
+    },
+    GERAL: {
+        ROOT: '#geral',
+        CURRICULOS: '/geral/curriculos',
+        TAREFAS: '/geral/tarefas',
     }
 } as const;

@@ -114,41 +114,13 @@ export interface Movimentacao {
     consumo_kw?: number;
     responsavel: string;
     created_at: string;
-    frota_veiculos?: {
+    veiculo?: {
         marca_modelo: string;
         placa: string;
         tipo: 'Combustão' | 'Elétrico';
         abastecimento: boolean;
         status: 'Ativo' | 'Em Manutenção' | 'Inativo';
     };
-}
-
-export interface MovimentacaoFormData {
-    data_hora_inicial: string;
-    data_hora_final: string;
-    veiculo_id: string;
-    trajeto: string;
-    km_inicial: number | '';
-    km_final: number | '';
-    bateria_inicial?: number | '';
-    bateria_final?: number | '';
-}
-
-export interface Movimentacao {
-    id: string;
-    data_hora_inicial: string;
-    data_hora_final: string;
-    veiculo_id: string;
-    trajeto: string;
-    km_inicial: number;
-    km_final: number;
-    km_rodados: number;
-    bateria_inicial?: number;
-    bateria_final?: number;
-    consumo_bateria?: number;
-    consumo_kw?: number;
-    responsavel: string;
-    created_at: string;
     frota_veiculos?: {
         marca_modelo: string;
         placa: string;

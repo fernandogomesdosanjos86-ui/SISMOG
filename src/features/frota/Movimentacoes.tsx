@@ -137,8 +137,8 @@ const Movimentacoes: React.FC = () => {
             header: 'Veículo',
             render: (i: Movimentacao) => (
                 <div className="flex flex-col">
-                    <span className="font-medium text-gray-900">{i.frota_veiculos?.marca_modelo}</span>
-                    <span className="text-xs text-gray-500 uppercase tracking-widest">{i.frota_veiculos?.placa}</span>
+                    <span className="font-medium text-gray-900">{i.veiculo?.marca_modelo}</span>
+                    <span className="text-xs text-gray-500 uppercase tracking-widest">{i.veiculo?.placa}</span>
                 </div>
             )
         },
@@ -158,7 +158,7 @@ const Movimentacoes: React.FC = () => {
             render: (i: Movimentacao) => (
                 <div className="flex flex-col">
                     <span className="text-sm font-medium text-blue-600">+{i.km_rodados} km</span>
-                    {i.frota_veiculos?.tipo === 'Elétrico' && i.consumo_kw !== null && i.consumo_kw !== undefined && (
+                    {i.veiculo?.tipo === 'Elétrico' && i.consumo_kw !== null && i.consumo_kw !== undefined && (
                         <span className="text-xs text-emerald-600">-{i.consumo_kw.toFixed(2)} kWh</span>
                     )}
                 </div>
@@ -174,15 +174,15 @@ const Movimentacoes: React.FC = () => {
     ];
 
     const renderCard = (i: Movimentacao) => {
-        const isEletrico = i.frota_veiculos?.tipo === 'Elétrico';
+        const isEletrico = i.veiculo?.tipo === 'Elétrico';
         const initialDate = new Date(i.data_hora_inicial);
 
         return (
             <div className={`flex flex-col gap-3 relative border-l-4 pl-3 ${isEletrico ? 'border-l-emerald-500' : 'border-l-gray-300'}`}>
                 <div className="flex justify-between items-start">
                     <div>
-                        <h3 className="font-semibold text-gray-900">{i.frota_veiculos?.marca_modelo || 'Veículo'}</h3>
-                        <p className="font-mono text-xs text-gray-500 mb-1">{i.frota_veiculos?.placa}</p>
+                        <h3 className="font-semibold text-gray-900">{i.veiculo?.marca_modelo || 'Veículo'}</h3>
+                        <p className="font-mono text-xs text-gray-500 mb-1">{i.veiculo?.placa}</p>
                     </div>
                     <span className="text-sm font-medium text-gray-900 text-right">{format(initialDate, "dd/MM/yyyy", { locale: ptBR })}</span>
                 </div>
@@ -271,7 +271,7 @@ const Movimentacoes: React.FC = () => {
                 renderCard={renderCard}
                 keyExtractor={(item) => item.id}
                 loading={isLoading}
-                getRowBorderColor={(item) => item.frota_veiculos?.tipo === 'Elétrico' ? 'border-emerald-500' : 'border-gray-300'}
+                getRowBorderColor={(item) => item.veiculo?.tipo === 'Elétrico' ? 'border-emerald-500' : 'border-gray-300'}
                 page={page}
                 totalPages={totalPages}
                 onPageChange={setPage}

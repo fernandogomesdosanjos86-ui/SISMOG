@@ -28,6 +28,8 @@ const Veiculos = lazy(() => import('./features/frota/Veiculos'));
 const Abastecimentos = lazy(() => import('./features/frota/Abastecimentos'));
 const Checklists = lazy(() => import('./features/frota/Checklists'));
 const Movimentacoes = lazy(() => import('./features/frota/Movimentacoes'));
+const Curriculos = lazy(() => import('./features/geral/curriculos/Curriculos'));
+const Tarefas = lazy(() => import('./features/geral/tarefas/Tarefas'));
 
 function App() {
   return (
@@ -66,6 +68,10 @@ function App() {
             <Route path={APP_ROUTES.FROTA.ABASTECIMENTOS} element={<Abastecimentos />} />
             <Route path={APP_ROUTES.FROTA.CHECKLISTS} element={<Checklists />} />
             <Route path={APP_ROUTES.FROTA.MOVIMENTACOES} element={<Movimentacoes />} />
+
+            {/* Geral */}
+            <Route path={APP_ROUTES.GERAL.CURRICULOS} element={<Curriculos />} />
+            <Route path={APP_ROUTES.GERAL.TAREFAS} element={<Tarefas />} />
           </Route>
         </Route>
 

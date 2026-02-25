@@ -104,7 +104,7 @@ const UserForm: FC<UserFormProps> = ({ user }) => {
             <MaskedInputField
                 label="CPF (apenas números)"
                 mask="999.999.999-99"
-                value={formData.cpf}
+                value={formData.cpf} // Custom component formatting
                 onChange={e => setFormData({ ...formData, cpf: e.target.value.replace(/\D/g, '') })}
                 placeholder="000.000.000-00"
                 disabled={isEditing}

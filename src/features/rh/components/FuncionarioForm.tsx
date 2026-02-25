@@ -35,7 +35,13 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'cpf') {
+            // Store raw digits for the backend/validation
+            const rawValue = value.replace(/\D/g, '');
+            setFormData(prev => ({ ...prev, [name]: rawValue }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -106,7 +112,7 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
                     label="CPF"
                     mask="999.999.999-99"
                     name="cpf"
-                    value={formData.cpf}
+                    value={formData.cpf} // Custom component will format this for display
                     onChange={handleChange}
                     placeholder="000.000.000-00"
                     required

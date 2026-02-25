@@ -104,4 +104,17 @@ export const queryKeys = {
         list: () => [...queryKeys.gratificacoes.all, 'list'] as const,
         detail: (id: string) => [...queryKeys.gratificacoes.all, 'detail', id] as const,
     },
+    // Geral
+    curriculos: {
+        all: ['curriculos'] as const,
+        list: () => [...queryKeys.curriculos.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.curriculos.all, 'detail', id] as const,
+    },
+    tarefas: {
+        all: ['tarefas'] as const,
+        list: () => [...queryKeys.tarefas.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.tarefas.all, 'detail', id] as const,
+        missoes: (tarefaId: string) => [...queryKeys.tarefas.detail(tarefaId), 'missoes'] as const,
+        chat: (tarefaId: string) => [...queryKeys.tarefas.detail(tarefaId), 'chat'] as const,
+    }
 } as const;
