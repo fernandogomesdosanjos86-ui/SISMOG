@@ -3,7 +3,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import { useModal } from '../../../../context/ModalContext';
 import { useTarefaDetail, useMissoes, useTarefaChat } from '../hooks/useTarefas';
 import TarefaStatusBadge from './TarefaStatusBadge';
-import { FileText, Send, CheckCircle, Clock, CheckSquare, ListTodo, MessageSquare, Paperclip, Download } from 'lucide-react';
+import { Send, CheckCircle, CheckSquare, ListTodo, MessageSquare, Paperclip, Download } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tarefa, StatusTarefaMissao } from '../types';
@@ -87,11 +87,11 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
     };
 
     return (
-        <div className="flex flex-col h-[600px] -m-6">
+        <div className="-m-4">
 
-            {/* Header info fixed */}
-            <div className="bg-gray-50 border-b px-6 py-4 flex-shrink-0">
-                <div className="flex justify-between items-start mb-2">
+            {/* Header - Sticky at top */}
+            <div className="sticky top-0 z-20 bg-gray-50 border-b px-6 py-4 -mx-6 -mt-4">
+                <div className="flex justify-between items-start">
                     <h2 className="text-xl font-bold text-gray-900">{tarefa.titulo}</h2>
                     <div className="flex gap-2">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${prioridadeColors[tarefa.prioridade]}`}>
@@ -100,45 +100,41 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
                         <TarefaStatusBadge status={tarefa.status_tarefa} />
                     </div>
                 </div>
-                <div className="text-sm text-gray-500 flex flex-wrap gap-4">
-                    <span className="flex items-center"><Clock size={14} className="mr-1" /> Prazo limite: {format(parseISO(tarefa.data_limite), "dd 'de' MMMM", { locale: ptBR })}</span>
-                    <span className="flex items-center"><FileText size={14} className="mr-1" /> Solicitado em: {format(parseISO(tarefa.data_solicitacao), "dd/MM/yyyy")}</span>
-                </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex border-b px-6 pt-2 bg-white flex-shrink-0">
+            {/* Navigation Tabs - Sticky below header */}
+            <div className="sticky top-[57px] z-10 flex border-b px-6 pt-2 bg-white -mx-6">
                 <button
                     onClick={() => setActiveTab('DADOS')}
                     className={`px-4 py-2 font-medium text-sm border-b-2 flex items-center transition-colors ${activeTab === 'DADOS' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
                     <ListTodo size={16} className="mr-2" />
-                    Dados Básicos
+                    Tarefa
                 </button>
                 <button
                     onClick={() => setActiveTab('MISSOES')}
                     className={`px-4 py-2 font-medium text-sm border-b-2 flex items-center transition-colors ${activeTab === 'MISSOES' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
                     <CheckSquare size={16} className="mr-2" />
-                    Missões / Etapas
+                    Missões
                 </button>
                 <button
                     onClick={() => setActiveTab('CHAT')}
                     className={`px-4 py-2 font-medium text-sm border-b-2 flex items-center transition-colors ${activeTab === 'CHAT' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                 >
                     <MessageSquare size={16} className="mr-2" />
-                    Chat da Tarefa
+                    Chat
                 </button>
             </div>
 
-            {/* Content Area - Scrollable */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
+            {/* Content Area */}
+            <div className="px-6 py-4 bg-gray-50 -mx-6">
 
                 {/* DADOS TAB */}
                 {activeTab === 'DADOS' && (
                     <div className="space-y-6">
                         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="text-sm font-bold text-gray-900 mb-4 border-b pb-2">Sobre esta Tarefa</h3>
+                            <h3 className="text-sm font-bold text-gray-900 mb-4 border-b pb-2">Tarefa</h3>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <span className="block text-gray-500 mb-1">Remetente (Criador)</span>
@@ -155,6 +151,14 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
                                             </span>
                                         )) : <span className="italic text-gray-400">Nenhum</span>}
                                     </div>
+                                </div>
+                                <div>
+                                    <span className="block text-gray-500 mb-1">Prazo Limite</span>
+                                    <span className="font-medium text-gray-900">{format(parseISO(tarefa.data_limite), "dd 'de' MMMM", { locale: ptBR })}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-gray-500 mb-1">Solicitado em</span>
+                                    <span className="font-medium text-gray-900">{format(parseISO(tarefa.data_solicitacao), "dd/MM/yyyy")}</span>
                                 </div>
                             </div>
                         </div>
@@ -234,18 +238,18 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Input Area */}
+                        {/* Input Area - Sticky at bottom */}
                         {canInteract && (
-                            <div className="border-t p-3 bg-gray-50">
+                            <div className="sticky bottom-0 border-t p-3 bg-gray-50 -mx-6 -mb-4 px-6 pb-4 flex-shrink-0">
                                 {chatFile && (
                                     <div className="mb-2 px-3 py-1 bg-white border border-blue-200 rounded-md flex justify-between items-center text-xs">
                                         <span className="truncate flex-1 font-medium text-blue-800">{chatFile.name}</span>
                                         <button type="button" onClick={() => setChatFile(null)} className="text-gray-400 hover:text-red-500 ml-2">Remover</button>
                                     </div>
                                 )}
-                                <form onSubmit={handleSendChat} className="flex gap-2 items-center">
-                                    <label className="cursor-pointer p-2 text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0" title="Anexar Arquivo">
-                                        <Paperclip size={20} />
+                                <form onSubmit={handleSendChat} className="flex gap-2 items-center overflow-hidden">
+                                    <label className="cursor-pointer p-1.5 text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0" title="Anexar Arquivo">
+                                        <Paperclip size={18} />
                                         <input
                                             type="file"
                                             onChange={e => e.target.files && setChatFile(e.target.files[0])}
@@ -258,7 +262,7 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
                                         value={chatText}
                                         onChange={e => setChatText(e.target.value)}
                                         placeholder="Comente algo ou anexe..."
-                                        className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="min-w-0 flex-1 px-3 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                     />
 
                                     <button
@@ -266,7 +270,7 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
                                         disabled={isSending || (!chatText.trim() && !chatFile)}
                                         className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                                     >
-                                        <Send size={18} />
+                                        <Send size={16} />
                                     </button>
                                 </form>
                             </div>
