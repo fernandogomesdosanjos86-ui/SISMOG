@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar, AlertTriangle, Award, Car, Droplet } from 'lucide-react';
+import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useModal } from '../context/ModalContext';
@@ -22,6 +22,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     'Configurações': false,
     'Financeiro': true
   });
+
+  // Collapse all menus when Dashboard is selected
+  useEffect(() => {
+    if (location.pathname === APP_ROUTES.HOME) {
+      setExpandedMenus({});
+    }
+  }, [location.pathname]);
 
   // Lock body scroll when sidebar is open on mobile
   useEffect(() => {
@@ -99,7 +106,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       path: APP_ROUTES.FROTA.ROOT,
       children: [
         { icon: Car, label: 'Veículos', path: APP_ROUTES.FROTA.VEICULOS },
-        { icon: Droplet, label: 'Abastecimentos', path: APP_ROUTES.FROTA.ABASTECIMENTOS }
+        { icon: MapPin, label: 'Movimentações', path: APP_ROUTES.FROTA.MOVIMENTACOES },
+        { icon: Droplet, label: 'Abastecimentos', path: APP_ROUTES.FROTA.ABASTECIMENTOS },
+        { icon: ClipboardCheck, label: 'Checklists', path: APP_ROUTES.FROTA.CHECKLISTS }
       ]
     },
     {

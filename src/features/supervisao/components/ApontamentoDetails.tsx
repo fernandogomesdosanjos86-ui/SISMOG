@@ -16,7 +16,7 @@ const formatScore = (score: number) => {
     return <span className="text-gray-500 font-medium">{score}</span>;
 };
 
-const ApontamentoDetails: React.FC<ApontamentoDetailsProps> = ({ apontamentos, onEdit, onDelete }) => {
+const ApontamentoDetails: React.FC<ApontamentoDetailsProps> = ({ employeeName, apontamentos, onEdit, onDelete }) => {
     const { openConfirmModal } = useModal();
 
     const totalFrequencia = apontamentos.reduce((acc: number, curr: Apontamento) => acc + curr.frequencia_pts, 0);
@@ -32,15 +32,22 @@ const ApontamentoDetails: React.FC<ApontamentoDetailsProps> = ({ apontamentos, o
 
     return (
         <div className="space-y-6">
-            {/* Header Stats */}
-            <div className="bg-gray-50 p-4 rounded-lg flex gap-8">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
                 <div>
-                    <p className="text-xs text-gray-500 uppercase">Frequência</p>
-                    <p className="text-xl">{formatScore(totalFrequencia)}</p>
+                    <h3 className="text-xl font-bold text-gray-900">Histórico de Apontamentos</h3>
+                    <p className="text-sm text-gray-500 mt-1">Funcionário: {employeeName}</p>
                 </div>
-                <div>
-                    <p className="text-xs text-gray-500 uppercase">Benefícios</p>
-                    <p className="text-xl">{formatScore(totalBeneficios)}</p>
+            </div>
+
+            {/* Header Stats */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">Frequência</div>
+                    <div className="text-2xl">{formatScore(totalFrequencia)}</div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">Benefícios</div>
+                    <div className="text-2xl">{formatScore(totalBeneficios)}</div>
                 </div>
             </div>
 

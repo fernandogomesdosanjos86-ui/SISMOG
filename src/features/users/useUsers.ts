@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../services/supabase';
+import { useModal } from '../../context/ModalContext';
 
 export interface User {
     id: string;
@@ -13,6 +14,7 @@ export interface User {
 
 export const useUsers = () => {
     const queryClient = useQueryClient();
+    const { showFeedback } = useModal();
 
     // Fetch Users
     const { data: users, isLoading, error } = useQuery({
@@ -70,11 +72,11 @@ export const useUsers = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            alert('Usuário criado com sucesso!');
+            showFeedback('success', 'Usuário criado com sucesso!');
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Error creating user:', error);
-            alert(`Erro ao criar usuário: ${error.message}`);
+            showFeedback('error', `Erro ao criar usuário: ${error.message}`);
         }
     });
 

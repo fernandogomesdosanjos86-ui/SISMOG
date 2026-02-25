@@ -1,18 +1,38 @@
 import { supabase } from '../../../services/supabase';
-import type { Abastecimento, AbastecimentoFormData } from '../types';
+import type { Abastecimento, AbastecimentoFormData, AbastecimentosFilters, PaginatedResponse } from '../types';
+import { startOfMonth, endOfMonth, parseISO } from 'date-fns';
 
 export const abastecimentosService = {
-    async getAbastecimentos(): Promise<Abastecimento[]> {
-        const { data, error } = await supabase
+    getAbastecimentos: async (filters: AbastecimentosFilters): Promise<PaginatedResponse<Abastecimento>> => {
+        const { page = 1, pageSize = 15, searchTerm, monthFilter } = filters;
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        let query = supabase
             .from('frota_abastecimentos')
             .select(`
                 *,
-                frota_veiculos (
+                frota_veiculos!inner (
                     marca_modelo,
                     placa
                 )
-            `)
+            `, { count: 'exact' })
             .order('data', { ascending: false });
+
+        if (monthFilter && monthFilter !== 'TODOS') {
+            const [year, month] = monthFilter.split('-');
+            const dateStr = `${year}-${month.padStart(2, '0')}-01T00:00:00Z`;
+            const dateObj = parseISO(dateStr);
+            const startStr = startOfMonth(dateObj).toISOString();
+            const endStr = endOfMonth(dateObj).toISOString();
+            query = query.gte('data', startStr).lte('data', endStr);
+        }
+
+        if (searchTerm) {
+            query = query.or(`responsavel.ilike.%${searchTerm}%,frota_veiculos.marca_modelo.ilike.%${searchTerm}%,frota_veiculos.placa.ilike.%${searchTerm}%`);
+        }
+
+        const { data, error, count } = await query.range(from, to);
 
         if (error) {
             console.error('Error fetching abastecimentos:', error);
@@ -20,10 +40,32 @@ export const abastecimentosService = {
         }
 
         // Clean up join data
-        return data.map((item: any) => ({
+        const formattedData = data.map((item: any) => ({
             ...item,
             frota_veiculos: Array.isArray(item.frota_veiculos) ? item.frota_veiculos[0] : item.frota_veiculos
         })) as Abastecimento[];
+
+        return {
+            data: formattedData,
+            count: count || 0,
+            page,
+            totalPages: count ? Math.ceil(count / pageSize) : 0
+        };
+    },
+
+    getAbastecimentosKpis: async () => {
+        const { data, error } = await supabase.rpc('get_abastecimentos_kpis');
+
+        if (error) {
+            console.error('Error fetching abastecimentos KPIs:', error);
+            throw new Error('Erro ao buscar KPIs de abastecimentos');
+        }
+
+        return data?.[0] || {
+            gasto_mes_atual: 0,
+            gasto_mes_anterior: 0,
+            gasto_ultimos_3_meses: 0
+        };
     },
 
     async createAbastecimento(abastecimento: AbastecimentoFormData): Promise<Abastecimento> {

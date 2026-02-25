@@ -4,6 +4,9 @@ import type { Contrato } from '../types';
 import { financeiroService } from '../../../services/financeiroService';
 import { useModal } from '../../../context/ModalContext';
 import CurrencyInput from '../../../components/CurrencyInput';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 interface ContratoFormProps {
     initialData?: Contrato;
@@ -87,37 +90,61 @@ const ContratoForm: FC<ContratoFormProps> = ({ initialData, onSuccess }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Basic Info */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Empresa</label>
-                    <select name="empresa" value={formData.empresa} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
-                        <option value="SEMOG">SEMOG</option>
-                        <option value="FEMOG">FEMOG</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Contratante</label>
-                    <input required name="contratante" value={formData.contratante} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Posto/Serviço</label>
-                    <input required name="nome_posto" value={formData.nome_posto} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
-                    <select name="status" value={formData.status} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500">
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
-                    </select>
-                </div>
+                <SelectField
+                    label="Empresa"
+                    name="empresa"
+                    value={formData.empresa}
+                    onChange={handleChange}
+                    options={[
+                        { value: 'SEMOG', label: 'SEMOG' },
+                        { value: 'FEMOG', label: 'FEMOG' }
+                    ]}
+                />
+                <InputField
+                    label="Contratante"
+                    name="contratante"
+                    value={formData.contratante}
+                    onChange={handleChange}
+                    required
+                />
+                <InputField
+                    label="Posto/Serviço"
+                    name="nome_posto"
+                    value={formData.nome_posto}
+                    onChange={handleChange}
+                    required
+                />
+                <SelectField
+                    label="Status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    options={[
+                        { value: 'ativo', label: 'Ativo' },
+                        { value: 'inativo', label: 'Inativo' }
+                    ]}
+                />
 
                 {/* Dates & Values */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Data Início</label>
-                    <input type="date" required name="data_inicio" value={formData.data_inicio} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
+                    <InputField
+                        label="Data Início"
+                        type="date"
+                        name="data_inicio"
+                        value={formData.data_inicio}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Duração (meses)</label>
-                    <input type="number" required name="duracao_meses" value={formData.duracao_meses} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
+                    <InputField
+                        label="Duração (meses)"
+                        type="number"
+                        name="duracao_meses"
+                        value={formData.duracao_meses}
+                        onChange={handleChange}
+                        required
+                    />
                     <p className="text-xs text-gray-500 mt-1">Término previsto: {calculateTermino()}</p>
                 </div>
                 <div>
@@ -133,12 +160,28 @@ const ContratoForm: FC<ContratoFormProps> = ({ initialData, onSuccess }) => {
                 <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-1 border-b">Faturamento e Vencimento</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Dia Faturamento</label>
-                        <input type="number" min="1" max="31" required name="dia_faturamento" value={formData.dia_faturamento} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
+                        <InputField
+                            label="Dia Faturamento"
+                            type="number"
+                            min="1"
+                            max="31"
+                            name="dia_faturamento"
+                            value={formData.dia_faturamento}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Dia Vencimento</label>
-                        <input type="number" min="1" max="31" required name="dia_vencimento" value={formData.dia_vencimento} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
+                        <InputField
+                            label="Dia Vencimento"
+                            type="number"
+                            min="1"
+                            max="31"
+                            name="dia_vencimento"
+                            value={formData.dia_vencimento}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
                     <div className="flex items-center mt-6">
                         <input type="checkbox" name="vencimento_mes_corrente" checked={formData.vencimento_mes_corrente} onChange={handleChange} className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500" />
@@ -152,14 +195,13 @@ const ContratoForm: FC<ContratoFormProps> = ({ initialData, onSuccess }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Percentual ISS (%)</label>
-                        <input
+                        <InputField
+                            label="Percentual ISS (%)"
                             type="number"
                             step="0.01"
                             name="perc_iss"
                             value={formData.perc_iss}
                             onChange={handleChange}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500"
                             placeholder="0.00"
                         />
                     </div>
@@ -209,23 +251,18 @@ const ContratoForm: FC<ContratoFormProps> = ({ initialData, onSuccess }) => {
                 </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3 border-t border-gray-200 mt-6">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center transition-colors"
-                >
+                <PrimaryButton type="submit" disabled={loading}>
                     {loading ? 'Salvando...' : 'Salvar Contrato'}
-                </button>
+                </PrimaryButton>
             </div>
-
         </form>
     );
 };

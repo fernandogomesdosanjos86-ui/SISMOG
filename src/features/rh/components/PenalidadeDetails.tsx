@@ -11,7 +11,7 @@ interface PenalidadeDetailsProps {
     onDelete: (item: Penalidade) => void;
 }
 
-const PenalidadeDetails: React.FC<PenalidadeDetailsProps> = ({ penalidades, onEdit, onDelete }) => {
+const PenalidadeDetails: React.FC<PenalidadeDetailsProps> = ({ employeeName, penalidades, onEdit, onDelete }) => {
     const { openConfirmModal } = useModal();
 
     const handleDelete = (item: Penalidade) => {
@@ -24,6 +24,13 @@ const PenalidadeDetails: React.FC<PenalidadeDetailsProps> = ({ penalidades, onEd
 
     return (
         <div className="space-y-6">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
+                <div>
+                    <h3 className="text-xl font-bold text-gray-900">Histórico de Penalidades</h3>
+                    <p className="text-sm text-gray-500 mt-1">Funcionário: {employeeName}</p>
+                </div>
+            </div>
+
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto border rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">

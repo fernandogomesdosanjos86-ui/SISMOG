@@ -3,6 +3,9 @@ import { useModal } from '../../../context/ModalContext';
 import { useFuncionarios } from '../hooks/useFuncionarios';
 import { useGratificacoes } from '../hooks/useGratificacoes';
 import type { Gratificacao, GratificacaoFormData, TipoGratificacao } from '../types';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 interface GratificacaoFormProps {
     initialData?: Gratificacao;
@@ -104,50 +107,36 @@ const GratificacaoForm: React.FC<GratificacaoFormProps> = ({ initialData, onSucc
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Funcionário *</label>
-                    <select
-                        name="funcionario_id"
-                        value={formData.funcionario_id}
-                        onChange={handleChange}
-                        className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        required
-                        disabled={isLoadingFunc}
-                    >
-                        <option value="">Selecione um funcionário</option>
-                        {activeFuncionarios.map(func => (
-                            <option key={func.id} value={func.id}>
-                                {func.nome} ({func.cpf})
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <SelectField
+                    label="Funcionário"
+                    name="funcionario_id"
+                    value={formData.funcionario_id}
+                    onChange={handleChange}
+                    options={activeFuncionarios.map(func => ({ value: func.id ?? '', label: `${func.nome} (${func.cpf})` }))}
+                    required
+                    disabled={isLoadingFunc}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Data *</label>
-                        <input
-                            type="date"
-                            name="data"
-                            value={formData.data}
-                            onChange={handleChange}
-                            className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
-                        <select
-                            name="tipo"
-                            value={formData.tipo}
-                            onChange={handleTipoChange}
-                            className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                            required
-                        >
-                            <option value="Folha de Pagamento">Folha de Pagamento</option>
-                            <option value="Incentivo">Incentivo</option>
-                        </select>
-                    </div>
+                    <InputField
+                        label="Data"
+                        type="date"
+                        name="data"
+                        value={formData.data}
+                        onChange={handleChange}
+                        required
+                    />
+                    <SelectField
+                        label="Tipo"
+                        name="tipo"
+                        value={formData.tipo}
+                        onChange={handleTipoChange}
+                        options={[
+                            { value: 'Folha de Pagamento', label: 'Folha de Pagamento' },
+                            { value: 'Incentivo', label: 'Incentivo' }
+                        ]}
+                        required
+                    />
                 </div>
 
                 {formData.tipo === 'Folha de Pagamento' && (
@@ -207,28 +196,17 @@ const GratificacaoForm: React.FC<GratificacaoFormProps> = ({ initialData, onSucc
                 </div>
             </div>
 
-            <div className="flex justify-end pt-4 gap-3 border-t border-gray-100">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={isCreating || isUpdating}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center shadow-sm"
-                >
-                    {isCreating || isUpdating ? (
-                        <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Salvando...
-                        </>
-                    ) : (
-                        'Salvar Registro'
-                    )}
-                </button>
+                <PrimaryButton type="submit" disabled={isCreating || isUpdating}>
+                    {isCreating || isUpdating ? 'Salvando...' : 'Salvar Registro'}
+                </PrimaryButton>
             </div>
         </form>
     );

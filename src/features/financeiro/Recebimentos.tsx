@@ -4,12 +4,13 @@ import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
+import StatCard from '../../components/StatCard';
 import CompanyBadge from '../../components/CompanyBadge';
 import type { Recebimento } from '../../features/financeiro/types';
 import { useModal } from '../../context/ModalContext';
 import RecebimentoAvulsoForm from '../../features/financeiro/components/RecebimentoAvulsoForm';
 import RecebimentoDetails from '../../features/financeiro/components/RecebimentoDetails';
-import { Plus, Search, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Search, FileText } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useRecebimentos } from './hooks/useRecebimentos';
 
@@ -180,34 +181,23 @@ const Recebimentos: React.FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-gray-500 font-medium">Total Previsto</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalLiquido)}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                        <FileText size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-yellow-600 font-medium">Pendente</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalPendente)}</p>
-                    </div>
-                    <div className="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
-                        <AlertCircle size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-green-600 font-medium">Recebido</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalRecebido)}</p>
-                    </div>
-                    <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                        <CheckCircle size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Total Previsto"
+                    value={formatCurrency(totalLiquido)}
+                    type="total"
+                    icon={FileText}
+                />
+                <StatCard
+                    title="Pendente"
+                    value={formatCurrency(totalPendente)}
+                    type="warning"
+                />
+                <StatCard
+                    title="Recebido"
+                    value={formatCurrency(totalRecebido)}
+                    type="success"
+                />
             </div>
 
             {/* Filters - Top Bar (Search + Status) */}

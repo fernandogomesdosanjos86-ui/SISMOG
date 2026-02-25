@@ -3,6 +3,10 @@ import { useAbastecimentos } from '../hooks/useAbastecimentos';
 import { useVeiculos } from '../hooks/useVeiculos';
 import CurrencyInput from '../../../components/CurrencyInput';
 import type { Abastecimento, AbastecimentoFormData } from '../types';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { useModal } from '../../../context/ModalContext';
 
 interface AbastecimentoFormProps {
     initialData?: Abastecimento;
@@ -12,6 +16,7 @@ interface AbastecimentoFormProps {
 const AbastecimentoForm: React.FC<AbastecimentoFormProps> = ({ initialData, onSuccess }) => {
     const { createAbastecimento, updateAbastecimento, isCreating, isUpdating } = useAbastecimentos();
     const { veiculos, isLoading: isLoadingVeiculos } = useVeiculos();
+    const { closeModal } = useModal();
 
     const [formData, setFormData] = useState<AbastecimentoFormData>({
         data: new Date().toISOString().split('T')[0],
@@ -61,70 +66,46 @@ const AbastecimentoForm: React.FC<AbastecimentoFormProps> = ({ initialData, onSu
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Data do Abastecimento
-                    </label>
-                    <input
-                        type="date"
-                        required
-                        value={formData.data}
-                        onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                <InputField
+                    label="Data do Abastecimento"
+                    type="date"
+                    required
+                    value={formData.data}
+                    onChange={(e) => setFormData({ ...formData, data: e.target.value })}
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Veículo
-                    </label>
-                    <select
-                        required
-                        value={formData.veiculo_id}
-                        onChange={(e) => setFormData({ ...formData, veiculo_id: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        disabled={isLoadingVeiculos}
-                    >
-                        <option value="">Selecione um veículo</option>
-                        {veiculos
-                            .filter(v => v.abastecimento === true) // Only vehicles that can be fueled
-                            .map((v) => (
-                                <option key={v.id} value={v.id}>
-                                    {v.marca_modelo} ({v.placa})
-                                </option>
-                            ))}
-                    </select>
-                </div>
+                <SelectField
+                    label="Veículo"
+                    required
+                    value={formData.veiculo_id}
+                    onChange={(e) => setFormData({ ...formData, veiculo_id: e.target.value })}
+                    disabled={isLoadingVeiculos}
+                    options={veiculos
+                        .filter(v => v.abastecimento === true)
+                        .map(v => ({ value: v.id, label: `${v.marca_modelo} (${v.placa})` }))}
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Km Atual
-                    </label>
-                    <input
-                        type="number"
-                        step="1"
-                        required
-                        value={formData.km_atual}
-                        onChange={(e) => setFormData({ ...formData, km_atual: e.target.value ? Number(e.target.value) : '' })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                        placeholder="Ex: 53200"
-                    />
-                </div>
+                <InputField
+                    label="Km Atual"
+                    type="number"
+                    step="1"
+                    required
+                    value={formData.km_atual}
+                    onChange={(e) => setFormData({ ...formData, km_atual: e.target.value ? Number(e.target.value) : '' })}
+                    placeholder="Ex: 53200"
+                    className="font-mono"
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Litros
-                    </label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={formData.litros}
-                        onChange={(e) => setFormData({ ...formData, litros: e.target.value ? Number(e.target.value) : '' })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                        placeholder="Ex: 40.5"
-                    />
-                </div>
+                <InputField
+                    label="Litros"
+                    type="number"
+                    step="0.01"
+                    required
+                    value={formData.litros}
+                    onChange={(e) => setFormData({ ...formData, litros: e.target.value ? Number(e.target.value) : '' })}
+                    placeholder="Ex: 40.5"
+                    className="font-mono"
+                />
 
                 <div className="sm:col-span-2">
                     <CurrencyInput
@@ -135,14 +116,20 @@ const AbastecimentoForm: React.FC<AbastecimentoFormProps> = ({ initialData, onSu
                 </div>
             </div>
 
-            <div className="pt-6 border-t border-gray-100 flex justify-end">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
                 <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                    Cancelar
+                </button>
+                <PrimaryButton
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium transition-colors"
                 >
                     {isSubmitting ? 'Salvando...' : initialData ? 'Salvar Alterações' : 'Lançar Abastecimento'}
-                </button>
+                </PrimaryButton>
             </div>
         </form>
     );

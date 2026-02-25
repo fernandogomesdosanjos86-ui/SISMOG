@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import React from 'react';
 import ResponsiveTable from '../../../../components/ResponsiveTable';
 import type { Produto } from '../types';
 
 interface TabEstoqueProps {
     produtos: (Produto & { em_estoque: number })[];
     isLoading: boolean;
+    searchTerm: string;
+    tipoFilter: 'TODOS' | 'Individual' | 'Coletivo';
 }
 
 const ITEMS_PER_PAGE = 50;
 
-const TabEstoque: React.FC<TabEstoqueProps> = ({ produtos, isLoading }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'Individual' | 'Coletivo'>('TODOS');
+const TabEstoque: React.FC<TabEstoqueProps> = ({ produtos, isLoading, searchTerm, tipoFilter }) => {
 
     const filtered = produtos.filter(p => {
         const matchesTipo = tipoFilter === 'TODOS' || p.tipo === tipoFilter;
@@ -56,29 +55,6 @@ const TabEstoque: React.FC<TabEstoqueProps> = ({ produtos, isLoading }) => {
 
     return (
         <div className="space-y-4">
-            {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Buscar por código..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <select
-                    value={tipoFilter}
-                    onChange={e => setTipoFilter(e.target.value as any)}
-                    className="px-3 py-2 border border-gray-200 rounded-lg bg-white"
-                >
-                    <option value="TODOS">Todos</option>
-                    <option value="Individual">Individual</option>
-                    <option value="Coletivo">Coletivo</option>
-                </select>
-            </div>
-
             {/* Table */}
             <ResponsiveTable
                 data={filtered.slice(0, ITEMS_PER_PAGE)}

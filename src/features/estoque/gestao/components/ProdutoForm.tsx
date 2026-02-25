@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useModal } from '../../../../context/ModalContext';
 import type { Produto, ProdutoFormData } from '../types';
+import PrimaryButton from '../../../../components/PrimaryButton';
 
 interface ProdutoFormProps {
     initialData?: Produto;
@@ -104,17 +105,13 @@ const ProdutoForm: React.FC<ProdutoFormProps> = ({ initialData, onSuccess, creat
                 </div>
             )}
 
-            <div className="flex justify-end pt-4 gap-3 border-t">
-                <button type="button" onClick={closeModal} className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+                <button type="button" onClick={closeModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
+                <PrimaryButton type="submit" disabled={isSubmitting}>
                     {isSubmitting ? 'Salvando...' : 'Salvar'}
-                </button>
+                </PrimaryButton>
             </div>
         </form>
     );

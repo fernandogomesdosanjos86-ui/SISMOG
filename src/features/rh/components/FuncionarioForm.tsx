@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useModal } from '../../../context/ModalContext';
 import { useFuncionarios } from '../hooks/useFuncionarios';
 import type { Funcionario, FuncionarioFormData } from '../types';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { MaskedInputField } from '../../../components/forms/MaskedInputField';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 
 interface FuncionarioFormProps {
@@ -29,23 +33,9 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
 
     const filteredCargos = cargos.filter(c => c.empresa === formData.empresa);
 
-
-    const formatCPF = (value: string) => {
-        return value
-            .replace(/\D/g, '') // Remove non-digits
-            .replace(/(\d{3})(\d)/, '$1.$2')
-            .replace(/(\d{3})(\d)/, '$1.$2')
-            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-            .replace(/(-\d{2})\d+?$/, '$1'); // Limit to 11 digits formatted
-    };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        if (name === 'cpf') {
-            setFormData(prev => ({ ...prev, [name]: formatCPF(value) }));
-        } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
-        }
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -103,150 +93,104 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">Nome Completo *</label>
-                    <input
-                        type="text"
+                    <InputField
+                        label="Nome Completo"
                         name="nome"
                         value={formData.nome}
                         onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         required
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">CPF *</label>
-                    <input
-                        type="text"
-                        name="cpf"
-                        value={formData.cpf}
-                        onChange={handleChange}
-                        maxLength={14}
-                        placeholder="000.000.000-00"
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        required
-                    />
-                </div>
+                <MaskedInputField
+                    label="CPF"
+                    mask="999.999.999-99"
+                    name="cpf"
+                    value={formData.cpf}
+                    onChange={handleChange}
+                    placeholder="000.000.000-00"
+                    required
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Cargo *</label>
-                    <select
-                        name="cargo_id"
-                        value={formData.cargo_id}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        required
-                    >
-                        <option value="">Selecione um cargo</option>
-                        {filteredCargos.map(cargo => (
-                            <option key={cargo.id} value={cargo.id}>
-                                {cargo.cargo} - {cargo.uf}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <SelectField
+                    label="Cargo"
+                    name="cargo_id"
+                    value={formData.cargo_id}
+                    onChange={handleChange}
+                    options={filteredCargos.map(cargo => ({ value: cargo.id ?? '', label: `${cargo.cargo} - ${cargo.uf}` }))}
+                    required
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Tipo de Contrato</label>
-                    <select
-                        name="tipo_contrato"
-                        value={formData.tipo_contrato}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    >
-                        <option value="Mensalista">Mensalista</option>
-                        <option value="Intermitente">Intermitente</option>
-                        <option value="Prazo Determinado">Prazo Determinado</option>
-                        <option value="Prolabore">Prolabore</option>
-                        <option value="Estagiário">Estagiário</option>
-                        <option value="Sem Remuneração">Sem Remuneração</option>
-                    </select>
-                </div>
+                <SelectField
+                    label="Tipo de Contrato"
+                    name="tipo_contrato"
+                    value={formData.tipo_contrato}
+                    onChange={handleChange}
+                    options={[
+                        { value: 'Mensalista', label: 'Mensalista' },
+                        { value: 'Intermitente', label: 'Intermitente' },
+                        { value: 'Prazo Determinado', label: 'Prazo Determinado' },
+                        { value: 'Prolabore', label: 'Prolabore' },
+                        { value: 'Estagiário', label: 'Estagiário' },
+                        { value: 'Sem Remuneração', label: 'Sem Remuneração' },
+                    ]}
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
-                    <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    >
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
-                    </select>
-                </div>
+                <SelectField
+                    label="Status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    options={[
+                        { value: 'ativo', label: 'Ativo' },
+                        { value: 'inativo', label: 'Inativo' },
+                    ]}
+                />
 
                 <div className="md:col-span-2 border-t pt-4 mt-2">
                     <h4 className="text-sm font-semibold text-gray-900 mb-3">Dados Bancários</h4>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Banco</label>
-                    <input
-                        type="text"
-                        name="banco"
-                        value={formData.banco}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                </div>
+                <InputField
+                    label="Banco"
+                    name="banco"
+                    value={formData.banco}
+                    onChange={handleChange}
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Agência</label>
-                    <input
-                        type="text"
-                        name="agencia"
-                        value={formData.agencia}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                </div>
+                <InputField
+                    label="Agência"
+                    name="agencia"
+                    value={formData.agencia}
+                    onChange={handleChange}
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Conta Corrente</label>
-                    <input
-                        type="text"
-                        name="conta"
-                        value={formData.conta}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                </div>
+                <InputField
+                    label="Conta Corrente"
+                    name="conta"
+                    value={formData.conta}
+                    onChange={handleChange}
+                />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Chave Pix</label>
-                    <input
-                        type="text"
-                        name="pix"
-                        value={formData.pix}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    />
-                </div>
+                <InputField
+                    label="Chave Pix"
+                    name="pix"
+                    value={formData.pix}
+                    onChange={handleChange}
+                />
             </div>
 
-            <div className="flex justify-end pt-4 gap-3 border-t">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={isCreating || isUpdating}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center"
-                >
-                    {isCreating || isUpdating ? (
-                        <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Salvando...
-                        </>
-                    ) : (
-                        'Salvar'
-                    )}
-                </button>
+                <PrimaryButton type="submit" disabled={isCreating || isUpdating}>
+                    {isCreating || isUpdating ? 'Salvando...' : 'Salvar Funcionário'}
+                </PrimaryButton>
             </div>
         </form>
     );

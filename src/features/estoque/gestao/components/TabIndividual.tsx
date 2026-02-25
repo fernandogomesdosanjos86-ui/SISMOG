@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Trash } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import ResponsiveTable from '../../../../components/ResponsiveTable';
 import { useModal } from '../../../../context/ModalContext';
 import { estoqueGestaoService } from '../../../../services/estoqueGestaoService';
@@ -8,13 +8,13 @@ import type { Movimentacao, ResumoFuncionario } from '../types';
 interface TabIndividualProps {
     onRefresh: () => void;
     deleteMov: (id: string) => Promise<any>;
+    searchTerm: string;
 }
 
 const ITEMS_PER_PAGE = 50;
 
-const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov }) => {
+const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, searchTerm }) => {
     const { openViewModal, showFeedback } = useModal();
-    const [searchTerm, setSearchTerm] = useState('');
     const [resumo, setResumo] = useState<ResumoFuncionario[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -89,19 +89,6 @@ const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov }) =
 
     return (
         <div className="space-y-4">
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Buscar por nome..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-            </div>
-
             <ResponsiveTable
                 data={filtered.slice(0, ITEMS_PER_PAGE)}
                 columns={columns}

@@ -3,6 +3,7 @@ import { Plus, Search, Award } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
+import StatCard from '../../components/StatCard';
 import CompanyBadge from '../../components/CompanyBadge';
 import { useModal } from '../../context/ModalContext';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -129,46 +130,36 @@ const Gratificacoes: React.FC = () => {
                 subtitle="Registro de gratificações em folha de pagamento e incentivos."
                 action={
                     <div className="w-full sm:w-auto">
-                        <PrimaryButton onClick={handleCreate} className="w-full justify-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">
-                            <Plus size={20} className="mr-2" />
+                        <PrimaryButton onClick={handleCreate} icon={<Plus size={20} />} className="w-full">
                             Novo Registro
                         </PrimaryButton>
                     </div>
                 }
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-gray-600 font-medium mb-1">Total Geral</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalGratificacoes}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 text-gray-600 rounded-lg shrink-0">
-                        <Award size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-blue-600 font-medium mb-1">Total FEMOG</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalFemog}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg shrink-0">
-                        <Award size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-orange-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-orange-600 font-medium mb-1">Total SEMOG</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalSemog}</p>
-                    </div>
-                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg shrink-0">
-                        <Award size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Total Geral"
+                    value={String(totalGratificacoes)}
+                    type="total"
+                    icon={Award}
+                />
+                <StatCard
+                    title="Total FEMOG"
+                    value={String(totalFemog)}
+                    type="info"
+                    icon={Award}
+                />
+                <StatCard
+                    title="Total SEMOG"
+                    value={String(totalSemog)}
+                    type="warning"
+                    icon={Award}
+                />
             </div>
 
             {/* Filters - Top Bar (Search + Tipo) */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
@@ -193,7 +184,7 @@ const Gratificacoes: React.FC = () => {
             </div>
 
             {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
+            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
                 {(['TODOS', 'FEMOG', 'SEMOG'] as const).map((tab) => (
                     <button
                         key={tab}

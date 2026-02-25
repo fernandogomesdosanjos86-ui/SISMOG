@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { usePostos } from '../hooks/usePostos';
+import PrimaryButton from '../../../components/PrimaryButton';
 
 interface EscalaFormProps {
     onSubmit: (competencia: string, empresa: 'FEMOG' | 'SEMOG', postoId: string) => void;
@@ -71,21 +72,17 @@ const EscalaForm: React.FC<EscalaFormProps> = ({ onSubmit, onCancel }) => {
                 </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={!postoId}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                <PrimaryButton type="submit" disabled={!postoId}>
                     Gerar Escala Inicial
-                </button>
+                </PrimaryButton>
             </div>
         </form>
     );

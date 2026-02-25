@@ -4,6 +4,9 @@ import { useFuncionarios } from '../hooks/useFuncionarios';
 import { usePenalidades } from '../hooks/usePenalidades';
 import type { Penalidade, PenalidadeFormData } from '../types';
 import { UploadCloud, X, FileText } from 'lucide-react';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 interface PenalidadeFormProps {
     initialData?: Penalidade;
@@ -105,51 +108,37 @@ const PenalidadeForm: React.FC<PenalidadeFormProps> = ({ initialData, onSuccess 
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Funcionário *</label>
-                    <select
-                        name="funcionario_id"
-                        value={formData.funcionario_id}
-                        onChange={handleChange}
-                        className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                        required
-                        disabled={isLoadingFunc}
-                    >
-                        <option value="">Selecione um funcionário</option>
-                        {activeFuncionarios.map(func => (
-                            <option key={func.id} value={func.id}>
-                                {func.nome} ({func.cpf})
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <SelectField
+                    label="Funcionário"
+                    name="funcionario_id"
+                    value={formData.funcionario_id}
+                    onChange={handleChange}
+                    options={activeFuncionarios.map(func => ({ value: func.id ?? '', label: `${func.nome} (${func.cpf})` }))}
+                    required
+                    disabled={isLoadingFunc}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Data *</label>
-                        <input
-                            type="date"
-                            name="data"
-                            value={formData.data}
-                            onChange={handleChange}
-                            className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Penalidade *</label>
-                        <select
-                            name="penalidade"
-                            value={formData.penalidade}
-                            onChange={handleChange}
-                            className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                            required
-                        >
-                            <option value="Advertência Verbal">Advertência Verbal</option>
-                            <option value="Advertência Escrita">Advertência Escrita</option>
-                            <option value="Suspensão">Suspensão</option>
-                        </select>
-                    </div>
+                    <InputField
+                        label="Data"
+                        type="date"
+                        name="data"
+                        value={formData.data}
+                        onChange={handleChange}
+                        required
+                    />
+                    <SelectField
+                        label="Tipo de Penalidade"
+                        name="penalidade"
+                        value={formData.penalidade}
+                        onChange={handleChange}
+                        options={[
+                            { value: 'Advertência Verbal', label: 'Advertência Verbal' },
+                            { value: 'Advertência Escrita', label: 'Advertência Escrita' },
+                            { value: 'Suspensão', label: 'Suspensão' },
+                        ]}
+                        required
+                    />
                 </div>
 
                 <div>
@@ -225,19 +214,15 @@ const PenalidadeForm: React.FC<PenalidadeFormProps> = ({ initialData, onSuccess 
                 </div>
             </div>
 
-            <div className="flex justify-end pt-4 gap-3 border-t">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={isCreating || isUpdating}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center"
-                >
+                <PrimaryButton type="submit" disabled={isCreating || isUpdating} className="bg-red-600 hover:bg-red-700 ring-red-500">
                     {isCreating || isUpdating ? (
                         <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -246,7 +231,7 @@ const PenalidadeForm: React.FC<PenalidadeFormProps> = ({ initialData, onSuccess 
                     ) : (
                         'Registrar Penalidade'
                     )}
-                </button>
+                </PrimaryButton>
             </div>
         </form>
     );

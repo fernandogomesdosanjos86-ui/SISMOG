@@ -4,12 +4,13 @@ import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
+import StatCard from '../../components/StatCard';
 import CompanyBadge from '../../components/CompanyBadge';
 import type { Faturamento } from '../../features/financeiro/types';
 import { useModal } from '../../context/ModalContext';
 import FaturamentoForm from '../../features/financeiro/components/FaturamentoForm';
 import FaturamentoDetails from '../../features/financeiro/components/FaturamentoDetails';
-import { FileText, Play, Search, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, Play, Search } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useFaturamentos } from './hooks/useFaturamentos';
@@ -211,34 +212,23 @@ const Faturamentos: FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-gray-500 font-medium">Total Bruto</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalBruto)}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                        <FileText size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-yellow-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-yellow-600 font-medium">Pendente Bruto</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalPendenteBruto)}</p>
-                    </div>
-                    <div className="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
-                        <AlertCircle size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-green-600 font-medium">Emitido Bruto</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalEmitidoBruto)}</p>
-                    </div>
-                    <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                        <CheckCircle size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Total Bruto"
+                    value={formatCurrency(totalBruto)}
+                    type="total"
+                    icon={FileText}
+                />
+                <StatCard
+                    title="Pendente Bruto"
+                    value={formatCurrency(totalPendenteBruto)}
+                    type="warning"
+                />
+                <StatCard
+                    title="Emitido Bruto"
+                    value={formatCurrency(totalEmitidoBruto)}
+                    type="success"
+                />
             </div>
 
             {/* Filters - Top Bar (Search + Competencia) */}

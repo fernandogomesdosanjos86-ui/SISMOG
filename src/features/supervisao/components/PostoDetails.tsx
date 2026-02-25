@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Building2, Activity } from 'lucide-react';
 import { useAlocacoes } from '../hooks/useAlocacoes';
 import type { PostoTrabalho, AlocacaoFormData } from '../types';
 import { useModal } from '../../../context/ModalContext';
 import { useFuncionarios } from '../../rh/hooks/useFuncionarios';
+import CompanyBadge from '../../../components/CompanyBadge';
 
 interface PostoDetailsProps {
     posto: PostoTrabalho;
@@ -60,17 +61,29 @@ const PostoDetails: React.FC<PostoDetailsProps> = ({ posto }) => {
 
     return (
         <div className="space-y-6">
-            {/* Info do Posto */}
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
                 <div>
-                    <span className="text-sm text-gray-500">Empresa</span>
-                    <p className={`font-medium ${posto.empresa === 'FEMOG' ? 'text-blue-700' : 'text-orange-700'}`}>
-                        {posto.empresa}
-                    </p>
+                    <h3 className="text-xl font-bold text-gray-900">{posto.nome}</h3>
                 </div>
-                <div>
-                    <span className="text-sm text-gray-500">Status</span>
-                    <p className="font-medium capitalize">{posto.status}</p>
+                <CompanyBadge company={posto.empresa} />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Building2 size={16} className="mr-2" /> Empresa
+                    </div>
+                    <div className={`font-semibold text-lg ${posto.empresa === 'FEMOG' ? 'text-blue-900' : 'text-orange-900'}`}>
+                        {posto.empresa}
+                    </div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Activity size={16} className="mr-2" /> Status
+                    </div>
+                    <div className="mt-1">
+                        <span className={`px-2.5 py-1 text-xs font-bold rounded-md capitalize ${posto.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{posto.status}</span>
+                    </div>
                 </div>
             </div>
 

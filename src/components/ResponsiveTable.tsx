@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TableSkeleton, CardSkeleton } from './SkeletonLoader';
 
 interface ResponsiveTableProps<T> {
@@ -18,6 +19,10 @@ interface ResponsiveTableProps<T> {
     getRowBorderColor?: (item: T) => string;
     loading?: boolean;
     skeletonRows?: number;
+    // Pagination props
+    page?: number;
+    totalPages?: number;
+    onPageChange?: (page: number) => void;
 }
 
 /**
@@ -35,6 +40,9 @@ function ResponsiveTable<T>({
     getRowBorderColor,
     loading = false,
     skeletonRows = 5,
+    page,
+    totalPages,
+    onPageChange,
 }: ResponsiveTableProps<T>) {
     if (loading) {
         return (
@@ -103,6 +111,61 @@ function ResponsiveTable<T>({
                     </div>
                 ))}
             </div>
+
+            {/* Pagination Controls */}
+            {page !== undefined && totalPages !== undefined && onPageChange && totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6 rounded-b-lg shadow">
+                    <div className="flex justify-between flex-1 sm:hidden">
+                        <button
+                            onClick={() => onPageChange(page - 1)}
+                            disabled={page === 1}
+                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${page === 1 ? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'} border border-gray-300`}
+                        >
+                            Anterior
+                        </button>
+                        <button
+                            onClick={() => onPageChange(page + 1)}
+                            disabled={page === totalPages}
+                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md ${page === totalPages ? 'text-gray-400 bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50'} border border-gray-300`}
+                        >
+                            Próxima
+                        </button>
+                    </div>
+                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700">
+                                Página <span className="font-medium">{page}</span> de <span className="font-medium">{totalPages}</span>
+                            </p>
+                        </div>
+                        <div>
+                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button
+                                    onClick={() => onPageChange(page - 1)}
+                                    disabled={page === 1}
+                                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1 ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    <span className="sr-only">Anterior</span>
+                                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                </button>
+
+                                {/* Current Page Indicator */}
+                                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                    {page}
+                                </span>
+
+                                <button
+                                    onClick={() => onPageChange(page + 1)}
+                                    disabled={page === totalPages}
+                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page === totalPages ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    <span className="sr-only">Próxima</span>
+                                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

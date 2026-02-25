@@ -5,6 +5,7 @@ import { equipamentosService } from '../../../services/equipamentosService';
 import { financeiroService } from '../../../services/financeiroService';
 import type { Equipamento, EquipamentoCategoria } from '../types';
 import type { Contrato } from '../../financeiro/types';
+import PrimaryButton from '../../../components/PrimaryButton';
 
 interface Props {
     onSuccess?: () => void;
@@ -34,10 +35,10 @@ const DestinarForm: FC<Props> = ({ onSuccess }) => {
                     financeiroService.getContratos()
                 ]);
 
-                setEquipamentos(eqData.filter(e => e.status === 'Ativo' && (e.disponivel || 0) > 0));
+                setEquipamentos(eqData.filter((e: Equipamento) => e.status === 'Ativo' && (e.disponivel || 0) > 0));
 
                 // Filter Postos: Active and FEMOG
-                setPostos(ctData.filter(c => c.status === 'ativo' && c.empresa === 'FEMOG'));
+                setPostos(ctData.filter((c: Contrato) => c.status === 'ativo' && c.empresa === 'FEMOG'));
             } catch (error) {
                 console.error(error);
                 showFeedback('error', 'Erro ao carregar dados');
@@ -148,21 +149,17 @@ const DestinarForm: FC<Props> = ({ onSuccess }) => {
                 </select>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 border-t mt-4 gap-3">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={loading || !selectedEquipamento || !selectedPosto}
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center"
-                >
+                <PrimaryButton type="submit" disabled={loading || !selectedEquipamento || !selectedPosto}>
                     {loading ? 'Processando...' : 'Destinar'}
-                </button>
+                </PrimaryButton>
             </div>
 
         </form>

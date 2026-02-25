@@ -21,7 +21,7 @@ const formatValue = (item: Gratificacao) => {
     return '-';
 };
 
-const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ gratificacoes, onEdit, onDelete }) => {
+const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName, gratificacoes, onEdit, onDelete }) => {
     const { openConfirmModal } = useModal();
 
     const handleDelete = (item: Gratificacao) => {
@@ -34,6 +34,13 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ gratificacoes
 
     return (
         <div className="space-y-6">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
+                <div>
+                    <h3 className="text-xl font-bold text-gray-900">Histórico de Gratificações</h3>
+                    <p className="text-sm text-gray-500 mt-1">Funcionário: {employeeName}</p>
+                </div>
+            </div>
+
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto border rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">

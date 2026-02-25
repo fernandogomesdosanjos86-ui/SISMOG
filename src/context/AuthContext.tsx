@@ -14,26 +14,62 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    // Estratégia "Instant Kick": Verifica imediatamente a presença de um token.
+    // Se não existir, carregamento começa como false, ejetando instantaneamente para o /login
+    const hasToken = () => {
+        if (typeof window === 'undefined') return false;
+        return Object.keys(localStorage).some(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
+    };
+
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(hasToken());
 
     useEffect(() => {
-        // Check active session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+        let mounted = true;
 
-        // Listen for changes
+        const initializeAuth = async () => {
+            // Instant Kick (Fail Fast) - Sem token local, aborta consultas de rede inúteis.
+            if (!hasToken()) {
+                if (mounted) setLoading(false);
+                return;
+            }
+
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error) throw error;
+
+                if (mounted) {
+                    setSession(session);
+                    setUser(session?.user ?? null);
+                }
+            } catch (error) {
+                console.error("Validação de Autenticação Falhou:", error);
+                await supabase.auth.signOut(); // Limpa estado corrompido
+                if (mounted) {
+                    setSession(null);
+                    setUser(null);
+                }
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        initializeAuth();
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
+            if (mounted) {
+                setSession(session);
+                setUser(session?.user ?? null);
+                setLoading(false);
+            }
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     const signIn = async (email: string, cpf: string) => {

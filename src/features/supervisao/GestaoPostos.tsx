@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
@@ -170,37 +170,45 @@ const GestaoPostos: React.FC = () => {
                 <StatCard title="Postos SEMOG" value={String(totalSemog)} type="warning" />
             </div>
 
-            {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
+            {/* Filters - Top Bar (Search + Status) */}
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="relative flex-1 w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
                         type="text"
                         placeholder="Buscar posto..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
-                <div className="flex gap-2">
-                    <select
-                        value={companyFilter}
-                        onChange={e => setCompanyFilter(e.target.value as any)}
-                        className="px-4 py-2 border border-gray-200 rounded-lg bg-white"
-                    >
-                        <option value="TODOS">Todas Empresas</option>
-                        <option value="FEMOG">FEMOG</option>
-                        <option value="SEMOG">SEMOG</option>
-                    </select>
+                <div className="w-full md:w-auto">
                     <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value as any)}
-                        className="px-4 py-2 border border-gray-200 rounded-lg bg-white"
+                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-full"
                     >
-                        <option value="TODOS">Todos Status</option>
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
+                        <option value="TODOS">Todos os Status</option>
+                        <option value="ativo">Ativos</option>
+                        <option value="inativo">Inativos</option>
                     </select>
                 </div>
+            </div>
+
+            {/* Filters - Bottom Bar (Tabs) */}
+            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
+                {(['TODOS', 'FEMOG', 'SEMOG'] as const).map((tab) => (
+                    <button
+                        key={tab}
+                        onClick={() => setCompanyFilter(tab)}
+                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
+                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            }`}
+                    >
+                        {tab === 'TODOS' ? 'Todas' : tab}
+                    </button>
+                ))}
             </div>
 
             <ResponsiveTable<PostoTrabalho>

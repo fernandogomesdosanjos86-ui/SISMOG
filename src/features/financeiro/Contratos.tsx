@@ -4,12 +4,13 @@ import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
+import StatCard from '../../components/StatCard';
 import CompanyBadge from '../../components/CompanyBadge';
 import type { Contrato } from '../../features/financeiro/types';
 import { useModal } from '../../context/ModalContext';
 import ContratoForm from '../../features/financeiro/components/ContratoForm';
 import ContratoDetails from '../../features/financeiro/components/ContratoDetails';
-import { Plus, Search, FileText, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Plus, Search, FileText, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useContratos } from './hooks/useContratos';
@@ -158,34 +159,24 @@ const Contratos: React.FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-gray-500 font-medium">Contratos Ativos</p>
-                        <p className="text-3xl font-bold text-gray-800">{activeContracts}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                        <FileText size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-orange-600 font-medium">Vencimento (3 meses)</p>
-                        <p className="text-2xl font-bold text-gray-800">{warningContracts}</p>
-                    </div>
-                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg">
-                        <AlertTriangle size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-red-600 font-medium">Vencimento (1 mês)</p>
-                        <p className="text-2xl font-bold text-gray-800">{criticalContracts}</p>
-                    </div>
-                    <div className="p-3 bg-red-50 text-red-600 rounded-lg">
-                        <AlertCircle size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Contratos Ativos"
+                    value={String(activeContracts)}
+                    type="total"
+                    icon={FileText}
+                />
+                <StatCard
+                    title="Vencimento (3 meses)"
+                    value={String(warningContracts)}
+                    type="warning"
+                />
+                <StatCard
+                    title="Vencimento (1 mês)"
+                    value={String(criticalContracts)}
+                    type="danger"
+                    icon={AlertCircle}
+                />
             </div>
 
             {/* Filters - Top Bar (Search + Status) */}

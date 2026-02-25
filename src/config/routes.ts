@@ -33,5 +33,7 @@ export const APP_ROUTES = {
         ROOT: '#frota',
         VEICULOS: '/frota/veiculos',
         ABASTECIMENTOS: '/frota/abastecimentos',
+        CHECKLISTS: '/frota/checklists',
+        MOVIMENTACOES: '/frota/movimentacoes',
     }
 } as const;

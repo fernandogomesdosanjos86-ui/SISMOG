@@ -8,9 +8,10 @@ import type { CargoSalario } from './types';
 import CargosSalariosForm from './components/CargosSalariosForm';
 import CargoSalarioDetails from './components/CargoSalarioDetails';
 import { formatCurrency } from '../../utils/format';
+import PrimaryButton from '../../components/PrimaryButton';
 
 const CargosSalarios: React.FC = () => {
-    const { openFormModal, openViewModal, closeModal, showFeedback } = useModal();
+    const { openConfirmModal, openFormModal, openViewModal, closeModal, showFeedback } = useModal();
     const [cargos, setCargos] = useState<CargoSalario[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'TODOS' | 'FEMOG' | 'SEMOG'>('TODOS');
@@ -45,17 +46,21 @@ const CargosSalarios: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Tem certeza que deseja excluir este cargo?')) {
-            try {
-                await rhService.deleteCargoSalario(id);
-                showFeedback('success', 'Cargo excluído com sucesso!');
-                fetchCargos();
-                closeModal();
-            } catch (error) {
-                console.error('Erro ao excluir cargo:', error);
-                showFeedback('error', 'Erro ao excluir cargo.');
+        openConfirmModal(
+            'Excluir Cargo',
+            'Tem certeza que deseja excluir este cargo?',
+            async () => {
+                try {
+                    await rhService.deleteCargoSalario(id);
+                    showFeedback('success', 'Cargo excluído com sucesso!');
+                    fetchCargos();
+                    closeModal();
+                } catch (error) {
+                    console.error('Erro ao excluir cargo:', error);
+                    showFeedback('error', 'Erro ao excluir cargo.');
+                }
             }
-        }
+        );
     };
 
     const handleRowClick = (cargo: CargoSalario) => {
@@ -157,13 +162,13 @@ const CargosSalarios: React.FC = () => {
                 subtitle="Gerencie os cargos, salários e adicionais das empresas."
                 action={
                     <div className="flex flex-col md:flex-row gap-3">
-                        <button
+                        <PrimaryButton
                             onClick={handleCreate}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                            icon={<Plus size={20} />}
+                            className="w-full md:w-auto"
                         >
-                            <Plus size={20} />
                             Novo Cargo
-                        </button>
+                        </PrimaryButton>
                     </div>
                 }
             />

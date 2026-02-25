@@ -4,6 +4,9 @@ import type { Recebimento } from '../types';
 import { financeiroService } from '../../../services/financeiroService';
 import { useModal } from '../../../context/ModalContext';
 import CurrencyInput from '../../../components/CurrencyInput';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 interface RecebimentoAvulsoFormProps {
     onSuccess?: () => void;
@@ -107,17 +110,26 @@ const RecebimentoAvulsoForm: FC<RecebimentoAvulsoFormProps> = ({ onSuccess, init
             <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-1 border-b">Dados Gerais</h3>
                 <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Empresa</label>
-                        <select name="empresa" value={formData.empresa} onChange={handleChange} disabled={initialData?.tipo === 'faturamento'} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 focus:border-blue-500 focus:ring-blue-500">
-                            <option value="SEMOG">SEMOG</option>
-                            <option value="FEMOG">FEMOG</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Descrição</label>
-                        <input required name="descricao" value={formData.descricao} onChange={handleChange} disabled={initialData?.tipo === 'faturamento'} placeholder="Ex: Devolução de Caução" className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500 focus:border-blue-500 focus:ring-blue-500" />
-                    </div>
+                    <SelectField
+                        label="Empresa"
+                        name="empresa"
+                        value={formData.empresa}
+                        onChange={handleChange}
+                        disabled={initialData?.tipo === 'faturamento'}
+                        options={[
+                            { value: 'SEMOG', label: 'SEMOG' },
+                            { value: 'FEMOG', label: 'FEMOG' }
+                        ]}
+                    />
+                    <InputField
+                        label="Descrição"
+                        name="descricao"
+                        value={formData.descricao}
+                        onChange={handleChange}
+                        disabled={initialData?.tipo === 'faturamento'}
+                        placeholder="Ex: Devolução de Caução"
+                        required
+                    />
                 </div>
             </div>
 
@@ -157,10 +169,14 @@ const RecebimentoAvulsoForm: FC<RecebimentoAvulsoFormProps> = ({ onSuccess, init
             <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-1 border-b">Datas e Detalhes</h3>
                 <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Data Recebimento (Previsão)</label>
-                        <input type="date" required name="data_recebimento" value={formData.data_recebimento} onChange={handleChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
-                    </div>
+                    <InputField
+                        label="Data Recebimento (Previsão)"
+                        type="date"
+                        name="data_recebimento"
+                        value={formData.data_recebimento}
+                        onChange={handleChange}
+                        required
+                    />
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Observações</label>
@@ -169,23 +185,18 @@ const RecebimentoAvulsoForm: FC<RecebimentoAvulsoFormProps> = ({ onSuccess, init
                 </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3 border-t border-gray-200 mt-6">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center transition-colors"
-                >
+                <PrimaryButton type="submit" disabled={loading}>
                     {loading ? 'Salvando...' : (initialData ? 'Salvar Alterações' : 'Criar Recebimento')}
-                </button>
+                </PrimaryButton>
             </div>
-
         </form>
     );
 };

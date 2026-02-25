@@ -88,6 +88,16 @@ export const queryKeys = {
             lists: () => [...queryKeys.frota.abastecimentos.all, 'list'] as const,
             detail: (id: string) => [...queryKeys.frota.abastecimentos.all, 'detail', id] as const,
         },
+        checklists: {
+            all: ['frota', 'checklists'] as const,
+            lists: () => [...queryKeys.frota.checklists.all, 'list'] as const,
+            detail: (id: string) => [...queryKeys.frota.checklists.all, 'detail', id] as const,
+        },
+        movimentacoes: {
+            all: ['frota', 'movimentacoes'] as const,
+            lists: () => [...queryKeys.frota.movimentacoes.all, 'list'] as const,
+            detail: (id: string) => [...queryKeys.frota.movimentacoes.all, 'detail', id] as const,
+        },
     },
     gratificacoes: {
         all: ['gratificacoes'] as const,

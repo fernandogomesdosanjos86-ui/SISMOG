@@ -5,6 +5,7 @@ import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import CompanyBadge from '../../components/CompanyBadge';
 import StatusBadge from '../../components/StatusBadge';
+import StatCard from '../../components/StatCard';
 import { useModal } from '../../context/ModalContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useFuncionarios } from './hooks/useFuncionarios';
@@ -147,34 +148,25 @@ const Funcionarios: React.FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-green-600 font-medium">Total Ativos</p>
-                        <p className="text-2xl font-bold text-gray-800">{totalAtivos}</p>
-                    </div>
-                    <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                        <Users size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-blue-600 font-medium">Ativos FEMOG</p>
-                        <p className="text-2xl font-bold text-gray-800">{totalFemog}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                        <UserCheck size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-orange-600 font-medium">Ativos SEMOG</p>
-                        <p className="text-2xl font-bold text-gray-800">{totalSemog}</p>
-                    </div>
-                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg">
-                        <UserCheck size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Total Ativos"
+                    value={String(totalAtivos)}
+                    type="success"
+                    icon={Users}
+                />
+                <StatCard
+                    title="Ativos FEMOG"
+                    value={String(totalFemog)}
+                    type="info"
+                    icon={UserCheck}
+                />
+                <StatCard
+                    title="Ativos SEMOG"
+                    value={String(totalSemog)}
+                    type="warning"
+                    icon={UserCheck}
+                />
             </div>
 
             {/* Filters - Top Bar (Search + Status) */}

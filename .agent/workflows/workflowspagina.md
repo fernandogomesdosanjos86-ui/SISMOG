@@ -102,17 +102,29 @@ export function use[Entity]s() {
 
 ### 5. Details (`components/[Entity]Details.tsx`)
 ```tsx
+import { Info } from 'lucide-react';
 import CompanyBadge from '../../../components/CompanyBadge';
 import StatusBadge from '../../../components/StatusBadge';
 
 const [Entity]Details = ({ [entity] }) => (
-    <div className="space-y-4">
-        <div className="flex items-center justify-between border-b pb-4">
-            <h3 className="text-lg font-bold text-gray-900">{[entity].nome}</h3>
-            <CompanyBadge company={[entity].empresa}/>
+    <div className="space-y-6">
+        <div className="flex items-start justify-between border-b border-gray-100 pb-5">
+            <div>
+                <h3 className="text-xl font-bold text-gray-900">{[entity].nome}</h3>
+                <p className="text-sm text-gray-500 mt-1">ID: {[entity].id}</p>
+            </div>
+            <CompanyBadge company={[entity].empresa} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-            <div><p className="text-sm font-medium text-gray-500">Status</p><StatusBadge active={[entity].status==='ativo'}/></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                    <Info size={16} className="mr-2" /> Status
+                </div>
+                <div className="mt-1"><StatusBadge active={[entity].status === 'ativo'} /></div>
+            </div>
+        </div>
+        <div className="text-xs text-gray-400 pt-4 text-center">
+            Registrado em {/* format date */}
         </div>
     </div>
 );
@@ -124,6 +136,9 @@ export default [Entity]Details;
 import { useState } from 'react';
 import { useModal } from '../../../context/ModalContext';
 import { use[Entity]s } from '../hooks/use[Entity]s';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 const [Entity]Form = ({ initialData, onSuccess }) => {
     const { closeModal, showFeedback } = useModal();
@@ -140,12 +155,15 @@ const [Entity]Form = ({ initialData, onSuccess }) => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{/* inputs */}</div>
-            <div className="flex justify-end pt-4 gap-3 border-t">
-                <button type="button" onClick={closeModal} className="px-4 py-2 border rounded-md">Cancelar</button>
-                <button type="submit" disabled={isCreating||isUpdating} className="bg-blue-600 text-white px-4 py-2 rounded-md">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputField label="Nome" name="nome" value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} required />
+                <SelectField label="Empresa" name="empresa" value={formData.empresa} onChange={e => setFormData({...formData, empresa: e.target.value})} options={[{value: 'FEMOG', label: 'FEMOG'}, {value: 'SEMOG', label: 'SEMOG'}]} required />
+            </div>
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+                <button type="button" onClick={closeModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Cancelar</button>
+                <PrimaryButton type="submit" disabled={isCreating||isUpdating}>
                     {isCreating||isUpdating ? 'Salvando...' : 'Salvar'}
-                </button>
+                </PrimaryButton>
             </div>
         </form>
     );
@@ -192,17 +210,22 @@ const [Entity]s = () => {
             <PageHeader title="[Entity]s" subtitle="Gerenciamento"
                 action={<PrimaryButton onClick={()=>openFormModal('Novo', <[Entity]Form onSuccess={refetch}/>)}><Plus size={20} className="mr-2"/>Novo</PrimaryButton>}
             />
-            <div className="bg-white p-4 rounded-xl shadow-sm flex gap-4">
-                <div className="relative flex-1">
+            {/* 1. Filter Bar MUST be placed BEFORE Tabs */}
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/>
                     <input type="text" placeholder="Buscar..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"/>
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                 </div>
             </div>
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
+            
+            {/* 2. Tabs MUST be placed AFTER Filter Bar */}
+            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
                 {['TODOS','SEMOG','FEMOG'].map(t=>(
                     <button key={t} onClick={()=>setCompanyFilter(t)}
-                        className={`px-6 py-2 rounded-md text-sm ${companyFilter===t?'bg-blue-50 text-blue-700':'text-gray-500'}`}>
+                        className={`px-6 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
+                            companyFilter===t?'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200':'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}>
                         {t==='TODOS'?'Todas':t}
                     </button>
                 ))}

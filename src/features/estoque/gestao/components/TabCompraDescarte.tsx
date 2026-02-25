@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Trash } from 'lucide-react';
+import React from 'react';
+import { Trash } from 'lucide-react';
 import ResponsiveTable from '../../../../components/ResponsiveTable';
 import { useModal } from '../../../../context/ModalContext';
 import type { Movimentacao } from '../types';
@@ -9,14 +9,14 @@ interface TabCompraDescarteProps {
     isLoading: boolean;
     deleteMov: (id: string) => Promise<any>;
     onRefresh: () => void;
+    searchTerm: string;
+    tipoFilter: 'TODOS' | 'Compra' | 'Descarte';
 }
 
 const ITEMS_PER_PAGE = 50;
 
-const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, isLoading, deleteMov, onRefresh }) => {
+const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, isLoading, deleteMov, onRefresh, searchTerm, tipoFilter }) => {
     const { openConfirmModal } = useModal();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'Compra' | 'Descarte'>('TODOS');
 
     const compraDescarte = movimentacoes.filter(m => m.tipo === 'Compra' || m.tipo === 'Descarte');
 
@@ -92,28 +92,6 @@ const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, is
 
     return (
         <div className="space-y-4">
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Buscar por código..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <select
-                    value={tipoFilter}
-                    onChange={e => setTipoFilter(e.target.value as any)}
-                    className="px-3 py-2 border border-gray-200 rounded-lg bg-white"
-                >
-                    <option value="TODOS">Todos</option>
-                    <option value="Compra">Compra</option>
-                    <option value="Descarte">Descarte</option>
-                </select>
-            </div>
-
             <ResponsiveTable
                 data={filtered.slice(0, ITEMS_PER_PAGE)}
                 columns={columns}

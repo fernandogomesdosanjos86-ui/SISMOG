@@ -4,7 +4,7 @@ import { type LucideIcon, BarChart2, Info, AlertTriangle, CheckCircle } from 'lu
 interface StatCardProps {
     title: string;
     value: string;
-    type?: 'total' | 'info' | 'warning' | 'success';
+    type?: 'total' | 'info' | 'warning' | 'success' | 'danger';
     icon?: LucideIcon;
 }
 
@@ -33,6 +33,12 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, type = 'total', icon:
             text: 'text-green-600',
             bg: 'bg-green-50',
             Icon: CheckCircle
+        },
+        danger: {
+            border: 'border-red-100',
+            text: 'text-red-600',
+            bg: 'bg-red-50',
+            Icon: AlertTriangle
         }
     };
 

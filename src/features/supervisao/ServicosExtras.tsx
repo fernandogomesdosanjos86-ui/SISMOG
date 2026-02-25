@@ -3,6 +3,7 @@ import { Plus, Search } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import StatCard from '../../components/StatCard';
+import PrimaryButton from '../../components/PrimaryButton';
 import { useModal } from '../../context/ModalContext';
 import { useServicosExtras } from './hooks/useServicosExtras';
 import ServicoExtraForm from './components/ServicoExtraForm';
@@ -155,13 +156,13 @@ const ServicosExtras: React.FC = () => {
                             value={competencia}
                             onChange={(e) => setCompetencia(e.target.value)}
                         />
-                        <button
+                        <PrimaryButton
                             onClick={handleCreate}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
+                            className="w-full sm:w-auto"
+                            icon={<Plus size={20} />}
                         >
-                            <Plus size={20} />
                             Novo Lançamento
-                        </button>
+                        </PrimaryButton>
                     </div>
                 }
             />
@@ -174,8 +175,8 @@ const ServicosExtras: React.FC = () => {
             </div>
 
             {/* Search Bar */}
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-                <div className="relative w-full">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
                         type="text"

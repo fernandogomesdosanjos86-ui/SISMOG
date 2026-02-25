@@ -10,12 +10,14 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [cpf, setCpf] = useState('');
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccess('');
 
         try {
             const { error } = await signIn(email, cpf);
@@ -38,12 +40,14 @@ const Login = () => {
         }
 
         setLoading(true);
+        setError('');
+        setSuccess('');
         try {
             const { error } = await resetPassword(email);
             if (error) {
                 setError('Erro ao enviar e-mail de recuperação: ' + error.message);
             } else {
-                alert('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+                setSuccess('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
             }
         } catch (err) {
             setError('Erro ao processar solicitação.');
@@ -79,6 +83,13 @@ const Login = () => {
                         <div className="bg-red-500/20 text-red-100 p-3 rounded-xl text-xs mb-4 text-center border border-red-500/30 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2">
                             <span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></span>
                             {error}
+                        </div>
+                    )}
+
+                    {success && (
+                        <div className="bg-green-500/20 text-green-100 p-3 rounded-xl text-xs mb-4 text-center border border-green-500/30 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                            {success}
                         </div>
                     )}
 

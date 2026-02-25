@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useModal } from '../../../context/ModalContext';
 import { usePostos } from '../hooks/usePostos';
 import type { PostoTrabalho, PostoFormData } from '../types';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 interface PostoFormProps {
     initialData?: PostoTrabalho;
@@ -71,54 +74,37 @@ const PostoForm: React.FC<PostoFormProps> = ({ initialData, onSuccess }) => {
                 </div>
             )}
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Nome do Posto</label>
-                <input
-                    type="text"
-                    name="nome"
-                    value={formData.nome}
-                    onChange={handleChange}
-                    className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="Ex: Portaria Central"
-                    required
-                />
-            </div>
+            <InputField
+                label="Nome do Posto"
+                name="nome"
+                value={formData.nome}
+                onChange={handleChange}
+                placeholder="Ex: Portaria Central"
+                required
+            />
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Status</label>
-                <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
-                </select>
-            </div>
+            <SelectField
+                label="Status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                options={[
+                    { value: 'ativo', label: 'Ativo' },
+                    { value: 'inativo', label: 'Inativo' }
+                ]}
+            />
 
-            <div className="flex justify-end pt-4 gap-3 border-t">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={isCreating || isUpdating}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center"
-                >
-                    {isCreating || isUpdating ? (
-                        <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Salvando...
-                        </>
-                    ) : (
-                        'Salvar'
-                    )}
-                </button>
+                <PrimaryButton type="submit" disabled={isCreating || isUpdating}>
+                    {isCreating || isUpdating ? 'Salvando...' : 'Salvar'}
+                </PrimaryButton>
             </div>
         </form>
     );

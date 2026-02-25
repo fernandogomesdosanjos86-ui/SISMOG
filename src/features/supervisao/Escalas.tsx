@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Building2, Search } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
+import PrimaryButton from '../../components/PrimaryButton';
 import { usePostos } from './hooks/usePostos';
 import { usePostosComEscala } from './hooks/usePostosComEscala';
 import EscalasGrid from './components/EscalasGrid';
@@ -77,34 +78,33 @@ const Escalas: React.FC = () => {
                                 setExpandedPostoId(null);
                             }}
                         />
-                        <button
+                        <PrimaryButton
                             onClick={handleOpenForm}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto font-medium"
+                            className="w-full sm:w-auto font-medium"
                         >
                             Gerar Escala
-                        </button>
+                        </PrimaryButton>
                     </div>
                 }
             />
 
             {/* Search Filter Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="grid grid-cols-1 p-4 lg:p-6 bg-gray-50 border-b border-gray-100">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Buscar posto..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
-                        />
-                    </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="relative flex-1 w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Buscar posto..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                 </div>
             </div>
 
             {/* Company Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm border border-gray-100">
+            {/* Company Tabs */}
+            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
                 {(['Todas', 'FEMOG', 'SEMOG'] as EmpresaFilter[]).map((tab) => (
                     <button
                         key={tab}

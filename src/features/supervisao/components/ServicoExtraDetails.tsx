@@ -10,7 +10,7 @@ interface ServicoExtraDetailsProps {
     onDelete: (id: string) => void;
 }
 
-const ServicoExtraDetails: React.FC<ServicoExtraDetailsProps> = ({ services, onEdit, onDelete }) => {
+const ServicoExtraDetails: React.FC<ServicoExtraDetailsProps> = ({ employeeName, services, onEdit, onDelete }) => {
     const { openConfirmModal } = useModal();
 
     const totalValue = services.reduce((acc, curr) => acc + curr.valor, 0);
@@ -33,19 +33,26 @@ const ServicoExtraDetails: React.FC<ServicoExtraDetailsProps> = ({ services, onE
 
     return (
         <div className="space-y-6">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
+                <div>
+                    <h3 className="text-xl font-bold text-gray-900">Histórico de Serviços Extras</h3>
+                    <p className="text-sm text-gray-500 mt-1">Funcionário: {employeeName}</p>
+                </div>
+            </div>
+
             {/* Header Stats */}
-            <div className="bg-gray-50 p-4 rounded-lg grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center md:text-left">
-                    <p className="text-xs text-gray-500 uppercase">Total</p>
-                    <p className="text-xl font-bold text-gray-900">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">Total</div>
+                    <div className="text-xl font-bold text-gray-900">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                 </div>
-                <div className="text-center md:text-left">
-                    <p className="text-xs text-gray-500 uppercase text-blue-600">Total FEMOG</p>
-                    <p className="text-lg font-semibold text-blue-700">R$ {totalFemog.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col gap-2">
+                    <div className="flex items-center text-blue-700 text-sm font-medium mb-1">Total FEMOG</div>
+                    <div className="text-lg font-semibold text-blue-900">R$ {totalFemog.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                 </div>
-                <div className="text-center md:text-left">
-                    <p className="text-xs text-gray-500 uppercase text-orange-600">Total SEMOG</p>
-                    <p className="text-lg font-semibold text-orange-700">R$ {totalSemog.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 flex flex-col gap-2">
+                    <div className="flex items-center text-orange-700 text-sm font-medium mb-1">Total SEMOG</div>
+                    <div className="text-lg font-semibold text-orange-900">R$ {totalSemog.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                 </div>
             </div>
 

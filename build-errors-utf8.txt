@@ -1,0 +1,12 @@
+﻿
+> temp_app@0.0.0 build
+> tsc -b && vite build
+
+src/features/frota/components/AbastecimentoForm.tsx(21,9): error TS2353: Object literal may only specify known properties, and 'valor' does not exist in type 'AbastecimentoFormData | (() => AbastecimentoFormData)'.
+src/features/frota/components/AbastecimentoForm.tsx(31,17): error TS2353: Object literal may only specify known properties, and 'valor' does not exist in type 'SetStateAction<AbastecimentoFormData>'.
+src/features/frota/components/AbastecimentoForm.tsx(44,13): error TS2353: Object literal may only specify known properties, and 'valor' does not exist in type 'AbastecimentoFormData'.
+src/features/frota/components/AbastecimentoForm.tsx(44,29): error TS2339: Property 'valor' does not exist on type 'AbastecimentoFormData'.
+src/features/frota/components/AbastecimentoForm.tsx(44,64): error TS2339: Property 'valor' does not exist on type 'AbastecimentoFormData'.
+src/features/frota/components/AbastecimentoForm.tsx(132,41): error TS2339: Property 'valor' does not exist on type 'AbastecimentoFormData'.
+src/features/frota/components/AbastecimentoForm.tsx(132,76): error TS2339: Property 'valor' does not exist on type 'AbastecimentoFormData'.
+src/features/frota/components/AbastecimentoForm.tsx(133,71): error TS2353: Object literal may only specify known properties, and 'valor' does not exist in type 'SetStateAction<AbastecimentoFormData>'.

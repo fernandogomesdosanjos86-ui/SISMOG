@@ -3,7 +3,9 @@ import { useState, useEffect, type FC, type FormEvent, type ChangeEvent } from '
 import type { Faturamento } from '../types';
 import { financeiroService } from '../../../services/financeiroService';
 import { useModal } from '../../../context/ModalContext';
+import PrimaryButton from '../../../components/PrimaryButton';
 import CurrencyInput from '../../../components/CurrencyInput';
+import { InputField } from '../../../components/forms/InputField';
 
 interface FaturamentoFormProps {
     initialData: Faturamento;
@@ -128,14 +130,20 @@ const FaturamentoForm: FC<FaturamentoFormProps> = ({ initialData, onSuccess }) =
             <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-1 border-b">Datas e Observações</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Data Emissão</label>
-                        <input type="date" name="data_emissao" value={formData.data_emissao || ''} onChange={handleDateChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Data Vencimento</label>
-                        <input type="date" name="data_vencimento" value={formData.data_vencimento || ''} onChange={handleDateChange} className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500" />
-                    </div>
+                    <InputField
+                        label="Data Emissão"
+                        type="date"
+                        name="data_emissao"
+                        value={formData.data_emissao || ''}
+                        onChange={handleDateChange}
+                    />
+                    <InputField
+                        label="Data Vencimento"
+                        type="date"
+                        name="data_vencimento"
+                        value={formData.data_vencimento || ''}
+                        onChange={handleDateChange}
+                    />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Observações</label>
@@ -143,23 +151,18 @@ const FaturamentoForm: FC<FaturamentoFormProps> = ({ initialData, onSuccess }) =
                 </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3 border-t border-gray-200 mt-6">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center transition-colors"
-                >
+                <PrimaryButton type="submit" disabled={loading}>
                     {loading ? 'Salvando...' : 'Salvar Alterações'}
-                </button>
+                </PrimaryButton>
             </div>
-
         </form>
     );
 };

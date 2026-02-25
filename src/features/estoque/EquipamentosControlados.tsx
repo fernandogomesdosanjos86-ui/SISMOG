@@ -4,6 +4,7 @@ import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
+import StatCard from '../../components/StatCard';
 import { useModal } from '../../context/ModalContext';
 import { equipamentosService } from '../../services/equipamentosService';
 import type { Equipamento, EquipamentoDestinacao, EquipamentoCategoria } from './types';
@@ -219,52 +220,93 @@ const EquipamentosControlados: React.FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card title="Armamentos" data={armasKpi} icon={Crosshair} color="blue" />
-                <Card title="Coletes Balísticos" data={coletesKpi} icon={Shield} color="indigo" />
-                <Card title="Munições" data={municaoKpi} icon={Box} color="amber" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Armamentos"
+                    value={
+                        <div>
+                            <div className="flex items-baseline gap-2">
+                                <span>{armasKpi.disponivel}</span>
+                                <span className="text-xs text-blue-300 font-normal">/ {armasKpi.total} total</span>
+                            </div>
+                            <p className="text-xs text-blue-500 mt-0 font-normal">{armasKpi.emUso} em uso</p>
+                        </div>
+                    }
+                    icon={Crosshair}
+                    type="total"
+                />
+                <StatCard
+                    title="Coletes Balísticos"
+                    value={
+                        <div>
+                            <div className="flex items-baseline gap-2">
+                                <span>{coletesKpi.disponivel}</span>
+                                <span className="text-xs text-blue-300 font-normal">/ {coletesKpi.total} total</span>
+                            </div>
+                            <p className="text-xs text-blue-500 mt-0 font-normal">{coletesKpi.emUso} em uso</p>
+                        </div>
+                    }
+                    icon={Shield}
+                    type="info"
+                />
+                <StatCard
+                    title="Munições"
+                    value={
+                        <div>
+                            <div className="flex items-baseline gap-2">
+                                <span>{municaoKpi.disponivel}</span>
+                                <span className="text-xs text-orange-300 font-normal">/ {municaoKpi.total} total</span>
+                            </div>
+                            <p className="text-xs text-orange-500 mt-0 font-normal">{municaoKpi.emUso} em uso</p>
+                        </div>
+                    }
+                    icon={Box}
+                    type="warning"
+                />
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row items-center gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
                         type="text"
                         placeholder="Buscar..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
 
-                <select
-                    className="p-2 border rounded-lg w-full md:w-auto"
-                    value={categoriaFilter}
-                    onChange={e => setCategoriaFilter(e.target.value as any)}
-                >
-                    <option value="Todas">Todas Categorias</option>
-                    <option value="Armamentos">Armamentos</option>
-                    <option value="Coletes Balísticos">Coletes Balísticos</option>
-                    <option value="Munições">Munições</option>
-                </select>
-
-                {activeTab === 'Postos' && (
+                <div className="w-full md:w-auto flex flex-col md:flex-row gap-2">
                     <select
-                        className="p-2 border rounded-lg w-full md:w-auto"
-                        value={postoFilter}
-                        onChange={e => setPostoFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-full md:w-auto"
+                        value={categoriaFilter}
+                        onChange={e => setCategoriaFilter(e.target.value as any)}
                     >
-                        <option value="Todos">Todos Postos</option>
-                        {postosFEMOG.map(p => (
-                            <option key={p.id} value={p.id}>{p.nome}</option>
-                        ))}
+                        <option value="Todas">Todas Categorias</option>
+                        <option value="Armamentos">Armamentos</option>
+                        <option value="Coletes Balísticos">Coletes Balísticos</option>
+                        <option value="Munições">Munições</option>
                     </select>
-                )}
+
+                    {activeTab === 'Postos' && (
+                        <select
+                            className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-full md:w-auto"
+                            value={postoFilter}
+                            onChange={e => setPostoFilter(e.target.value)}
+                        >
+                            <option value="Todos">Todos Postos</option>
+                            {postosFEMOG.map(p => (
+                                <option key={p.id} value={p.id}>{p.nome}</option>
+                            ))}
+                        </select>
+                    )}
+                </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
+            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
                 {['Estoque', 'Postos'].map((tab) => (
                     <button
                         key={tab}
@@ -333,31 +375,5 @@ const EquipamentosControlados: React.FC = () => {
         </div>
     );
 };
-
-const Card = ({ title, data, icon: Icon, color }: any) => {
-    const colorClasses = {
-        blue: 'bg-blue-50 text-blue-600 border-blue-100',
-        indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-        amber: 'bg-amber-50 text-amber-600 border-amber-100',
-    };
-    // @ts-ignore
-    const theme = colorClasses[color];
-
-    return (
-        <div className={`bg-white p-4 rounded-xl shadow-sm border flex items-center justify-between`}>
-            <div>
-                <p className="text-sm text-gray-500 font-medium">{title}</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-gray-800">{data.disponivel}</span>
-                    <span className="text-xs text-gray-400">/ {data.total} total</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{data.emUso} em uso</p>
-            </div>
-            <div className={`p-3 rounded-lg ${theme}`}>
-                <Icon size={24} />
-            </div>
-        </div>
-    )
-}
 
 export default EquipamentosControlados;

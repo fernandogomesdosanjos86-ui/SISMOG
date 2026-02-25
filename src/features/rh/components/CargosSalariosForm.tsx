@@ -4,6 +4,9 @@ import { useModal } from '../../../context/ModalContext';
 import { rhService } from '../../../services/rhService';
 import type { CargoSalario } from '../types';
 import CurrencyInput from '../../../components/CurrencyInput';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 interface CargosSalariosFormProps {
     initialData?: CargoSalario;
@@ -79,47 +82,34 @@ const CargosSalariosForm: React.FC<CargosSalariosFormProps> = ({ initialData, on
                     Dados Principais
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Empresa</label>
-                        <select
-                            name="empresa"
-                            value={formData.empresa}
-                            onChange={handleChange}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500"
-                            required
-                        >
-                            <option value="FEMOG">FEMOG</option>
-                            <option value="SEMOG">SEMOG</option>
-                        </select>
-                    </div>
+                    <SelectField
+                        label="Empresa"
+                        name="empresa"
+                        value={formData.empresa}
+                        onChange={handleChange}
+                        options={[
+                            { value: 'FEMOG', label: 'FEMOG' },
+                            { value: 'SEMOG', label: 'SEMOG' }
+                        ]}
+                        required
+                    />
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Cargo</label>
-                        <input
-                            type="text"
-                            name="cargo"
-                            value={formData.cargo || ''}
-                            onChange={handleChange}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
+                    <InputField
+                        label="Cargo"
+                        name="cargo"
+                        value={formData.cargo || ''}
+                        onChange={handleChange}
+                        required
+                    />
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">UF</label>
-                        <select
-                            name="uf"
-                            value={formData.uf || ''}
-                            onChange={handleChange}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500"
-                            required
-                        >
-                            <option value="">Selecione...</option>
-                            {UFS.map(uf => (
-                                <option key={uf} value={uf}>{uf}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <SelectField
+                        label="UF"
+                        name="uf"
+                        value={formData.uf || ''}
+                        onChange={handleChange}
+                        options={UFS.map(uf => ({ value: uf, label: uf }))}
+                        required
+                    />
 
                     <CurrencyInput
                         label="Salário Base"
@@ -135,50 +125,42 @@ const CargosSalariosForm: React.FC<CargosSalariosFormProps> = ({ initialData, on
                     Adicionais e Percentuais (%)
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">% Periculosidade</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="perc_periculosidade"
-                            value={formData.perc_periculosidade}
-                            onChange={(e) => handleNumberChange('perc_periculosidade', parseFloat(e.target.value))}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500 text-right"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">% Insalubridade</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="perc_insalubridade"
-                            value={formData.perc_insalubridade}
-                            onChange={(e) => handleNumberChange('perc_insalubridade', parseFloat(e.target.value))}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500 text-right"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">% Adc. Noturno</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="perc_adc_noturno"
-                            value={formData.perc_adc_noturno}
-                            onChange={(e) => handleNumberChange('perc_adc_noturno', parseFloat(e.target.value))}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500 text-right"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">% Intrajornada</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="perc_intrajornada"
-                            value={formData.perc_intrajornada}
-                            onChange={(e) => handleNumberChange('perc_intrajornada', parseFloat(e.target.value))}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500 text-right"
-                        />
-                    </div>
+                    <InputField
+                        label="% Periculosidade"
+                        type="number"
+                        step="0.01"
+                        name="perc_periculosidade"
+                        className="text-right"
+                        value={formData.perc_periculosidade}
+                        onChange={(e) => handleNumberChange('perc_periculosidade', parseFloat(e.target.value) || 0)}
+                    />
+                    <InputField
+                        label="% Insalubridade"
+                        type="number"
+                        step="0.01"
+                        name="perc_insalubridade"
+                        className="text-right"
+                        value={formData.perc_insalubridade}
+                        onChange={(e) => handleNumberChange('perc_insalubridade', parseFloat(e.target.value) || 0)}
+                    />
+                    <InputField
+                        label="% Adc. Noturno"
+                        type="number"
+                        step="0.01"
+                        name="perc_adc_noturno"
+                        className="text-right"
+                        value={formData.perc_adc_noturno}
+                        onChange={(e) => handleNumberChange('perc_adc_noturno', parseFloat(e.target.value) || 0)}
+                    />
+                    <InputField
+                        label="% Intrajornada"
+                        type="number"
+                        step="0.01"
+                        name="perc_intrajornada"
+                        className="text-right"
+                        value={formData.perc_intrajornada}
+                        onChange={(e) => handleNumberChange('perc_intrajornada', parseFloat(e.target.value) || 0)}
+                    />
                 </div>
             </div>
 
@@ -193,17 +175,15 @@ const CargosSalariosForm: React.FC<CargosSalariosFormProps> = ({ initialData, on
                         value={formData.valor_aux_alim || 0}
                         onChange={(val) => handleNumberChange('valor_aux_alim', val)}
                     />
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">% Desc. Alimentação</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="perc_desc_alim"
-                            value={formData.perc_desc_alim}
-                            onChange={(e) => handleNumberChange('perc_desc_alim', parseFloat(e.target.value))}
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-blue-500 focus:ring-blue-500 text-right"
-                        />
-                    </div>
+                    <InputField
+                        label="% Desc. Alimentação"
+                        type="number"
+                        step="0.01"
+                        name="perc_desc_alim"
+                        className="text-right"
+                        value={formData.perc_desc_alim}
+                        onChange={(e) => handleNumberChange('perc_desc_alim', parseFloat(e.target.value) || 0)}
+                    />
                 </div>
             </div>
 
@@ -227,22 +207,18 @@ const CargosSalariosForm: React.FC<CargosSalariosFormProps> = ({ initialData, on
             </div>
 
             {/* Ações */}
-            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3 border-t border-gray-200 mt-6">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     disabled={loading}
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center transition-colors"
-                >
+                <PrimaryButton type="submit" disabled={loading}>
                     {loading ? 'Salvando...' : 'Salvar Cargo'}
-                </button>
+                </PrimaryButton>
             </div>
         </form>
     );

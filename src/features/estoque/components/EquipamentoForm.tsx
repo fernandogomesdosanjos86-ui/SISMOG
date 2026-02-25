@@ -3,6 +3,7 @@ import { useState, type FC, type FormEvent } from 'react';
 import { useModal } from '../../../context/ModalContext';
 import { equipamentosService } from '../../../services/equipamentosService';
 import type { Equipamento, EquipamentoCategoria, EquipamentoStatus } from '../types';
+import PrimaryButton from '../../../components/PrimaryButton';
 
 interface Props {
     initialData?: Equipamento;
@@ -137,21 +138,17 @@ const EquipamentoForm: FC<Props> = ({ initialData, onSuccess }) => {
                 </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end pt-4 gap-3 border-t border-gray-200 mt-6">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
                     type="button"
                     onClick={closeModal}
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
                 </button>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex justify-center items-center transition-colors"
-                >
+                <PrimaryButton type="submit" disabled={loading}>
                     {loading ? 'Salvando...' : (initialData ? 'Salvar Alterações' : 'Cadastrar')}
-                </button>
+                </PrimaryButton>
             </div>
 
         </form>

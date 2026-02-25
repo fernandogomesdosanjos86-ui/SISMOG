@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Activity, DollarSign } from 'lucide-react';
 import type { Faturamento } from '../types';
 import { formatCurrency } from '../../../utils/format';
 
@@ -8,30 +8,31 @@ interface FaturamentoDetailsProps {
 }
 
 const FaturamentoDetails: React.FC<FaturamentoDetailsProps> = ({ faturamento }) => (
-    <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-6">
+        <div className="flex items-start justify-between border-b border-gray-100 pb-5">
             <div>
-                <p className="text-sm font-medium text-gray-500">Status</p>
+                <h3 className="text-xl font-bold text-gray-900">{faturamento.contratos?.contratante}</h3>
+                <p className="text-sm text-gray-500 mt-1 capitalize">Competência: {new Date(faturamento.competencia + 'T00:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                    <Activity size={16} className="mr-2" /> Status
+                </div>
                 <div className="mt-1">
-                    <span className={`px-2 py-1 text-xs rounded-full uppercase font-bold tracking-wide ${faturamento.status === 'emitido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    <span className={`px-2.5 py-1 text-xs rounded-md uppercase font-bold tracking-wide ${faturamento.status === 'emitido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                         }`}>
                         {faturamento.status}
                     </span>
                 </div>
             </div>
-            <div>
-                <p className="text-sm font-medium text-gray-500">Contratante</p>
-                <p className="text-base text-gray-900">{faturamento.contratos?.contratante}</p>
-            </div>
-            <div>
-                <p className="text-sm font-medium text-gray-500">Competência</p>
-                <p className="text-base text-gray-900 font-mono">
-                    {new Date(faturamento.competencia + 'T00:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                </p>
-            </div>
-            <div>
-                <p className="text-sm font-medium text-gray-500">Valor Líquido</p>
-                <p className="text-base font-bold text-green-700">{formatCurrency(faturamento.valor_liquido)}</p>
+            <div className="bg-green-50/50 p-4 rounded-xl border border-green-100 flex flex-col gap-2">
+                <div className="flex items-center text-green-700 text-sm font-medium mb-1">
+                    <DollarSign size={16} className="mr-2" /> Valor Líquido
+                </div>
+                <div className="text-green-900 font-semibold text-lg">{formatCurrency(faturamento.valor_liquido)}</div>
             </div>
         </div>
 

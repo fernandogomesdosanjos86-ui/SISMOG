@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Search, Droplet, Calendar, TrendingUp } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
+import StatCard from '../../components/StatCard';
 import { useModal } from '../../context/ModalContext';
-import { useDebounce } from '../../hooks/useDebounce';
 import { useAbastecimentos } from './hooks/useAbastecimentos';
 import AbastecimentoForm from './components/AbastecimentoForm';
 import AbastecimentoDetails from './components/AbastecimentoDetails';
 import type { Abastecimento } from './types';
-import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const formatCurrency = (value: number) => {
@@ -20,36 +20,38 @@ const formatCurrency = (value: number) => {
 };
 
 const Abastecimentos: React.FC = () => {
-    const { abastecimentos, isLoading, deleteAbastecimento } = useAbastecimentos();
     const { openViewModal, openConfirmModal, openFormModal, closeModal, showFeedback } = useModal();
 
-    // Filters
+    // Filters and Pagination
     const [searchTerm, setSearchTerm] = useState('');
-    const debouncedSearch = useDebounce(searchTerm, 300);
-
-    // Month/Year filter (Format: "YYYY-MM")
-    const today = new Date();
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [monthFilter, setMonthFilter] = useState('TODOS');
+    const [page, setPage] = useState(1);
+    const pageSize = 15;
 
-    // Filter Logic
-    const filteredAbastecimentos = abastecimentos.filter(item => {
-        // Date match
-        let matchesMonth = true;
-        if (monthFilter !== 'TODOS') {
-            const [year, month] = monthFilter.split('-');
-            const itemDate = new Date(item.data);
-            matchesMonth = itemDate.getFullYear() === parseInt(year) &&
-                (itemDate.getMonth() + 1) === parseInt(month);
-        }
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setPage(1);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
-        // Search match
-        const searchLower = debouncedSearch.toLowerCase();
-        const matchesSearch =
-            item.responsavel.toLowerCase().includes(searchLower) ||
-            item.frota_veiculos?.marca_modelo.toLowerCase().includes(searchLower) ||
-            item.frota_veiculos?.placa.toLowerCase().includes(searchLower);
+    useEffect(() => {
+        setPage(1);
+    }, [monthFilter]);
 
-        return matchesMonth && matchesSearch;
+    const {
+        abastecimentos,
+        totalPages,
+        kpis,
+        isLoading,
+        deleteAbastecimento
+    } = useAbastecimentos({
+        page,
+        pageSize,
+        searchTerm: debouncedSearch,
+        monthFilter: monthFilter === 'TODOS' ? undefined : monthFilter
     });
 
     const handleCreate = () => {
@@ -88,57 +90,24 @@ const Abastecimentos: React.FC = () => {
         );
     };
 
-    // Calculate KPIs
-    const currentMonthStart = startOfMonth(today);
-    const currentMonthEnd = endOfMonth(today);
-    const previousMonthStart = startOfMonth(subMonths(today, 1));
-    const previousMonthEnd = endOfMonth(subMonths(today, 1));
-    const last3MonthsStart = startOfMonth(subMonths(today, 2));
+    // Calculate KPIs purely from Server Aggregation
+    const gastoMesAtual = Number(kpis?.gasto_mes_atual || 0);
+    const gastoMesAnterior = Number(kpis?.gasto_mes_anterior || 0);
+    const gastoUltimos3Meses = Number(kpis?.gasto_ultimos_3_meses || 0);
 
-    let gastoMesAtual = 0;
-    let gastoMesAnterior = 0;
-    let gastoUltimos3Meses = 0;
-
-    abastecimentos.forEach(item => {
-        // use item.data
-        const itemDate = new Date(item.data);
-        const localDateObj = new Date(itemDate.getTime() + itemDate.getTimezoneOffset() * 60000);
-
-        // Month Current
-        if (isWithinInterval(localDateObj, { start: currentMonthStart, end: currentMonthEnd })) {
-            gastoMesAtual += Number(item.valor);
-        }
-        // Month Previous
-        if (isWithinInterval(localDateObj, { start: previousMonthStart, end: previousMonthEnd })) {
-            gastoMesAnterior += Number(item.valor);
-        }
-        // Last 3 Months
-        if (localDateObj >= last3MonthsStart) {
-            gastoUltimos3Meses += Number(item.valor);
-        }
-    });
-
-    // Extract unique months from existing abastecimentos
-    const monthOptions = React.useMemo(() => {
-        if (!abastecimentos || abastecimentos.length === 0) return [];
-
-        const uniqueMonths = new Set<string>();
-        abastecimentos.forEach(item => {
-            if (!item.data) return;
-            const itemDate = new Date(item.data);
-            const localDateObj = new Date(itemDate.getTime() + itemDate.getTimezoneOffset() * 60000);
-            uniqueMonths.add(format(localDateObj, 'yyyy-MM'));
-        });
-
-        return Array.from(uniqueMonths)
-            .sort((a, b) => b.localeCompare(a)) // sort descending
-            .map(value => {
-                const [year, month] = value.split('-');
-                const d = new Date(parseInt(year), parseInt(month) - 1, 1);
-                const label = format(d, 'MMM/yyyy', { locale: ptBR }).replace('.', '').toUpperCase();
-                return { value, label };
+    // Static Month Options based on the last 12 months
+    const monthOptions = useMemo(() => {
+        const options = [];
+        const date = new Date();
+        for (let i = 0; i < 12; i++) {
+            const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+            options.push({
+                value: format(d, "yyyy-MM", { locale: ptBR }),
+                label: format(d, "MMM/yyyy", { locale: ptBR }).replace('.', '').toUpperCase()
             });
-    }, [abastecimentos]);
+        }
+        return options;
+    }, []);
 
     const renderCard = (i: Abastecimento) => {
         const itemDate = new Date(i.data);
@@ -226,34 +195,25 @@ const Abastecimentos: React.FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-blue-600 font-medium">Gasto Mês Atual</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(gastoMesAtual)}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                        <Calendar size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-orange-600 font-medium">Gasto Mês Anterior</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(gastoMesAnterior)}</p>
-                    </div>
-                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg">
-                        <Calendar size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-green-600 font-medium">Total Últimos 3 Meses</p>
-                        <p className="text-2xl font-bold text-gray-800">{formatCurrency(gastoUltimos3Meses)}</p>
-                    </div>
-                    <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                        <TrendingUp size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Gasto Mês Atual"
+                    value={formatCurrency(gastoMesAtual)}
+                    type="total"
+                    icon={Calendar}
+                />
+                <StatCard
+                    title="Gasto Mês Anterior"
+                    value={formatCurrency(gastoMesAnterior)}
+                    type="warning"
+                    icon={Calendar}
+                />
+                <StatCard
+                    title="Total Últimos 3 Meses"
+                    value={formatCurrency(gastoUltimos3Meses)}
+                    type="success"
+                    icon={TrendingUp}
+                />
             </div>
 
             {/* Filters */}
@@ -283,7 +243,7 @@ const Abastecimentos: React.FC = () => {
             </div>
 
             <ResponsiveTable<Abastecimento>
-                data={filteredAbastecimentos}
+                data={abastecimentos}
                 columns={columns}
                 emptyMessage="Nenhum abastecimento encontrado."
                 renderCard={renderCard}
@@ -291,6 +251,9 @@ const Abastecimentos: React.FC = () => {
                 onRowClick={handleView}
                 loading={isLoading}
                 getRowBorderColor={() => 'border-blue-500'}
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
             />
 
         </div>

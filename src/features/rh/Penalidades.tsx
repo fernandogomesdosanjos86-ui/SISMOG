@@ -3,6 +3,7 @@ import { Plus, Search, AlertTriangle } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
+import StatCard from '../../components/StatCard';
 import CompanyBadge from '../../components/CompanyBadge';
 import { useModal } from '../../context/ModalContext';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -135,38 +136,29 @@ const Penalidades: React.FC = () => {
                 }
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-red-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-red-600 font-medium mb-1">Total</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalPenalidades}</p>
-                    </div>
-                    <div className="p-3 bg-red-50 text-red-600 rounded-lg shrink-0">
-                        <AlertTriangle size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-blue-600 font-medium mb-1">Aplicações FEMOG</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalFemog}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg shrink-0">
-                        <AlertTriangle size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-orange-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-orange-600 font-medium mb-1">Aplicações SEMOG</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalSemog}</p>
-                    </div>
-                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg shrink-0">
-                        <AlertTriangle size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Total"
+                    value={String(totalPenalidades)}
+                    type="danger"
+                    icon={AlertTriangle}
+                />
+                <StatCard
+                    title="Aplicações FEMOG"
+                    value={String(totalFemog)}
+                    type="info"
+                    icon={AlertTriangle}
+                />
+                <StatCard
+                    title="Aplicações SEMOG"
+                    value={String(totalSemog)}
+                    type="warning"
+                    icon={AlertTriangle}
+                />
             </div>
 
             {/* Filters - Top Bar (Search) */}
-            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                     <input
@@ -180,7 +172,7 @@ const Penalidades: React.FC = () => {
             </div>
 
             {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
+            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
                 {(['TODOS', 'FEMOG', 'SEMOG'] as const).map((tab) => (
                     <button
                         key={tab}

@@ -4,6 +4,7 @@ import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
+import StatCard from '../../components/StatCard';
 import { useModal } from '../../context/ModalContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useVeiculos } from './hooks/useVeiculos';
@@ -162,34 +163,25 @@ const Veiculos: React.FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-gray-600 font-medium">Total Frota</p>
-                        <p className="text-2xl font-bold text-gray-800">{totalVeiculos}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 text-gray-600 rounded-lg">
-                        <Car size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-green-600 font-medium">Operacionais</p>
-                        <p className="text-2xl font-bold text-gray-800">{totalAtivos}</p>
-                    </div>
-                    <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                        <Car size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-orange-600 font-medium">Em Manutenção</p>
-                        <p className="text-2xl font-bold text-gray-800">{totalManutencao}</p>
-                    </div>
-                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg">
-                        <Wrench size={24} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard
+                    title="Total Frota"
+                    value={String(totalVeiculos)}
+                    type="total"
+                    icon={Car}
+                />
+                <StatCard
+                    title="Operacionais"
+                    value={String(totalAtivos)}
+                    type="success"
+                    icon={Car}
+                />
+                <StatCard
+                    title="Em Manutenção"
+                    value={String(totalManutencao)}
+                    type="warning"
+                    icon={Wrench}
+                />
             </div>
 
             {/* Filters - Top Bar (Search + Status) */}

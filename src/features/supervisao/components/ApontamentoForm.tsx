@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { usePostos } from '../hooks/usePostos';
 import { useFuncionarios } from '../../rh/hooks/useFuncionarios';
 import type { ApontamentoFormData, TipoApontamento } from '../types';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { InputField } from '../../../components/forms/InputField';
+import { SelectField } from '../../../components/forms/SelectField';
 
 interface ApontamentoFormProps {
     onSuccess: () => void;
@@ -64,82 +67,55 @@ const ApontamentoForm: React.FC<ApontamentoFormProps> = ({ onSuccess, initialDat
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Empresa */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Empresa</label>
-                    <select
-                        name="empresa"
-                        value={formData.empresa}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                        required
-                    >
-                        <option value="FEMOG">FEMOG</option>
-                        <option value="SEMOG">SEMOG</option>
-                    </select>
-                </div>
+                <SelectField
+                    label="Empresa"
+                    name="empresa"
+                    value={formData.empresa}
+                    onChange={handleChange}
+                    options={[
+                        { value: 'FEMOG', label: 'FEMOG' },
+                        { value: 'SEMOG', label: 'SEMOG' }
+                    ]}
+                    required
+                />
 
-                {/* Posto */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Posto de Trabalho</label>
-                    <select
-                        name="posto_id"
-                        value={formData.posto_id}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                        required
-                    >
-                        <option value="">Selecione...</option>
-                        {filteredPostos.map(p => (
-                            <option key={p.id} value={p.id}>{p.nome}</option>
-                        ))}
-                    </select>
-                </div>
+                <SelectField
+                    label="Posto de Trabalho"
+                    name="posto_id"
+                    value={formData.posto_id}
+                    onChange={handleChange}
+                    options={filteredPostos.map(p => ({ value: p.id ?? '', label: p.nome }))}
+                    required
+                />
 
-                {/* Funcionario */}
                 <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">Funcionário</label>
-                    <select
+                    <SelectField
+                        label="Funcionário"
                         name="funcionario_id"
                         value={formData.funcionario_id}
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                        required
-                    >
-                        <option value="">Selecione...</option>
-                        {filteredFuncionarios.map(f => (
-                            <option key={f.id} value={f.id}>{f.nome}</option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Apontamento Tipo */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Tipo de Apontamento</label>
-                    <select
-                        name="apontamento"
-                        value={formData.apontamento}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                        required
-                    >
-                        {TIPOS_APONTAMENTO.map(tipo => (
-                            <option key={tipo} value={tipo}>{tipo}</option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Data */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Data</label>
-                    <input
-                        type="date"
-                        name="data"
-                        value={formData.data}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        options={filteredFuncionarios.map(f => ({ value: f.id ?? '', label: f.nome }))}
                         required
                     />
                 </div>
+
+                <SelectField
+                    label="Tipo de Apontamento"
+                    name="apontamento"
+                    value={formData.apontamento}
+                    onChange={handleChange}
+                    options={TIPOS_APONTAMENTO.map(tipo => ({ value: tipo, label: tipo }))}
+                    required
+                />
+
+                <InputField
+                    label="Data"
+                    type="date"
+                    name="data"
+                    value={formData.data}
+                    onChange={handleChange}
+                    required
+                />
 
                 {/* Observacao */}
                 <div className="md:col-span-2">
@@ -155,13 +131,17 @@ const ApontamentoForm: React.FC<ApontamentoFormProps> = ({ onSuccess, initialDat
                 </div>
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    type="button"
+                    onClick={onSuccess}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                    Salvar Lançamento
+                    Cancelar
                 </button>
+                <PrimaryButton type="submit">
+                    Salvar Lançamento
+                </PrimaryButton>
             </div>
         </form>
     );
