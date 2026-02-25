@@ -1,0 +1,12 @@
+
+> temp_app@0.0.0 build
+> tsc -b && vite build
+
+src/features/estoque/EquipamentosControlados.tsx(226,21): error TS2322: Type 'Element' is not assignable to type 'string'.
+src/features/estoque/EquipamentosControlados.tsx(240,21): error TS2322: Type 'Element' is not assignable to type 'string'.
+src/features/estoque/EquipamentosControlados.tsx(254,21): error TS2322: Type 'Element' is not assignable to type 'string'.
+src/features/estoque/gestao/components/MovimentacaoForm.tsx(46,41): error TS2304: Cannot find name 'estoqueGestaoService'.
+src/features/estoque/gestao/components/MovimentacaoForm.tsx(50,45): error TS2304: Cannot find name 'estoqueGestaoService'.
+src/features/estoque/gestao/components/MovimentacaoForm.tsx(53,45): error TS2304: Cannot find name 'estoqueGestaoService'.
+src/features/financeiro/components/ContratoDetails.tsx(51,18): error TS2304: Cannot find name 'FileText'.
+src/features/frota/services/movimentacoesService.ts(3,10): error TS6133: 'startOfMonth' is declared but its value is never read.

@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { type LucideIcon, BarChart2, Info, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface StatCardProps {
     title: string;
-    value: string;
+    value: string | ReactNode;
     type?: 'total' | 'info' | 'warning' | 'success' | 'danger';
     icon?: LucideIcon;
 }

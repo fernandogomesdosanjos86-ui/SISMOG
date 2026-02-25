@@ -3,6 +3,7 @@ import { useModal } from '../../../../context/ModalContext';
 import { useProdutos } from '../hooks/useProdutos';
 import { useFuncionarios } from '../../../rh/hooks/useFuncionarios';
 import { usePostos } from '../../../supervisao/hooks/usePostos';
+import { estoqueGestaoService } from '../../../../services/estoqueGestaoService';
 import type { TipoMovimentacao, MovimentacaoFormData, TipoProduto } from '../types';
 import PrimaryButton from '../../../../components/PrimaryButton';
 

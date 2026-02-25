@@ -1,6 +1,6 @@
 import { supabase } from '../../../services/supabase';
 import type { Movimentacao, MovimentacaoFormData, MovimentacoesFilters, PaginatedResponse } from '../types';
-import { startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { endOfMonth, parseISO } from 'date-fns';
 
 export const movimentacoesService = {
     getMovimentacoes: async (filters: MovimentacoesFilters): Promise<PaginatedResponse<Movimentacao>> => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Contrato } from '../types';
-import { Info, Calendar, DollarSign, CalendarDays } from 'lucide-react';
+import { Info, Calendar, DollarSign, CalendarDays, FileText } from 'lucide-react';
 import { formatCurrency } from '../../../utils/format';
 import CompanyBadge from '../../../components/CompanyBadge';
 import StatusBadge from '../../../components/StatusBadge';
