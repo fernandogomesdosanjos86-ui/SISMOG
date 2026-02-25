@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../../lib/queryClient';
 import { tarefasService } from '../services/tarefasService';
 import { useModal } from '../../../../context/ModalContext';
-import type { TarefaFormData, TarefaChat, ChatFormData, StatusTarefaMissao } from '../types';
+import type { TarefaFormData, ChatFormData, StatusTarefaMissao } from '../types';
 
 export const useTarefas = () => {
     const queryClient = useQueryClient();
@@ -27,7 +27,7 @@ export const useTarefas = () => {
 
     const updateTarefa = useMutation({
         mutationFn: ({ id, data }: { id: string, data: Partial<TarefaFormData> }) => tarefasService.updateTarefa(id, data),
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.tarefas.all });
             showFeedback('success', 'Dados da Tarefa atualizados!');
         },
@@ -74,7 +74,7 @@ export const useTarefaDetail = (tarefaId: string) => {
     };
 };
 
-export const useMissoes = (tarefaId: string) => {
+export const useMissoes = (_tarefaId: string) => {
     const queryClient = useQueryClient();
     const { showFeedback } = useModal();
 
