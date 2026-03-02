@@ -193,7 +193,7 @@ const Checklists: React.FC = () => {
             key: 'responsavel',
             header: 'Enviado por',
             render: (i: Checklist) => (
-                <span className="text-sm text-gray-600 truncate max-w-[120px] block">{i.responsavel}</span>
+                <span className="text-sm text-gray-600">{i.responsavel}</span>
             )
         }
     ];

@@ -40,5 +40,6 @@ export const APP_ROUTES = {
         ROOT: '#geral',
         CURRICULOS: '/geral/curriculos',
         TAREFAS: '/geral/tarefas',
-    }
+    },
+    PORTAL_COLABORADOR: '/portal-colaborador'
 } as const;

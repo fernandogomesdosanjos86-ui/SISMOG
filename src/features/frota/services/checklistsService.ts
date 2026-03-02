@@ -60,20 +60,21 @@ export const checklistsService = {
     async createChecklist(checklist: ChecklistFormData): Promise<Checklist> {
         // Obter nome do usuário logado
         const { data: { user } } = await supabase.auth.getUser();
-        let responsavelName = user?.email || 'Usuário Desconhecido';
+        let responsavelName = "Usuário Desconhecido";
 
         if (user) {
-            const { data: userData } = await supabase
-                .from('usuarios')
+            const { data: profileData } = await supabase
+                .from('con_usuarios')
                 .select('nome')
                 .eq('id', user.id)
                 .single();
 
-            if (userData?.nome) {
-                const partes = userData.nome.split(' ');
-                responsavelName = partes.length > 1
-                    ? `${partes[0]} ${partes[partes.length - 1]}`
-                    : partes[0];
+            if (profileData?.nome) {
+                responsavelName = profileData.nome;
+            } else if (user.user_metadata?.nome) {
+                responsavelName = user.user_metadata.nome;
+            } else if (user.email) {
+                responsavelName = user.email.split('@')[0];
             }
         }
 

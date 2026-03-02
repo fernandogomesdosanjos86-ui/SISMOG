@@ -31,6 +31,8 @@ const Movimentacoes = lazy(() => import('./features/frota/Movimentacoes'));
 const Curriculos = lazy(() => import('./features/geral/curriculos/Curriculos'));
 const Tarefas = lazy(() => import('./features/geral/tarefas/Tarefas'));
 
+const PortalColaborador = lazy(() => import('./pages/PortalColaborador'));
+
 function App() {
   return (
     <Suspense fallback={<LoadingSpinner />}>
@@ -38,6 +40,10 @@ function App() {
         <Route path={APP_ROUTES.LOGIN} element={<Login />} />
 
         <Route element={<ProtectedRoute />}>
+          {/* Rota exclusiva do portal (sem sidebar/MainLayout) */}
+          <Route path={APP_ROUTES.PORTAL_COLABORADOR} element={<PortalColaborador />} />
+
+          {/* Rotas Administrativas com Sidebar */}
           <Route path={APP_ROUTES.HOME} element={<MainLayout />}>
             <Route index element={<Dashboard />} />
             <Route path={APP_ROUTES.USERS} element={<UserList />} />

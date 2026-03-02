@@ -9,7 +9,9 @@ interface MovimentacaoDetailsProps {
 }
 
 const MovimentacaoDetails: React.FC<MovimentacaoDetailsProps> = ({ movimentacao }) => {
-    const isEletrico = movimentacao.frota_veiculos?.tipo === 'Elétrico';
+    // A API pode retornar como "veiculo" ou "frota_veiculos" baseado na versão da query
+    const veiculoData = movimentacao.frota_veiculos || (movimentacao as any).veiculo;
+    const isEletrico = veiculoData?.tipo === 'Elétrico';
 
     // Calculo de duração
     const initialDate = new Date(movimentacao.data_hora_inicial);
@@ -27,13 +29,13 @@ const MovimentacaoDetails: React.FC<MovimentacaoDetailsProps> = ({ movimentacao 
                     <Car size={24} />
                 </div>
                 <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900">{movimentacao.frota_veiculos?.marca_modelo || 'Veículo Desconhecido'}</h3>
+                    <h3 className="text-lg font-bold text-gray-900">{veiculoData?.marca_modelo || 'Veículo Desconhecido'}</h3>
                     <div className="flex items-center gap-3 text-sm mt-1">
                         <span className="font-mono bg-gray-200 text-gray-700 px-2 py-0.5 rounded uppercase tracking-wider">
-                            {movimentacao.frota_veiculos?.placa}
+                            {veiculoData?.placa}
                         </span>
                         <span className="text-gray-500">
-                            {movimentacao.frota_veiculos?.tipo}
+                            {veiculoData?.tipo}
                         </span>
                     </div>
                 </div>

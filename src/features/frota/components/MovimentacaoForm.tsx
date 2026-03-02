@@ -156,14 +156,14 @@ const MovimentacaoForm: React.FC<MovimentacaoFormProps> = ({ initialData, onSucc
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
-                    label="Saída (Data/Hora)"
+                    label="Início (Data/Hora)"
                     type="datetime-local"
                     required
                     value={formData.data_hora_inicial}
                     onChange={e => setFormData({ ...formData, data_hora_inicial: e.target.value })}
                 />
                 <InputField
-                    label="Retorno (Data/Hora)"
+                    label="Final (Data/Hora)"
                     type="datetime-local"
                     required
                     value={formData.data_hora_final}
@@ -231,7 +231,10 @@ const MovimentacaoForm: React.FC<MovimentacaoFormProps> = ({ initialData, onSucc
             <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
                 <button
                     type="button"
-                    onClick={closeModal}
+                    onClick={() => {
+                        if (onSuccess) onSuccess();
+                        else closeModal();
+                    }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     Cancelar
