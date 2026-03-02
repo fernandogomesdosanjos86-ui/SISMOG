@@ -28,6 +28,7 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
         agencia: initialData?.agencia || '',
         conta: initialData?.conta || '',
         pix: initialData?.pix || '',
+        uniforme: initialData?.uniforme || '',
         status: initialData?.status || 'ativo',
     });
 
@@ -39,6 +40,8 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
             // Store raw digits for the backend/validation
             const rawValue = value.replace(/\D/g, '');
             setFormData(prev => ({ ...prev, [name]: rawValue }));
+        } else if (name === 'nome') {
+            setFormData(prev => ({ ...prev, [name]: value.toUpperCase() }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -151,6 +154,14 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
                         { value: 'ativo', label: 'Ativo' },
                         { value: 'inativo', label: 'Inativo' },
                     ]}
+                />
+
+                <InputField
+                    label="Uniforme (Tamanho/Referência)"
+                    name="uniforme"
+                    value={formData.uniforme || ''}
+                    onChange={handleChange}
+                    placeholder="Ex: M / G / 42"
                 />
 
                 <div className="md:col-span-2 border-t pt-4 mt-2">

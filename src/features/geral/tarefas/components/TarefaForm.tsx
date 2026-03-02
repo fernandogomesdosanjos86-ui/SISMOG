@@ -35,7 +35,7 @@ export default function TarefaForm({ onSuccess, initialData }: TarefaFormProps) 
         data_limite: initialData?.data_limite || new Date().toISOString().split('T')[0],
         prioridade: initialData?.prioridade || 'Normal',
         destinatarios: initialData?.destinatarios?.map(d => d.usuario_id) || [],
-        missoes: initialData?.missoes?.map(m => ({ missao: m.missao, observacoes: m.observacoes || '' })) || [{ missao: '', observacoes: '' }]
+        missoes: initialData?.missoes?.map(m => ({ id: m.id, missao: m.missao, observacoes: m.observacoes || '' })) || [{ missao: '', observacoes: '' }]
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -62,6 +62,7 @@ export default function TarefaForm({ onSuccess, initialData }: TarefaFormProps) 
                         data_limite: formData.data_limite,
                         prioridade: formData.prioridade,
                         destinatarios: formData.destinatarios,
+                        missoes: validMissoes
                     }
                 });
             } else {

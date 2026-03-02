@@ -25,6 +25,13 @@ export function useRecebimentos() {
         },
     });
 
+    const undoMutation = useMutation({
+        mutationFn: (id: string) => financeiroService.desfazerRecebimento(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.recebimentos.all });
+        },
+    });
+
     const updateMutation = useMutation({
         mutationFn: ({ id, data }: { id: string; data: Partial<Recebimento> }) =>
             financeiroService.updateRecebimento(id, data),
@@ -50,9 +57,11 @@ export function useRecebimentos() {
         register: registerMutation.mutateAsync,
         update: updateMutation.mutateAsync,
         delete: deleteMutation.mutateAsync,
+        undo: undoMutation.mutateAsync,
         isCreating: createAvulsoMutation.isPending,
         isRegistering: registerMutation.isPending,
         isUpdating: updateMutation.isPending,
         isDeleting: deleteMutation.isPending,
+        isUndoing: undoMutation.isPending,
     };
 }

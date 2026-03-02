@@ -337,6 +337,15 @@ export const financeiroService = {
         return data as Recebimento;
     },
 
+    async desfazerRecebimento(id: string) {
+        const { error } = await supabase
+            .from('recebimentos')
+            .update({ status: 'pendente' })
+            .eq('id', id);
+
+        if (error) throw error;
+    },
+
     async deleteRecebimento(id: string) {
         const { error } = await supabase
             .from('recebimentos')

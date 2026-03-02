@@ -169,6 +169,58 @@ export const tarefasService = {
                 }
             }
         }
+
+        // Sync missoes if provided
+        if (updates.missoes) {
+            // 1. Fetch existing missoes
+            const { data: existingMissoes, error: fetchError } = await supabase
+                .from('geral_missoes')
+                .select('id')
+                .eq('tarefa_id', id);
+
+            if (fetchError) {
+                console.error('Error fetching existing missoes:', fetchError);
+            } else {
+                const existingIds = (existingMissoes || []).map(m => m.id);
+                const updatedIds = updates.missoes.map(m => m.id).filter(Boolean) as string[];
+
+                // 2. Delete missoes that are not in the new list
+                const idsToDelete = existingIds.filter(existingId => !updatedIds.includes(existingId));
+                if (idsToDelete.length > 0) {
+                    const { error: deleteError } = await supabase
+                        .from('geral_missoes')
+                        .delete()
+                        .in('id', idsToDelete);
+                    if (deleteError) console.error('Error deleting missoes:', deleteError);
+                }
+
+                // 3. Upsert (Update or Insert) missoes
+                for (const m of updates.missoes) {
+                    if (m.id) {
+                        // Update existing
+                        const { error: updateError } = await supabase
+                            .from('geral_missoes')
+                            .update({
+                                missao: m.missao,
+                                observacoes: m.observacoes || null,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', m.id);
+                        if (updateError) console.error('Error updating missao:', updateError);
+                    } else {
+                        // Insert new
+                        const { error: insertError } = await supabase
+                            .from('geral_missoes')
+                            .insert([{
+                                tarefa_id: id,
+                                missao: m.missao,
+                                observacoes: m.observacoes || null
+                            }]);
+                        if (insertError) console.error('Error inserting missao:', insertError);
+                    }
+                }
+            }
+        }
     },
 
     async deleteTarefa(id: string): Promise<void> {

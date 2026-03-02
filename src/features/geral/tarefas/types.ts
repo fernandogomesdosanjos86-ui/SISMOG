@@ -59,7 +59,7 @@ export interface TarefaFormData {
     data_limite: string;
     prioridade: PrioridadeTarefa;
     destinatarios: string[]; // Array of user IDs
-    missoes: { missao: string; observacoes?: string }[];
+    missoes: { id?: string; missao: string; observacoes?: string }[];
 }
 
 export interface MissaoFormData {

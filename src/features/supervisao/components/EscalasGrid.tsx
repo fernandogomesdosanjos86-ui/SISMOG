@@ -86,9 +86,12 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
 
             const tableStartY = 20 + imageHeight + 35;
 
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const formattedCompetenciaTitle = `${monthNames[month - 1]}/${year}`;
+
             const head = [
                 [
-                    { content: `Posto de Trabalho: ${posto.nome}`, colSpan: totalDays + 1, styles: { halign: 'center', valign: 'middle', fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 10 } }
+                    { content: `Posto de Trabalho: ${posto.nome} - ${formattedCompetenciaTitle}`, colSpan: totalDays + 1, styles: { halign: 'center', valign: 'middle', fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 10 } }
                 ],
                 [
                     { content: 'Funcionário', rowSpan: 2, styles: { halign: 'center', valign: 'middle', fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 9 } },

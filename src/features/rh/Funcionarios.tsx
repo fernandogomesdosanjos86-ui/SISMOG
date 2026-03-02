@@ -30,11 +30,16 @@ const Funcionarios: React.FC = () => {
         const matchesCompany = companyFilter === 'TODOS' || func.empresa === companyFilter;
         const matchesStatus = statusFilter === 'TODOS' || func.status === statusFilter;
 
-        const searchLower = debouncedSearch.toLowerCase();
+        const searchLower = debouncedSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+
+        const nomeUpperRaw = func.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+        const cpfRaw = (func.cpf || '').replace(/\D/g, '');
+        const cargoRaw = (func.cargos_salarios?.cargo || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+
         const matchesSearch =
-            func.nome.toLowerCase().includes(searchLower) ||
-            (func.cpf || '').includes(searchLower) ||
-            (func.cargos_salarios?.cargo || '').toLowerCase().includes(searchLower);
+            nomeUpperRaw.includes(searchLower) ||
+            cpfRaw.includes(searchLower) ||
+            cargoRaw.includes(searchLower);
 
         return matchesCompany && matchesStatus && matchesSearch;
     });
@@ -103,6 +108,13 @@ const Funcionarios: React.FC = () => {
                     <span className="text-sm text-gray-900">{i.cargos_salarios?.cargo || '-'}</span>
                     <span className="text-xs text-gray-500">{i.cargos_salarios?.uf || '-'}</span>
                 </div>
+            )
+        },
+        {
+            key: 'uniforme',
+            header: 'Uniforme',
+            render: (i: Funcionario) => (
+                <span className="text-sm text-gray-900">{i.uniforme || '-'}</span>
             )
         },
         {

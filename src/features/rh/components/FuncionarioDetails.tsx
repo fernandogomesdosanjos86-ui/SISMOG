@@ -38,6 +38,13 @@ const FuncionarioDetails: React.FC<FuncionarioDetailsProps> = ({ funcionario }) 
 
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
                     <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <FileText size={16} className="mr-2" /> Uniforme
+                    </div>
+                    <div className="text-gray-900 font-semibold">{funcionario.uniforme || '-'}</div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
                         <Activity size={16} className="mr-2" /> Status
                     </div>
                     <div className="mt-1">

@@ -27,6 +27,7 @@ export interface Funcionario {
     agencia: string;
     conta: string;
     pix: string;
+    uniforme?: string;
     status: 'ativo' | 'inativo' | 'ferias' | 'afastado';
     // Joined fields
     cargo?: {

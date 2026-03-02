@@ -21,7 +21,7 @@ const Recebimentos: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const { openFormModal, openConfirmModal, openViewModal, showFeedback } = useModal();
 
-    const { recebimentos, isLoading, refetch, register, delete: deleteRecebimento } = useRecebimentos();
+    const { recebimentos, isLoading, refetch, register, delete: deleteRecebimento, undo } = useRecebimentos();
 
     // Filter Logic
     const filteredRecebimentos = recebimentos.filter(r => {
@@ -84,21 +84,37 @@ const Recebimentos: React.FC = () => {
                 editText: 'Editar',
                 onEdit: item.status === 'pendente' ? () => openFormModal('Editar Recebimento', <RecebimentoAvulsoForm initialData={item} onSuccess={refetch} />) : undefined,
                 canDelete: true,
-                deleteText: 'Excluir',
+                deleteText: isRecebido ? 'Desfazer Recebimento' : 'Excluir',
                 onDelete: async () => {
-                    openConfirmModal(
-                        'Excluir Recebimento',
-                        'Deseja excluir este recebimento? Ação irreversível.',
-                        async () => {
-                            try {
-                                await deleteRecebimento(item.id);
-                                showFeedback('success', 'Recebimento excluído com sucesso!');
-                            } catch (e) {
-                                console.error(e);
-                                showFeedback('error', 'Erro ao excluir recebimento.');
+                    if (isRecebido) {
+                        openConfirmModal(
+                            'Desfazer Recebimento',
+                            'Deseja retornar este recebimento para o status pendente?',
+                            async () => {
+                                try {
+                                    await undo(item.id);
+                                    showFeedback('success', 'Recebimento retornado para pendente!');
+                                } catch (e) {
+                                    console.error(e);
+                                    showFeedback('error', 'Erro ao desfazer recebimento.');
+                                }
                             }
-                        }
-                    );
+                        );
+                    } else {
+                        openConfirmModal(
+                            'Excluir Recebimento',
+                            'Deseja excluir este recebimento? Ação irreversível.',
+                            async () => {
+                                try {
+                                    await deleteRecebimento(item.id);
+                                    showFeedback('success', 'Recebimento excluído com sucesso!');
+                                } catch (e) {
+                                    console.error(e);
+                                    showFeedback('error', 'Erro ao excluir recebimento.');
+                                }
+                            }
+                        );
+                    }
                 },
                 extraActions: [
                     ...(!isRecebido ? [{
