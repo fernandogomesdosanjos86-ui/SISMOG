@@ -32,6 +32,8 @@ export interface Abastecimento {
     frota_veiculos?: {
         marca_modelo: string;
         placa: string;
+        tipo?: 'Combustão' | 'Elétrico';
+        abastecimento?: boolean;
     };
 }
 

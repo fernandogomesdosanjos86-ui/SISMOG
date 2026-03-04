@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin } from 'lucide-react';
+import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin, PieChart } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useModal } from '../context/ModalContext';
@@ -117,7 +117,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         { icon: Car, label: 'Veículos', path: APP_ROUTES.FROTA.VEICULOS },
         { icon: MapPin, label: 'Movimentações', path: APP_ROUTES.FROTA.MOVIMENTACOES },
         { icon: Droplet, label: 'Abastecimentos', path: APP_ROUTES.FROTA.ABASTECIMENTOS },
-        { icon: ClipboardCheck, label: 'Checklists', path: APP_ROUTES.FROTA.CHECKLISTS }
+        { icon: ClipboardCheck, label: 'Checklists', path: APP_ROUTES.FROTA.CHECKLISTS },
+        { icon: PieChart, label: 'Relatório Frota', path: APP_ROUTES.FROTA.RELATORIOS }
       ]
     },
     {
@@ -134,7 +135,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       children: [
         { icon: FileText, label: 'Contratos', path: APP_ROUTES.FINANCEIRO.CONTRATOS },
         { icon: BarChart2, label: 'Faturamentos', path: APP_ROUTES.FINANCEIRO.FATURAMENTOS },
-        { icon: Users, label: 'Recebimentos', path: APP_ROUTES.FINANCEIRO.RECEBIMENTOS }
+        { icon: Users, label: 'Recebimentos', path: APP_ROUTES.FINANCEIRO.RECEBIMENTOS },
+        { icon: PieChart, label: 'Relatório Financeiro', path: APP_ROUTES.FINANCEIRO.RELATORIOS }
       ]
     },
     {

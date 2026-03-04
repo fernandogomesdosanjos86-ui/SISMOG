@@ -25,7 +25,7 @@ export const queryKeys = {
     },
     faturamentos: {
         all: ['faturamentos'] as const,
-        list: (competencia: string) => [...queryKeys.faturamentos.all, 'list', competencia] as const,
+        list: (competencia?: string) => [...queryKeys.faturamentos.all, 'list', ...(competencia ? [competencia] : [])] as const,
         detail: (id: string) => [...queryKeys.faturamentos.all, 'detail', id] as const,
     },
     recebimentos: {

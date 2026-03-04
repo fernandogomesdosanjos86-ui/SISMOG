@@ -2,7 +2,7 @@ import React from 'react';
 import type { Movimentacao } from '../types';
 import { format, differenceInMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Clock, MapPin, Gauge, Battery, Zap, Car } from 'lucide-react';
+import { Clock, MapPin, Gauge, Battery, Zap } from 'lucide-react';
 
 interface MovimentacaoDetailsProps {
     movimentacao: Movimentacao;
@@ -25,9 +25,6 @@ const MovimentacaoDetails: React.FC<MovimentacaoDetailsProps> = ({ movimentacao 
         <div className="space-y-6">
             {/* Cabecalho Veiculo */}
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start gap-4">
-                <div className="p-3 bg-indigo-100 text-indigo-600 rounded-lg">
-                    <Car size={24} />
-                </div>
                 <div className="flex-1">
                     <h3 className="text-lg font-bold text-gray-900">{veiculoData?.marca_modelo || 'Veículo Desconhecido'}</h3>
                     <div className="flex items-center gap-3 text-sm mt-1">

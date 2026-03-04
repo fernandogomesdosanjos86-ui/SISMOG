@@ -9,6 +9,7 @@ export const APP_ROUTES = {
         CONTRATOS: '/financeiro/contratos',
         FATURAMENTOS: '/financeiro/faturamentos',
         RECEBIMENTOS: '/financeiro/recebimentos',
+        RELATORIOS: '/financeiro/relatorios',
     },
     ESTOQUE: {
         ROOT: '#estoque',
@@ -35,6 +36,7 @@ export const APP_ROUTES = {
         ABASTECIMENTOS: '/frota/abastecimentos',
         CHECKLISTS: '/frota/checklists',
         MOVIMENTACOES: '/frota/movimentacoes',
+        RELATORIOS: '/frota/relatorios',
     },
     GERAL: {
         ROOT: '#geral',

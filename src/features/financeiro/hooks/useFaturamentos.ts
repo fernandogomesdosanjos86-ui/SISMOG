@@ -3,7 +3,7 @@ import { financeiroService } from '../../../services/financeiroService';
 import { queryKeys } from '../../../lib/queryClient';
 import type { Faturamento } from '../types';
 
-export function useFaturamentos(competencia: string) {
+export function useFaturamentos(competencia?: string) {
     const queryClient = useQueryClient();
 
     const query = useQuery({

@@ -14,7 +14,9 @@ export const abastecimentosService = {
                 *,
                 frota_veiculos!inner (
                     marca_modelo,
-                    placa
+                    placa,
+                    tipo,
+                    abastecimento
                 )
             `, { count: 'exact' })
             .order('data', { ascending: false });
