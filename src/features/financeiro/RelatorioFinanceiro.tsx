@@ -26,10 +26,9 @@ const RelatorioFinanceiro: React.FC = () => {
         const agrupado: Record<string, { SEMOG: number; FEMOG: number }> = {};
 
         faturamentos.forEach(item => {
-            if (!item.competencia) return;
-            const dateStr = item.competencia.length === 7 ? `${item.competencia}-01` : item.competencia;
+            if (!item.data_emissao) return;
             try {
-                const date = new Date(dateStr);
+                const date = new Date(item.data_emissao);
                 const key = format(date, 'yyyy-MM');
 
                 const empresa = item.contratos?.empresa || 'SEMOG'; // Default fallback
@@ -42,7 +41,7 @@ const RelatorioFinanceiro: React.FC = () => {
                     agrupado[key][empresa] += Number(item.valor_bruto || 0);
                 }
             } catch (e) {
-                console.error("Invalid date", item.competencia);
+                console.error("Invalid date", item.data_emissao);
             }
         });
 
@@ -61,8 +60,10 @@ const RelatorioFinanceiro: React.FC = () => {
 
         if (postoFilter.month !== 'all' && postoFilter.year !== 'all') {
             dadosFiltrados = dadosFiltrados.filter(item => {
-                if (!item.competencia) return false;
-                const [year, month] = item.competencia.split('-');
+                if (!item.data_emissao) return false;
+                const date = new Date(item.data_emissao);
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = String(date.getFullYear());
                 return month === postoFilter.month && year === postoFilter.year;
             });
         }
