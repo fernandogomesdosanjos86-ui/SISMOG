@@ -98,7 +98,7 @@ const RelatorioFinanceiro: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* 1. Faturamento por Período */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[400px]">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[400px] sm:h-[450px]">
                     <div className="flex items-center gap-2 mb-6">
                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                             <TrendingUp size={20} />
@@ -128,7 +128,7 @@ const RelatorioFinanceiro: React.FC = () => {
                 </div>
 
                 {/* 2. Faturamento por Posto */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[400px]">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[400px] sm:h-[450px]">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <div className="flex items-center gap-2">
                             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
@@ -159,16 +159,16 @@ const RelatorioFinanceiro: React.FC = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-[250px] w-full relative">
                         {faturamentoPorPosto.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
+                                <PieChart margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
                                     <Pie
                                         data={faturamentoPorPosto}
                                         cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={100}
+                                        cy="45%"
+                                        innerRadius="45%"
+                                        outerRadius="75%"
                                         paddingAngle={2}
                                         dataKey="value"
                                     >
@@ -178,9 +178,9 @@ const RelatorioFinanceiro: React.FC = () => {
                                     </Pie>
                                     <Tooltip
                                         formatter={(value: any) => [formatCurrency(Number(value)), 'Faturamento']}
-                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }}
                                     />
-                                    <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px' }} />
+                                    <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '11px', lineHeight: '14px', paddingTop: '10px' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         ) : (

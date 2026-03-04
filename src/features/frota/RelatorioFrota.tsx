@@ -297,35 +297,35 @@ const RelatorioFrota: React.FC = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-2 scrollbar-thin scrollbar-thumb-gray-200">
+                    <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-1 sm:pr-2 scrollbar-thin scrollbar-thumb-gray-200">
                         {consumoEnergiaCondutor.length > 0 ? (
                             consumoEnergiaCondutor.map((item, idx) => (
-                                <div key={idx} className="p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-emerald-200 hover:shadow-md transition-all flex items-center justify-between gap-4 group">
-                                    <div className="flex items-center gap-4 min-w-0">
-                                        <div className="w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-sm font-bold text-gray-500 shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:border-emerald-200 transition-colors">
+                                <div key={idx} className="p-3 sm:p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-emerald-200 hover:shadow-md transition-all flex items-center justify-between gap-2 sm:gap-4 group">
+                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-xs sm:text-sm font-bold text-gray-500 shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:border-emerald-200 transition-colors">
                                             {idx + 1}º
                                         </div>
-                                        <div className="min-w-0">
+                                        <div className="min-w-0 flex-1">
                                             <h4 className="font-semibold text-gray-800 text-sm truncate" title={item.responsavel}>
                                                 {item.responsavel}
                                             </h4>
-                                            <div className="flex items-center gap-4 mt-1.5 text-xs text-gray-500">
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-gray-500">
                                                 <div className="flex items-center gap-1" title="Consumo">
-                                                    <Zap size={14} className="text-emerald-500" />
-                                                    <span className="font-medium">{item.consumoKwh}</span> kWh
+                                                    <Zap size={12} className="text-emerald-500 shrink-0" />
+                                                    <span className="font-medium truncate">{item.consumoKwh}</span> <span className="text-[10px] sm:text-xs">kWh</span>
                                                 </div>
                                                 <div className="flex items-center gap-1" title="Distância">
-                                                    <Car size={14} className="text-blue-500" />
-                                                    <span className="font-medium">{item.kmRodados}</span> km
+                                                    <Car size={12} className="text-blue-500 shrink-0" />
+                                                    <span className="font-medium truncate">{item.kmRodados}</span> <span className="text-[10px] sm:text-xs">km</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-right shrink-0 bg-white px-3 py-2 rounded-lg border border-gray-100 shadow-sm group-hover:border-emerald-100 group-hover:bg-emerald-50/50 transition-colors">
-                                        <div className="text-lg font-bold text-emerald-600 leading-none mb-1">
+                                    <div className="text-right shrink-0 bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-100 shadow-sm group-hover:border-emerald-100 group-hover:bg-emerald-50/50 transition-colors">
+                                        <div className="text-base sm:text-lg font-bold text-emerald-600 leading-none mb-0.5 sm:mb-1">
                                             {item.eficiencia.toFixed(2)}
                                         </div>
-                                        <div className="text-[10px] uppercase font-bold text-gray-400 group-hover:text-emerald-500 transition-colors">
+                                        <div className="text-[9px] sm:text-[10px] uppercase font-bold text-gray-400 group-hover:text-emerald-500 transition-colors">
                                             km / kWh
                                         </div>
                                     </div>

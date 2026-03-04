@@ -146,9 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       children: [
         { icon: Users, label: 'Usuários', path: APP_ROUTES.USERS },
       ]
-    },
-    { icon: FileText, label: 'Relatórios', path: APP_ROUTES.REPORTS },
-    { icon: BarChart2, label: 'Análises', path: APP_ROUTES.ANALYTICS },
+    }
   ];
   return (
     <>
