@@ -22,7 +22,7 @@ export const useUsers = () => {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('usuarios')
-                .select('*')
+                .select('id, nome, cpf, email, permissao, setor, ativo, created_at, updated_at')
                 .order('nome');
 
             if (error) throw error;

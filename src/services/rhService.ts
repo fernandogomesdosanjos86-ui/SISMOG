@@ -5,7 +5,7 @@ export const rhService = {
     async getCargosSalarios() {
         const { data, error } = await supabase
             .from('cargos_salarios')
-            .select('*')
+            .select('id, cargo, empresa, uf, salario_base, perc_insalubridade, perc_periculosidade, perc_adc_noturno, perc_intrajornada, valor_aux_alim, perc_desc_alim, valor_he_diurno, valor_he_noturno, created_at, updated_at')
             .order('cargo', { ascending: true })
             .order('uf', { ascending: true });
 

@@ -5,7 +5,7 @@ export const curriculoService = {
     async getCurriculos() {
         const { data, error } = await supabase
             .from('geral_curriculos')
-            .select('*')
+            .select('id, nome, cargo, data, empresa, status, indicacao, observacoes, arquivo_url, created_at')
             .order('nome', { ascending: true }); // requested: alphabetical
 
         if (error) throw error;

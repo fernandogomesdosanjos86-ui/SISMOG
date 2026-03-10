@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Users, FileText, BarChart2, LogOut, X, ChevronDown, ChevronRight, DollarSign, Box, Briefcase, Package, Lock, Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin, PieChart } from 'lucide-react';
-
+import { useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useModal } from '../context/ModalContext';
-import UserSettingsForm from './UserSettingsForm';
+import { navItems } from './sidebar/sidebarNavItems';
+import SidebarNavItem from './sidebar/SidebarNavItem';
+import SidebarUserFooter from './sidebar/SidebarUserFooter';
 import { APP_ROUTES } from '../config/routes';
+import { useTarefasNotification } from '../features/geral/tarefas/context/TarefasNotificationContext';
 import '../index.css';
 
 interface SidebarProps {
@@ -15,9 +15,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { user, signOut } = useAuth();
-  const { openFormModal } = useModal();
+  const { user } = useAuth();
   const location = useLocation();
+  const { unreadTaskIds } = useTarefasNotification();
+  const unreadTarefasCount = unreadTaskIds.length;
+
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
     'Configurações': false,
     'Financeiro': true
@@ -42,16 +44,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
-  const handleOpenSettings = () => {
-    openFormModal('Configurações de Usuário', <UserSettingsForm />);
-  };
-
   const toggleMenu = (label: string) => {
     setExpandedMenus(prev => {
       const newState: Record<string, boolean> = {};
-      // Close all currently tracked menus
       Object.keys(prev).forEach(key => newState[key] = false);
-      // If clicking a closed menu, open it. If clicking an open one, leave it closed.
       if (!prev[label]) {
         newState[label] = true;
       }
@@ -59,95 +55,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     });
   };
 
-  type NavItem = {
-    icon: any;
-    label: string;
-    path: string;
-    children?: { icon: any; label: string; path: string; }[];
-    hasAccess?: (user: any) => boolean;
-  };
-
-  const navItems: NavItem[] = [
-    { icon: Home, label: 'Dashboard', path: APP_ROUTES.HOME },
-    {
-      icon: FileText,
-      label: 'Geral',
-      path: APP_ROUTES.GERAL.ROOT,
-      children: [
-        { icon: AlertTriangle, label: 'Tarefas', path: APP_ROUTES.GERAL.TAREFAS },
-        { icon: FileText, label: 'Currículos', path: APP_ROUTES.GERAL.CURRICULOS }
-      ]
-    },
-    {
-      icon: Box,
-      label: 'Estoque',
-      path: APP_ROUTES.ESTOQUE.ROOT,
-      children: [
-        { icon: FileText, label: 'Equip. Controlados', path: APP_ROUTES.ESTOQUE.EQUIPAMENTOS },
-        { icon: Package, label: 'Gestão de Estoque', path: APP_ROUTES.ESTOQUE.GESTAO_ESTOQUE }
-      ]
-    },
-    {
-      icon: Briefcase,
-      label: 'Dep. Pessoal',
-      path: APP_ROUTES.RH.ROOT,
-      children: [
-        { icon: FileText, label: 'Cargos e Salários', path: APP_ROUTES.RH.CARGOS_SALARIOS },
-        { icon: Users, label: 'Funcionários', path: APP_ROUTES.RH.FUNCIONARIOS },
-        { icon: AlertTriangle, label: 'Penalidades', path: APP_ROUTES.RH.PENALIDADES },
-        { icon: Award, label: 'Gratificações', path: APP_ROUTES.RH.GRATIFICACOES }
-      ]
-    },
-    {
-      icon: Users, // Using Users icon temporarily, can change if needed
-      label: 'Supervisão',
-      path: APP_ROUTES.SUPERVISAO.ROOT,
-      children: [
-        { icon: FileText, label: 'Gestão de Postos', path: APP_ROUTES.SUPERVISAO.POSTOS },
-        { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS },
-        { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS },
-        { icon: Calendar, label: 'Escalas', path: APP_ROUTES.SUPERVISAO.ESCALAS }
-      ]
-    },
-    {
-      icon: Car,
-      label: 'Gestão de Frota',
-      path: APP_ROUTES.FROTA.ROOT,
-      children: [
-        { icon: Car, label: 'Veículos', path: APP_ROUTES.FROTA.VEICULOS },
-        { icon: MapPin, label: 'Movimentações', path: APP_ROUTES.FROTA.MOVIMENTACOES },
-        { icon: Droplet, label: 'Abastecimentos', path: APP_ROUTES.FROTA.ABASTECIMENTOS },
-        { icon: ClipboardCheck, label: 'Checklists', path: APP_ROUTES.FROTA.CHECKLISTS },
-        { icon: PieChart, label: 'Relatório Frota', path: APP_ROUTES.FROTA.RELATORIOS }
-      ]
-    },
-    {
-      icon: DollarSign,
-      label: 'Financeiro',
-      path: APP_ROUTES.FINANCEIRO.ROOT,
-      hasAccess: (user: any) => {
-        const p = user?.user_metadata?.permissao?.toLowerCase();
-        const s = user?.user_metadata?.setor?.toLowerCase();
-        if (p === 'adm') return true;
-        if (p === 'gestor' && (s === 'financeiro' || s === 'direção')) return true;
-        return false;
-      },
-      children: [
-        { icon: FileText, label: 'Contratos', path: APP_ROUTES.FINANCEIRO.CONTRATOS },
-        { icon: BarChart2, label: 'Faturamentos', path: APP_ROUTES.FINANCEIRO.FATURAMENTOS },
-        { icon: Users, label: 'Recebimentos', path: APP_ROUTES.FINANCEIRO.RECEBIMENTOS },
-        { icon: PieChart, label: 'Relatório Financeiro', path: APP_ROUTES.FINANCEIRO.RELATORIOS }
-      ]
-    },
-    {
-      icon: Settings,
-      label: 'Configurações',
-      path: '#', // Parent item
-      children: [
-        { icon: Users, label: 'Usuários', path: APP_ROUTES.USERS },
-      ]
-    }
-  ];
   return (
     <>
       {/* Mobile Overlay */}
@@ -173,7 +80,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <img src="/logo.png" alt="SISMOG Logo" className="h-14 object-contain" />
             <span className="text-xl font-bold tracking-widest mt-1 text-white drop-shadow-sm">SISMOG</span>
           </div>
-          {/* Close Button (Mobile Only) */}
           <button
             onClick={onClose}
             className="md:hidden absolute right-4 text-white/70 hover:text-white transition-colors"
@@ -184,7 +90,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 no-scrollbar">
-
           <ul className="space-y-1">
             {navItems.map((item) => {
               const hasChildren = item.children && item.children.length > 0;
@@ -192,68 +97,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               const isActiveParent = hasChildren && item.children?.some(child => location.pathname === child.path);
               const isLocked = item.hasAccess ? !item.hasAccess(user) : false;
 
+              let parentBadge = undefined;
+              let childrenBadges: Record<string, number> = {};
+
+              if (item.label === 'Geral' && unreadTarefasCount > 0) {
+                if (!isExpanded) {
+                  parentBadge = unreadTarefasCount;
+                }
+                childrenBadges['Tarefas'] = unreadTarefasCount;
+              }
+
               return (
                 <li key={item.label}>
-                  {hasChildren ? (
-                    <div>
-                      <button
-                        onClick={() => !isLocked && toggleMenu(item.label)}
-                        className={`
-                          w-full flex items-center justify-between px-6 py-3 transition-colors duration-200
-                          ${isLocked
-                            ? 'text-blue-200/30 cursor-not-allowed'
-                            : isActiveParent ? 'text-blue-100' : 'text-blue-200/70 hover:bg-white/5 hover:text-white'
-                          }
-                        `}
-                        title={isLocked ? 'Acesso restrito' : undefined}
-                      >
-                        <div className="flex items-center gap-3">
-                          <item.icon size={20} />
-                          <span className="font-medium">{item.label}</span>
-                        </div>
-                        {isLocked ? <Lock size={14} /> : isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      </button>
-
-                      {/* Submenu */}
-                      <div className={`overflow-hidden transition-all duration-300 ${!isLocked && isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <ul className="bg-black/10 pb-2">
-                          {item.children?.map((child) => (
-                            <li key={child.path}>
-                              <NavLink
-                                to={child.path}
-                                onClick={() => onClose()}
-                                className={({ isActive }) => `
-                                  flex items-center gap-3 pl-12 pr-6 py-2.5 text-sm transition-all duration-200
-                                  ${isActive
-                                    ? 'text-white font-medium border-l-4 border-blue-400 bg-white/5'
-                                    : 'text-blue-200/60 hover:text-white border-l-4 border-transparent'
-                                  }
-                                `}
-                              >
-                                <child.icon size={18} />
-                                <span>{child.label}</span>
-                              </NavLink>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ) : (
-                    <NavLink
-                      to={item.path}
-                      onClick={() => onClose()}
-                      className={({ isActive }) => `
-                        flex items-center gap-3 px-6 py-3 transition-all duration-200
-                        ${isActive
-                          ? 'bg-white/10 text-white border-l-4 border-blue-400'
-                          : 'text-blue-100/70 hover:bg-white/5 hover:text-white border-l-4 border-transparent'
-                        }
-                      `}
-                    >
-                      <item.icon size={20} />
-                      <span className="font-medium">{item.label}</span>
-                    </NavLink>
-                  )}
+                  <SidebarNavItem
+                    item={item}
+                    isExpanded={!!isExpanded}
+                    isLocked={isLocked}
+                    isActiveParent={!!isActiveParent}
+                    onToggle={() => toggleMenu(item.label)}
+                    onClose={onClose}
+                    badge={parentBadge}
+                    childrenBadges={childrenBadges}
+                  />
                 </li>
               );
             })}
@@ -261,39 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </nav>
 
         {/* User Footer */}
-        <div className="p-4 border-t border-white/10 bg-[#172554] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="overflow-hidden">
-              <p className="text-sm font-semibold truncate text-white max-w-[140px]">
-                {user?.user_metadata?.nome?.split(' ').slice(0, 2).join(' ') || 'Usuário'}
-              </p>
-              <p className="text-xs text-blue-200/70 truncate flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                {user?.user_metadata?.permissao || 'Visitante'}
-                {user?.user_metadata?.permissao?.toLowerCase() === 'gestor' && user?.user_metadata?.setor
-                  ? ` ${user.user_metadata.setor}`
-                  : ''}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleOpenSettings}
-              className="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              title="Configurações de Usuário"
-            >
-              <Settings size={20} />
-            </button>
-            <button
-              onClick={() => signOut()}
-              className="p-2 text-red-300 hover:text-red-100 hover:bg-red-500/20 rounded-lg transition-colors"
-              title="Sair do Sistema"
-            >
-              <LogOut size={20} />
-            </button>
-          </div>
-        </div>
+        <SidebarUserFooter />
       </aside>
     </>
   );

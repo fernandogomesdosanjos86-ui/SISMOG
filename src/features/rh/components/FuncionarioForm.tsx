@@ -3,6 +3,7 @@ import { useModal } from '../../../context/ModalContext';
 import { useFuncionarios } from '../hooks/useFuncionarios';
 import type { Funcionario, FuncionarioFormData } from '../types';
 import PrimaryButton from '../../../components/PrimaryButton';
+import CurrencyInput from '../../../components/CurrencyInput';
 import { MaskedInputField } from '../../../components/forms/MaskedInputField';
 import { InputField } from '../../../components/forms/InputField';
 import { SelectField } from '../../../components/forms/SelectField';
@@ -29,6 +30,8 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
         conta: initialData?.conta || '',
         pix: initialData?.pix || '',
         uniforme: initialData?.uniforme || '',
+        valor_transporte_dia: initialData?.valor_transporte_dia || 0,
+        valor_combustivel_dia: initialData?.valor_combustivel_dia || 0,
         status: initialData?.status || 'ativo',
     });
 
@@ -162,6 +165,18 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
                     value={formData.uniforme || ''}
                     onChange={handleChange}
                     placeholder="Ex: M / G / 42"
+                />
+
+                <CurrencyInput
+                    label="Valor Transporte (Dia)"
+                    value={formData.valor_transporte_dia || 0}
+                    onChange={(val) => setFormData(prev => ({ ...prev, valor_transporte_dia: val }))}
+                />
+
+                <CurrencyInput
+                    label="Valor Combustível (Dia)"
+                    value={formData.valor_combustivel_dia || 0}
+                    onChange={(val) => setFormData(prev => ({ ...prev, valor_combustivel_dia: val }))}
                 />
 
                 <div className="md:col-span-2 border-t pt-4 mt-2">

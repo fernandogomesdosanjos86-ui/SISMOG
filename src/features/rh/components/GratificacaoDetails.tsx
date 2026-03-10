@@ -1,7 +1,6 @@
 import React from 'react';
 import { Trash, Edit } from 'lucide-react';
 import type { Gratificacao } from '../types';
-import { useModal } from '../../../context/ModalContext';
 import { format } from 'date-fns';
 
 interface GratificacaoDetailsProps {
@@ -22,15 +21,6 @@ const formatValue = (item: Gratificacao) => {
 };
 
 const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName, gratificacoes, onEdit, onDelete }) => {
-    const { openConfirmModal } = useModal();
-
-    const handleDelete = (item: Gratificacao) => {
-        openConfirmModal(
-            'Excluir Registro',
-            `Tem certeza que deseja excluir este registro de ${item.tipo}?`,
-            () => onDelete(item)
-        );
-    };
 
     return (
         <div className="space-y-6">
@@ -76,7 +66,7 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName,
                                         <button onClick={() => onEdit(item)} className="text-blue-600 hover:text-blue-900 p-1" title="Editar">
                                             <Edit size={16} />
                                         </button>
-                                        <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900 p-1" title="Excluir">
+                                        <button onClick={() => onDelete(item)} className="text-red-600 hover:text-red-900 p-1" title="Excluir">
                                             <Trash size={16} />
                                         </button>
                                     </div>
@@ -116,7 +106,7 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName,
                                 <button onClick={() => onEdit(item)} className="text-blue-500 hover:text-blue-700 bg-blue-50 p-2 rounded-lg" title="Editar">
                                     <Edit size={16} />
                                 </button>
-                                <button onClick={() => handleDelete(item)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg" title="Excluir">
+                                <button onClick={() => onDelete(item)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg" title="Excluir">
                                     <Trash size={16} />
                                 </button>
                             </div>

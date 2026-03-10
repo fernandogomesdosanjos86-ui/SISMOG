@@ -28,6 +28,8 @@ export interface Funcionario {
     conta: string;
     pix: string;
     uniforme?: string;
+    valor_transporte_dia?: number;
+    valor_combustivel_dia?: number;
     status: 'ativo' | 'inativo' | 'ferias' | 'afastado';
     // Joined fields
     cargo?: {

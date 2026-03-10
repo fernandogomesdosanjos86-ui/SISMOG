@@ -2,23 +2,55 @@
 description: Visual standards and patterns for creating new SISMOG pages with consistent UI
 ---
 
-# /ui-ux-pro-max - SISMOG Visual Standards
+# /ui-ux-pro-max — Padrões Visuais e UX SISMOG
 
-## 🌍 Infrastructure Context
-- **Backend/Database:** Supabase (Projeto: `SISMOG`). Toda autenticação, fluxo de dados e schema de banco estão neste Supabase.
-- **Deploy/Hosting:** Vercel. Os deploys usam integração contínua (CI/CD) com ferramentas de validação de Build.
+> Consulte `workflowspagina.md` para o workflow completo de criação de páginas.
+> Consulte `standards.md` / `standards-reference.md` para regras de arquitetura e segurança.
 
-## 📐 Page Structure
+---
+
+## 🌍 Infraestrutura
+
+| Camada | Tecnologia | Regra |
+|--------|-----------|-------|
+| **Backend** | Supabase (`SISMOG`) | Client tipado: `createClient<Database>()` |
+| **Deploy** | Vercel | Build `tsc -b && vite build` com 0 erros |
+| **Cache** | React Query | staleTime dinâmico (STATIC 30m / MODERATE 5m / DYNAMIC 2m / REALTIME 30s) |
+| **Monitoramento** | Sentry (prod only) | ErrorBoundary + `captureException` |
+
+---
+
+## 📐 Hierarquia Visual da Página (Ordem Obrigatória)
+
 ```
-1. PageHeader (title, subtitle, action buttons)
-2. KPI Cards (3-column grid, optional)
-3. Filter Bar (search + dropdown filters. Deve vir PRECEDEDENDO as abas. Layout: `bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4`)
-4. Tabs (Company ou View tabs. Layout: `flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4`)
-5. ResponsiveTable (with SkeletonLoader)
-6. Loading Overlay
+1. PageHeader (título + botão ação)
+2. KPI Cards (grid 3 colunas, opcional)
+3. Filter Bar (search + dropdown)         ← SEMPRE ANTES das tabs
+4. Company/View Tabs                       ← SEMPRE DEPOIS dos filtros
+5. ResponsiveTable (skeleton + cards mobile)
+6. Loading Overlay (condicional)
 ```
 
-## 🛠️ Required Imports
+---
+
+## 🧩 Componentes Obrigatórios
+
+> ❌ É **PROIBIDO** usar `<span>`, `<input>`, `<select>`, `<button>` ou `<table>` nativos onde existir componente global.
+
+| Necessidade | Componente | Importação |
+|------------|-----------|-----------|
+| Badge empresa | `<CompanyBadge>` | `../../components/CompanyBadge` |
+| Status ativo/inativo | `<StatusBadge>` | `../../components/StatusBadge` |
+| Tabela (desktop + mobile) | `<ResponsiveTable>` | `../../components/ResponsiveTable` |
+| Input texto | `<InputField>` | `../../components/forms/InputField` |
+| Select | `<SelectField>` | `../../components/forms/SelectField` |
+| CPF/CNPJ/Telefone | `<MaskedInputField>` | `../../components/forms/MaskedInputField` |
+| Moeda | `<CurrencyInput>` | `../../components/forms/CurrencyInput` |
+| Botão primário | `<PrimaryButton>` | `../../components/PrimaryButton` |
+| Header de página | `<PageHeader>` | `../../components/PageHeader` |
+| KPI Card | `<StatCard>` | `../../components/StatCard` |
+
+### Imports Padrão de Página
 ```tsx
 import { useState } from 'react';
 import { use[Entity]s } from './hooks/use[Entity]s';
@@ -29,54 +61,30 @@ import StatusBadge from '../../components/StatusBadge';
 import CompanyBadge from '../../components/CompanyBadge';
 import { useModal } from '../../context/ModalContext';
 import { Plus, Search } from 'lucide-react';
-import { formatCurrency } from '../../utils/format';
+import { formatCurrency, formatDate } from '../../utils/format';
 import [Entity]Form from './components/[Entity]Form';
 import [Entity]Details from './components/[Entity]Details';
 ```
 
-## 🎨 Color Palette
-| Type | Border | Badge BG/Text |
-|------|--------|---------------|
+---
+
+## 🎨 Paleta de Cores
+
+| Tipo | Border | Badge |
+|------|--------|-------|
 | FEMOG | `border-blue-500` | `bg-blue-100 text-blue-800` |
 | SEMOG | `border-orange-500` | `bg-purple-100 text-purple-800` |
-| Success | `border-green-500` | `bg-green-100 text-green-800` |
-| Warning | `border-yellow-500` | `bg-yellow-100 text-yellow-800` |
-| Error | `border-red-500` | `bg-red-100 text-red-800` |
+| Sucesso | `border-green-500` | `bg-green-100 text-green-800` |
+| Alerta | `border-yellow-500` | `bg-yellow-100 text-yellow-800` |
+| Erro | `border-red-500` | `bg-red-100 text-red-800` |
 
-## 🔄 React Query Hook
-```tsx
-// hooks/use[Entity]s.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { [entity]Service } from '../../../services/[entity]Service';
-import { queryKeys } from '../../../lib/queryClient';
+---
 
-export function use[Entity]s() {
-    const queryClient = useQueryClient();
-    const query = useQuery({
-        queryKey: queryKeys.[entity]s.list(),
-        queryFn: () => [entity]Service.get[Entity]s(),
-    });
-    const createMutation = useMutation({
-        mutationFn: (data) => [entity]Service.create[Entity](data),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.[entity]s.all }),
-    });
-    // updateMutation, deleteMutation similar pattern...
-    return {
-        [entity]s: query.data ?? [],
-        isLoading: query.isLoading,
-        refetch: query.refetch,
-        create: createMutation.mutateAsync,
-        update: updateMutation.mutateAsync,
-        delete: deleteMutation.mutateAsync,
-    };
-}
-```
-
-## 📦 Component Patterns
+## 📦 Padrões de Componentes
 
 ### PageHeader
 ```tsx
-<PageHeader title="[Module]" subtitle="[Description]"
+<PageHeader title="[Módulo]" subtitle="[Descrição]"
     action={<PrimaryButton onClick={handleCreate}><Plus size={20} className="mr-2"/>Novo</PrimaryButton>}
 />
 ```
@@ -94,16 +102,17 @@ export function use[Entity]s() {
 </div>
 ```
 
-### Filter Bar (Ordem: Sempre antes das abas)
+### Filter Bar (ANTES das tabs)
 ```tsx
-<div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+<div className="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div className="relative flex-1 w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/>
-        <input type="text" placeholder="Buscar..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)}
+        <input type="text" placeholder="Buscar..." value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
     </div>
     <div className="w-full md:w-auto">
-        <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
             className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full">
             <option value="TODOS">Todos</option>
         </select>
@@ -111,13 +120,15 @@ export function use[Entity]s() {
 </div>
 ```
 
-### Company/View Tabs (Ordem: Sempre depois dos filtros)
+### Company/View Tabs (DEPOIS dos filtros)
 ```tsx
-<div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
-    {['TODOS','SEMOG','FEMOG'].map(tab=>(
-        <button key={tab} onClick={()=>setCompanyFilter(tab)}
+<div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto">
+    {['TODOS','SEMOG','FEMOG'].map(tab => (
+        <button key={tab} onClick={() => setCompanyFilter(tab)}
             className={`px-6 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
-                companyFilter===tab ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                companyFilter===tab
+                    ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}>{tab==='TODOS'?'Todas':tab}</button>
     ))}
 </div>
@@ -125,64 +136,61 @@ export function use[Entity]s() {
 
 ### ResponsiveTable
 ```tsx
-<ResponsiveTable data={filteredData} columns={columns} keyExtractor={i=>i.id}
+<ResponsiveTable data={filteredData} columns={columns} keyExtractor={i => i.id}
     onRowClick={handleView} loading={isLoading} skeletonRows={5}
-    getRowBorderColor={i=>i.empresa==='FEMOG'?'border-blue-500':'border-orange-500'}
-    renderCard={i=>(<div className={`border-l-4 pl-3 ${i.empresa==='FEMOG'?'border-l-blue-500':'border-l-orange-500'}`}>
-        {/* card content */}
-    </div>)}
+    getRowBorderColor={i => i.empresa==='FEMOG'?'border-blue-500':'border-orange-500'}
+    renderCard={i => (
+        <div className={`border-l-4 pl-3 ${i.empresa==='FEMOG'?'border-l-blue-500':'border-l-orange-500'}`}>
+            {/* Card content - mobile */}
+        </div>
+    )}
 />
 ```
-```
+
+---
 
 ## 🏷️ Badges (Tags)
 
-**Regra de Padronização Visual:**
-Sempre que precisar renderizar uma "Tag" ou um indicativo de status para o usuário, você **DEVE OBRIGATORIAMENTE** usar um componente padronizado ao invés de codificar um `<span>` solto com cores tailwind (`bg-blue-100`, etc). 
+> **OBRIGATÓRIO:** Usar componentes padronizados. NUNCA `<span>` manual com cores.
 
-1. **Indicativo de Empresa (FEMOG/SEMOG):**
-   ```tsx
-   import CompanyBadge from '../../components/CompanyBadge';
-   <CompanyBadge company={item.empresa} />
-   ```
-2. **Booleanos / Status Binário (Ativo/Inativo, Aberto/Fechado):**
-   ```tsx
-   import StatusBadge from '../../components/StatusBadge';
-   // Padrão: Bolinha verde (Ativo) / vermelha (Inativo)
-   <StatusBadge active={item.status === 'ativo'} /> 
-   // Customizado: Mudando o texto
-   <StatusBadge active={item.status === 'aberto'} activeLabel="Aberto" inactiveLabel="Fechado" />
-   ```
-3. **Outros Status Textuais Específicos (Emitido, Recebido, Oficial, etc):**
-   Quando a tag não for uma Empresa nem um booleano simples, use um `span` padronizado mantendo sempre as proporções de padding `px-2.5 py-0.5 rounded-full text-xs font-medium` (Se dentro de cards menores, pode usar `px-2 text-[10px]`). Exemplo:
-   ```tsx
-   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-       item.tipo === 'Oficial' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-   }`}>
-       {item.tipo}
-   </span>
-   ```
+### 1. Empresa
+```tsx
+<CompanyBadge company={item.empresa} />  // FEMOG: blue, SEMOG: purple
+```
+
+### 2. Status Booleano
+```tsx
+<StatusBadge active={item.status === 'ativo'} />
+<StatusBadge active={item.status === 'aberto'} activeLabel="Aberto" inactiveLabel="Fechado" />
+```
+
+### 3. Status Textual Customizado (quando não há componente)
+```tsx
+<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+    item.tipo === 'Oficial' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+}`}>{item.tipo}</span>
+```
+
+---
 
 ## 🪟 Modal Patterns
 
 ### View Modal
-**Regra de Título:** O título do modal deve SEMPRE seguir o padrão "Detalhes do [Entidade]" ou "Detalhes da [Entidade]" (ex: Detalhes do Usuário, Detalhes da Gratificação). Nunca use termos genéricos como "Histórico" ou apenas a entidade.
-
 ```tsx
-openViewModal('Detalhes do [Entidade]', <[Entity]Details [entity]={item}/>, {
+openViewModal('Detalhes do/da [Entidade]', <[Entity]Details [entity]={item}/>, {
     canEdit: true, canDelete: true,
-    onEdit: ()=>openFormModal('Editar', <[Entity]Form initialData={item} onSuccess={refetch}/>),
-    onDelete: ()=>openConfirmModal('Excluir', 'Confirma?', async()=>{
-        await delete[Entity](item.id);
+    onEdit: () => openFormModal('Editar', <[Entity]Form initialData={item} onSuccess={refetch}/>),
+    onDelete: () => openConfirmModal('Excluir', 'Confirma exclusão?', async () => {
+        await deleteEntity(item.id);
         showFeedback('success', 'Excluído!');
     }),
 });
 ```
 
+> **Regra de Título:** SEMPRE "Detalhes do/da [Entidade]". Nunca genérico.
+
 ### Details Component (Premium Card Pattern)
 ```tsx
-import { Info } from 'lucide-react';
-// ...
 <div className="space-y-6">
     {/* Header / Main Info */}
     <div className="flex items-start justify-between border-b border-gray-100 pb-5">
@@ -193,17 +201,17 @@ import { Info } from 'lucide-react';
         <CompanyBadge company={entity.empresa} />
     </div>
 
-    {/* Grid Infos (Premium Cards Pattern) */}
+    {/* Grid Infos (Premium Cards) */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Card padrão */}
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
             <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
                 <Info size={16} className="mr-2" /> [Label]
             </div>
             <div className="text-gray-900 font-semibold text-lg">{value}</div>
-            <div className="text-xs text-gray-500 font-mono">...</div>
         </div>
-        
-        {/* Highlight Card Example */}
+
+        {/* Card highlight (destaque) */}
         <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col gap-2">
             <div className="flex items-center text-blue-700 text-sm font-medium mb-1">
                 <Info size={16} className="mr-2" /> [Highlight Label]
@@ -213,72 +221,127 @@ import { Info } from 'lucide-react';
     </div>
 
     {/* Footer Timestamp */}
-    <div className="text-xs text-gray-400 pt-4 text-center">Registrado em date</div>
+    <div className="text-xs text-gray-400 pt-4 text-center">Registrado em {formatDate(entity.created_at)}</div>
 </div>
 ```
 
+---
+
 ## 📝 Form Pattern
+
 ```tsx
-const [Entity]Form = ({ initialData, onSuccess }) => {
-    const { closeModal, showFeedback } = useModal();
-    const { create, update, isCreating, isUpdating } = use[Entity]s();
-    const [formData, setFormData] = useState({...});
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            initialData ? await update({id:initialData.id, data:formData}) : await create(formData);
-            showFeedback('success', 'Salvo!'); onSuccess(); closeModal();
-        } catch { showFeedback('error', 'Erro!'); }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{/* inputs */}</div>
-            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
-                <button type="button" onClick={closeModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Cancelar</button>
-                <PrimaryButton type="submit" disabled={isCreating||isUpdating}>
-                    {isCreating||isUpdating ? 'Salvando...' : 'Salvar'}
-                </PrimaryButton>
-            </div>
-        </form>
-    );
-};
+<form onSubmit={handleSubmit} className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <InputField label="Nome" name="nome" value="..." onChange={...} required />
+        <SelectField label="Empresa" name="empresa" value="..." onChange={...}
+            options={[{value: 'FEMOG', label: 'FEMOG'}, {value: 'SEMOG', label: 'SEMOG'}]} required />
+        <MaskedInputField label="CPF" mask="999.999.999-99" name="cpf" value="..." onChange={...} required />
+    </div>
+    <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+        <button type="button" onClick={closeModal}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Cancelar
+        </button>
+        <PrimaryButton type="submit" disabled={isSaving}>
+            {isSaving ? 'Salvando...' : 'Salvar'}
+        </PrimaryButton>
+    </div>
+</form>
 ```
 
-### Form Inputs (Global Components)
-```tsx
-import { InputField } from '../../components/forms/InputField';
-import { SelectField } from '../../components/forms/SelectField';
-import { MaskedInputField } from '../../components/forms/MaskedInputField';
+> **Checkbox:** `className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"`
 
-// Use components instead of native html inputs for consistency
-<InputField label="Nome" name="nome" value="..." onChange={...} required />
-<SelectField label="Empresa" name="empresa" value="..." onChange={...} options={[{value: 'FEMOG', label: 'FEMOG'}, {value: 'SEMOG', label: 'SEMOG'}]} required />
-<MaskedInputField label="CPF" mask="999.999.999-99" name="cpf" value="..." onChange={...} required />
+---
 
-// Checkbox (Native with classes):
-// className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-```
+## 🔤 Tipografia e Espaçamento
 
-## 🏷️ Badges
-```tsx
-<CompanyBadge company={item.empresa}/>  // FEMOG: blue, SEMOG: purple
-<StatusBadge active={item.status==='ativo'} activeLabel="Ativo" inactiveLabel="Inativo"/>
-<span className="px-2 py-1 text-xs rounded-full font-bold bg-[color]-100 text-[color]-800">{text}</span>
-```
-
-## 📏 Typography & Spacing
-| Element | Classes |
-|---------|---------|
-| Page Title | `text-2xl font-bold text-gray-900` |
-| Section Header | `text-sm font-semibold text-gray-900 mb-4 pb-1 border-b` |
+| Elemento | Classes |
+|----------|---------|
+| Título da página | `text-2xl font-bold text-gray-900` |
+| Header de seção | `text-sm font-semibold text-gray-900 mb-4 pb-1 border-b` |
 | Label | `text-sm font-medium text-gray-700` |
-| Currency | `font-bold text-green-700` |
-| Page container | `space-y-6`, Card: `p-4`, Grid: `gap-4` |
+| Moeda | `font-bold text-green-700` |
+| Container da página | `space-y-4` |
+| Card | `p-4` |
+| Grid | `gap-4` |
 
-## ✅ Checklist
-- [ ] types.ts, hooks/use[Entity]s.ts, components/Form+Details, [Entity]s.tsx
-- [ ] Query keys in queryClient.ts
-- [ ] Use `isLoading` from hook, pass `loading={isLoading}` to table
-- [ ] Route in routes.ts, App.tsx, Sidebar.tsx
+---
+
+## 📱 Mobile
+
+- Todas as tabelas DEVEM ter `renderCard` para mobile
+- Cards com `border-l-4` colorido por empresa
+- Filter bar: `flex-col` em mobile, `flex-row` em desktop
+- Tabs com `overflow-x-auto` para scroll horizontal
+
+---
+
+## ♿ Acessibilidade
+
+- `lang="pt-BR"` no `index.html`
+- `focus:ring-2 focus:ring-blue-500` em todos os inputs interativos
+- Labels em todos os campos de formulário
+- Skeleton loader durante carregamento (nunca tela em branco)
+- Feedback após ações: `showFeedback('success'|'error', mensagem)`
+
+---
+
+## ⚡ Performance e Deploy
+
+### Regras Obrigatórias
+- NUNCA `select('*')` → listar colunas explicitamente
+- SEMPRE lazy load de rotas: `lazy(() => import(...))`
+- SEMPRE DevTools condicional: `import.meta.env.DEV`
+- NUNCA `console.log` em produção
+- `npm run build` local com 0 erros ANTES de push
+
+### Vercel Config
+```json
+{
+    "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+    "headers": [{
+        "source": "/assets/(.*)",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }]
+}
+```
+
+### React Query Hook Pattern
+```tsx
+import { STALE_TIMES, queryKeys } from '../../../lib/queryClient';
+
+useQuery({
+    queryKey: queryKeys.[entity]s.list(),
+    queryFn: () => [entity]Service.get[Entity]s(),
+    staleTime: STALE_TIMES.MODERATE,  // Ajustar: STATIC(30m), DYNAMIC(2m), REALTIME(30s)
+});
+```
+
+---
+
+## 🔒 Segurança
+
+- Toda tabela nova: RLS habilitada + policies por perfil
+- Comparação case-insensitive com `LOWER()`
+- NUNCA `service_role_key` no frontend
+- Tabela de usuários: usar `usuarios` (NUNCA `con_usuarios`)
+- Client tipado: `createClient<Database>()` com casts documentados
+
+---
+
+## ✅ Checklist da Página
+
+| Item | ✓ |
+|------|---|
+| PageHeader com botão Novo | |
+| Table renderiza dados com skeleton | |
+| Mobile cards funcionam (renderCard) | |
+| Filtros Search + Company tabs | |
+| Filtros ANTES das tabs (ordem) | |
+| View modal: "Detalhes do/da [Entidade]" | |
+| Edit/Delete funcionam com feedback | |
+| Form usa componentes globais (InputField/SelectField) | |
+| Cache atualiza após CRUD (invalidateQueries) | |
+| RLS policies aplicadas na tabela |  |
+| `npm run build` local: 0 erros | |
+| Rota: `routes.ts` + `App.tsx` (lazy) + Sidebar | |

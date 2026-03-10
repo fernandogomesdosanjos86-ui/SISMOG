@@ -7,7 +7,7 @@ export const supervisaoService = {
         // Fetch postos
         const { data: postos, error } = await supabase
             .from('postos_trabalho')
-            .select(`*`)
+            .select('id, nome, empresa, status, created_at, updated_at')
             .order('nome', { ascending: true });
 
         if (error) throw error;

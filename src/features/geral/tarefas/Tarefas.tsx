@@ -11,6 +11,7 @@ import TarefaDetails from './components/TarefaDetails';
 import TarefaStatusBadge from './components/TarefaStatusBadge';
 import { format, parseISO } from 'date-fns';
 import type { Tarefa } from './types';
+import { useTarefasNotification } from './context/TarefasNotificationContext';
 
 const prioridadeColors: Record<string, string> = {
     'Normal': 'bg-gray-100 text-gray-800',
@@ -28,11 +29,12 @@ const Tarefas = () => {
     const { user } = useAuth();
     const { tarefas, isLoading, refetch, delete: del } = useTarefas();
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
+    const { unreadTaskIds } = useTarefasNotification();
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
     const [prioridadeFilter, setPrioridadeFilter] = useState('TODOS');
-    const [statusTab, setStatusTab] = useState('TODOS');
+    const [statusTab, setStatusTab] = useState('Pendente');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 50;
 
@@ -116,7 +118,17 @@ const Tarefas = () => {
         {
             key: 'titulo',
             header: 'Título',
-            render: (i: Tarefa) => <span className="font-semibold text-gray-900">{i.titulo}</span>
+            render: (i: Tarefa) => {
+                const isUnread = unreadTaskIds.includes(i.id);
+                return (
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900">{i.titulo}</span>
+                        {isUnread && (
+                            <span className="bg-blue-500 rounded-full h-2 w-2 shadow-[0_0_8px_rgba(59,130,246,0.8)]" title="Nova atualização ou mensagem" />
+                        )}
+                    </div>
+                );
+            }
         },
         {
             key: 'prioridade',
@@ -227,12 +239,12 @@ const Tarefas = () => {
             </div>
 
             {/* View Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
+            <div className="flex bg-white p-1 rounded-lg w-full shadow-sm overflow-x-auto mb-4">
                 {['TODOS', 'Pendente', 'Em Andamento', 'Concluído'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setStatusTab(tab)}
-                        className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${statusTab === tab
+                        className={`flex-1 px-4 sm:px-6 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${statusTab === tab
                             ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
                             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
@@ -251,25 +263,33 @@ const Tarefas = () => {
                 skeletonRows={5}
                 emptyMessage="Nenhuma tarefa encontrada."
                 getRowBorderColor={i => i.prioridade === 'Urgente' ? 'border-red-500' : 'border-gray-200'}
-                renderCard={i => (
-                    <div className={`border-l-4 pl-3 ${i.prioridade === 'Urgente' ? 'border-l-red-500' : 'border-l-gray-300'}`}>
-                        <div className="flex justify-between items-start mb-1">
-                            <div className="font-bold text-gray-900">{i.titulo}</div>
-                            <TarefaStatusBadge status={i.status_tarefa} />
+                renderCard={i => {
+                    const isUnread = unreadTaskIds.includes(i.id);
+                    return (
+                        <div className={`border-l-4 pl-3 ${i.prioridade === 'Urgente' ? 'border-l-red-500' : 'border-l-gray-300'}`}>
+                            <div className="flex justify-between items-start mb-1">
+                                <div className="flex flex-1 items-center gap-2 pr-2">
+                                    <div className="font-bold text-gray-900 leading-tight">{i.titulo}</div>
+                                    {isUnread && (
+                                        <span className="bg-blue-500 rounded-full flex-shrink-0 h-2 w-2 shadow-[0_0_8px_rgba(59,130,246,0.8)]" title="Nova atualização ou mensagem" />
+                                    )}
+                                </div>
+                                <TarefaStatusBadge status={i.status_tarefa} />
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                                {i.destinatarios?.map(d => (
+                                    <span key={d.usuario_id} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                        {getShortName(d.usuario?.nome)}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-2 flex justify-between items-center bg-gray-50 p-1.5 rounded">
+                                <span>Limite: <strong className="text-gray-600">{format(parseISO(i.data_limite), "dd/MM")}</strong></span>
+                                {i.prioridade === 'Urgente' && <span className="text-red-600 font-bold uppercase track">Urgente</span>}
+                            </div>
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                            {i.destinatarios?.map(d => (
-                                <span key={d.usuario_id} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                    {getShortName(d.usuario?.nome)}
-                                </span>
-                            ))}
-                        </div>
-                        <div className="text-xs text-gray-400 mt-2 flex justify-between items-center bg-gray-50 p-1.5 rounded">
-                            <span>Limite: <strong className="text-gray-600">{format(parseISO(i.data_limite), "dd/MM")}</strong></span>
-                            {i.prioridade === 'Urgente' && <span className="text-red-600 font-bold uppercase track">Urgente</span>}
-                        </div>
-                    </div>
-                )}
+                    );
+                }}
             />
 
             {/* Pagination */}

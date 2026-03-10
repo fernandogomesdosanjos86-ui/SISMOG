@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
 import { useModal } from '../../../../context/ModalContext';
 import { useTarefaDetail, useMissoes, useTarefaChat } from '../hooks/useTarefas';
+import { useTarefasNotification } from '../context/TarefasNotificationContext';
 import TarefaStatusBadge from './TarefaStatusBadge';
 import { Send, CheckCircle, CheckSquare, ListTodo, MessageSquare, Paperclip, Download } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -28,6 +29,7 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
     const { user } = useAuth();
     const { openConfirmModal } = useModal();
     const [activeTab, setActiveTab] = useState<TabType>('DADOS');
+    const { unreadTaskIds, markAsRead } = useTarefasNotification();
 
     // Live data fetching for reactive updates
     const { tarefa: liveTarefa } = useTarefaDetail(initialTarefa.id);
@@ -46,6 +48,13 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
     const [chatText, setChatText] = useState('');
     const [chatFile, setChatFile] = useState<File | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Mark as read when component mounts or task changes and is unread
+    useEffect(() => {
+        if (tarefa?.id && unreadTaskIds.includes(tarefa.id)) {
+            markAsRead(tarefa.id);
+        }
+    }, [tarefa?.id, unreadTaskIds, markAsRead]);
 
     useEffect(() => {
         if (activeTab === 'CHAT') {
@@ -87,48 +96,51 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
     };
 
     return (
-        <div className="-m-4">
+        <div className="-mx-6 -mt-4 -mb-4 h-full flex flex-col">
 
-            {/* Header - Sticky at top */}
-            <div className="sticky top-0 z-20 bg-gray-50 border-b px-6 py-4 -mx-6 -mt-4">
-                <div className="flex justify-between items-start">
-                    <h2 className="text-xl font-bold text-gray-900">{tarefa.titulo}</h2>
-                    <div className="flex gap-2">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${prioridadeColors[tarefa.prioridade]}`}>
-                            {tarefa.prioridade}
-                        </span>
-                        <TarefaStatusBadge status={tarefa.status_tarefa} />
+            {/* Sticky Container for Header and Tabs */}
+            <div className="sticky -top-4 z-20 flex flex-col bg-gray-50 shadow-sm border-b">
+                {/* Header */}
+                <div className="px-6 py-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start md:items-center gap-3">
+                        <h2 className="text-xl font-bold text-gray-900 break-words w-full sm:w-auto">{tarefa.titulo}</h2>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium flex items-center ${prioridadeColors[tarefa.prioridade]}`}>
+                                {tarefa.prioridade}
+                            </span>
+                            <TarefaStatusBadge status={tarefa.status_tarefa} />
+                        </div>
                     </div>
+                </div>
+
+                {/* Navigation Tabs */}
+                <div className="flex overflow-x-auto bg-white px-2 sm:px-6 hide-scrollbar">
+                    <button
+                        onClick={() => setActiveTab('DADOS')}
+                        className={`flex-1 sm:flex-none px-2 sm:px-4 py-3 font-medium text-sm flex items-center justify-center border-b-2 transition-colors whitespace-nowrap ${activeTab === 'DADOS' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <ListTodo size={16} className="mr-2" />
+                        Tarefa
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('MISSOES')}
+                        className={`flex-1 sm:flex-none px-2 sm:px-4 py-3 font-medium text-sm flex items-center justify-center border-b-2 transition-colors whitespace-nowrap ${activeTab === 'MISSOES' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <CheckSquare size={16} className="mr-2" />
+                        Missões
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('CHAT')}
+                        className={`flex-1 sm:flex-none px-2 sm:px-4 py-3 font-medium text-sm flex items-center justify-center border-b-2 transition-colors whitespace-nowrap ${activeTab === 'CHAT' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <MessageSquare size={16} className="mr-2" />
+                        Chat
+                    </button>
                 </div>
             </div>
 
-            {/* Navigation Tabs - Sticky below header */}
-            <div className="sticky top-[57px] z-10 flex border-b px-6 pt-2 bg-white -mx-6">
-                <button
-                    onClick={() => setActiveTab('DADOS')}
-                    className={`px-4 py-2 font-medium text-sm border-b-2 flex items-center transition-colors ${activeTab === 'DADOS' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-                >
-                    <ListTodo size={16} className="mr-2" />
-                    Tarefa
-                </button>
-                <button
-                    onClick={() => setActiveTab('MISSOES')}
-                    className={`px-4 py-2 font-medium text-sm border-b-2 flex items-center transition-colors ${activeTab === 'MISSOES' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-                >
-                    <CheckSquare size={16} className="mr-2" />
-                    Missões
-                </button>
-                <button
-                    onClick={() => setActiveTab('CHAT')}
-                    className={`px-4 py-2 font-medium text-sm border-b-2 flex items-center transition-colors ${activeTab === 'CHAT' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-                >
-                    <MessageSquare size={16} className="mr-2" />
-                    Chat
-                </button>
-            </div>
-
             {/* Content Area */}
-            <div className="px-6 py-4 bg-gray-50 -mx-6">
+            <div className="px-6 py-4 bg-gray-50 flex-1">
 
                 {/* DADOS TAB */}
                 {activeTab === 'DADOS' && (

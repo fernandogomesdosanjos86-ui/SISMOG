@@ -6,7 +6,7 @@ export const financeiroService = {
     async getContratos() {
         const { data, error } = await supabase
             .from('contratos')
-            .select('*')
+            .select('id, empresa, contratante, nome_posto, valor_mensal, data_inicio, duracao_meses, dia_faturamento, dia_vencimento, vencimento_mes_corrente, retencao_pis, retencao_cofins, retencao_irpj, retencao_csll, retencao_inss, retencao_iss, perc_iss, tem_retencao_caucao, perc_retencao_caucao, status, created_at, updated_at')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -75,13 +75,14 @@ export const financeiroService = {
 
     async generateFaturamentos(competencia: string) {
         // 1. Get active contracts
-        const { data: contratos, error: contratosError } = await supabase
+        const { data: contratosRaw, error: contratosError } = await supabase
             .from('contratos')
-            .select('*')
+            .select('id, empresa, contratante, nome_posto, valor_mensal, data_inicio, duracao_meses, dia_faturamento, dia_vencimento, vencimento_mes_corrente, retencao_pis, retencao_cofins, retencao_irpj, retencao_csll, retencao_inss, retencao_iss, perc_iss, tem_retencao_caucao, perc_retencao_caucao, status, created_at, updated_at')
             .eq('status', 'ativo');
 
         if (contratosError) throw contratosError;
-        if (!contratos) return [];
+        if (!contratosRaw) return [];
+        const contratos = contratosRaw as unknown as Contrato[];
 
         const faturamentosGerados: Faturamento[] = [];
 
@@ -156,12 +157,12 @@ export const financeiroService = {
 
             const { data: newFaturamento, error: createError } = await supabase
                 .from('faturamentos')
-                .insert(faturamento)
+                .insert(faturamento as any)
                 .select()
                 .single();
 
             if (createError) throw createError;
-            if (newFaturamento) faturamentosGerados.push(newFaturamento as Faturamento);
+            if (newFaturamento) faturamentosGerados.push(newFaturamento as unknown as Faturamento);
         }
 
         return faturamentosGerados;
@@ -233,7 +234,7 @@ export const financeiroService = {
         // Exemplo 7 says: "Data Recebimento: 05/02/2026" (matches due date).
         // So default data_recebimento = faturamento.data_vencimento.
 
-        const dataRecebimento = fat.data_vencimento;
+        const dataRecebimento = fat.data_vencimento || new Date().toISOString().split('T')[0];
         const recCompetencia = dataRecebimento.substring(0, 7) + '-01'; // YYYY-MM-01
 
         const recebimento: Partial<Recebimento> = {
@@ -254,7 +255,7 @@ export const financeiroService = {
 
         const { data: newRec, error: createRecError } = await supabase
             .from('recebimentos')
-            .insert(recebimento)
+            .insert(recebimento as any)
             .select()
             .single();
 
@@ -305,12 +306,12 @@ export const financeiroService = {
     async createRecebimentoAvulso(recebimento: Partial<Recebimento>) {
         const { data, error } = await supabase
             .from('recebimentos')
-            .insert({ ...recebimento, tipo: 'avulso' })
+            .insert({ ...recebimento, tipo: 'avulso' } as any)
             .select()
             .single();
 
         if (error) throw error;
-        return data as Recebimento;
+        return data as unknown as Recebimento;
     },
 
     async updateRecebimento(id: string, recebimento: Partial<Recebimento>) {
@@ -357,13 +358,13 @@ export const financeiroService = {
 
     // Helper
     calculateRetencoes(base: {
-        retencao_pis: boolean;
-        retencao_cofins: boolean;
-        retencao_irpj: boolean;
-        retencao_csll: boolean;
-        retencao_inss: boolean;
-        retencao_iss: boolean;
-        perc_iss: number;
+        retencao_pis: boolean | null;
+        retencao_cofins: boolean | null;
+        retencao_irpj: boolean | null;
+        retencao_csll: boolean | null;
+        retencao_inss: boolean | null;
+        retencao_iss: boolean | null;
+        perc_iss: number | null;
     }, valorBruto: number) {
         const ret = {
             pis: base.retencao_pis ? valorBruto * 0.0065 : 0,
@@ -371,7 +372,7 @@ export const financeiroService = {
             irpj: base.retencao_irpj ? valorBruto * 0.01 : 0,
             csll: base.retencao_csll ? valorBruto * 0.01 : 0,
             inss: base.retencao_inss ? valorBruto * 0.11 : 0,
-            iss: base.retencao_iss ? valorBruto * (base.perc_iss / 100) : 0,
+            iss: base.retencao_iss ? valorBruto * ((base.perc_iss || 0) / 100) : 0,
         };
         const total = Object.values(ret).reduce((acc, curr) => acc + curr, 0);
         return { ...ret, totalRetencoes: total };

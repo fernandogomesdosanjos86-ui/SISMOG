@@ -6,7 +6,7 @@ export const equipamentosService = {
         // Fetch equipments and their destinations to calculate available stock
         const { data: equipamentos, error } = await supabase
             .from('equipamentos')
-            .select('*')
+            .select('id, descricao, categoria, identificacao, quantidade, status, created_at, updated_at')
             .order('categoria')
             .order('descricao');
 
@@ -45,13 +45,13 @@ export const equipamentosService = {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return data as EquipamentoDestinacao[];
+        return data as unknown as EquipamentoDestinacao[];
     },
 
     async createEquipamento(equipamento: Partial<Equipamento>) {
         const { data, error } = await supabase
             .from('equipamentos')
-            .insert(equipamento)
+            .insert(equipamento as any)
             .select()
             .single();
 
@@ -62,7 +62,7 @@ export const equipamentosService = {
     async updateEquipamento(id: string, equipamento: Partial<Equipamento>) {
         const { data, error } = await supabase
             .from('equipamentos')
-            .update(equipamento)
+            .update(equipamento as any)
             .eq('id', id)
             .select()
             .single();

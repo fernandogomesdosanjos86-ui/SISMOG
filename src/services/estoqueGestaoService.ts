@@ -7,7 +7,7 @@ export const estoqueGestaoService = {
     async getProdutos(): Promise<(Produto & { em_estoque: number })[]> {
         const { data: produtos, error } = await supabase
             .from('estoque_produtos')
-            .select('*')
+            .select('id, codigo, produto, tipo, cor, tamanho, created_at')
             .order('codigo');
 
         if (error) throw error;
@@ -32,7 +32,7 @@ export const estoqueGestaoService = {
         return (produtos || []).map(p => ({
             ...p,
             em_estoque: saldoMap[p.id] || 0,
-        }));
+        })) as unknown as (Produto & { em_estoque: number })[];
     },
 
     generateCodigo(produto: string, cor?: string, tamanho?: string): string {

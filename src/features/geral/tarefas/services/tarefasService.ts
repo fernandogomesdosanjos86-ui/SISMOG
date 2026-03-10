@@ -248,7 +248,7 @@ export const tarefasService = {
         const { error } = await supabase
             .from('geral_missoes')
             .update({
-                status_missao: novoStatus,
+                status_missao: novoStatus as any,
                 updated_at: new Date().toISOString()
             })
             .eq('id', missaoId);

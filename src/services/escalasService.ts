@@ -114,7 +114,7 @@ export const escalasService = {
     saveEscalaEmMassa: async (escalasData: Partial<Escala>[]) => {
         const { data, error } = await supabase
             .from('supervisao_escalas')
-            .upsert(escalasData, {
+            .upsert(escalasData as any, {
                 onConflict: 'competencia, funcionario_id, posto_id', // Make sure it overwrites instead of creating dupes
                 ignoreDuplicates: false
             })

@@ -1,10 +1,18 @@
 import { QueryClient } from '@tanstack/react-query';
 
+// staleTime by data volatility
+export const STALE_TIMES = {
+    STATIC: 1000 * 60 * 30,      // 30min — cargos, postos, veículos, equipamentos, curriculos
+    MODERATE: 1000 * 60 * 5,     // 5min — funcionários, contratos, escalas, gratificações
+    DYNAMIC: 1000 * 60 * 2,      // 2min — apontamentos, faturamentos, recebimentos, tarefas
+    REALTIME: 1000 * 30,          // 30s — chats
+} as const;
+
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
-            gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+            staleTime: STALE_TIMES.MODERATE,
+            gcTime: 1000 * 60 * 30,
             retry: 2,
             refetchOnWindowFocus: false,
             refetchOnReconnect: true,

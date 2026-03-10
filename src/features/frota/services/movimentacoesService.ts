@@ -56,7 +56,7 @@ export const movimentacoesService = {
         const { data, error } = await supabase.rpc('get_movimentacoes_kpis', {
             p_month: parseInt(month, 10),
             p_year: parseInt(year, 10),
-            p_search_term: searchTerm || null
+            p_search_term: searchTerm || null as any
         });
 
         if (error) throw error;
@@ -89,7 +89,7 @@ export const movimentacoesService = {
         let responsavel = "Usuário Desconhecido";
         if (userData.user?.id) {
             const { data: profileData } = await supabase
-                .from('con_usuarios')
+                .from('usuarios')
                 .select('nome')
                 .eq('id', userData.user.id)
                 .single();
@@ -113,7 +113,7 @@ export const movimentacoesService = {
 
         const { error } = await supabase
             .from('frota_movimentacoes')
-            .insert([payload]);
+            .insert([payload] as any);
 
         if (error) throw error;
     },
@@ -141,7 +141,7 @@ export const movimentacoesService = {
 
         const { error } = await supabase
             .from('frota_movimentacoes')
-            .update(payload)
+            .update(payload as any)
             .eq('id', id);
 
         if (error) throw error;

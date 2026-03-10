@@ -20,6 +20,7 @@ export const APP_ROUTES = {
         ROOT: '#rh',
         CARGOS_SALARIOS: '/rh/cargos-salarios',
         FUNCIONARIOS: '/rh/funcionarios',
+        BENEFICIOS: '/rh/beneficios',
         PENALIDADES: '/rh/penalidades',
         GRATIFICACOES: '/rh/gratificacoes',
     },

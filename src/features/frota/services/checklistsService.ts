@@ -64,7 +64,7 @@ export const checklistsService = {
 
         if (user) {
             const { data: profileData } = await supabase
-                .from('con_usuarios')
+                .from('usuarios')
                 .select('nome')
                 .eq('id', user.id)
                 .single();
@@ -88,7 +88,7 @@ export const checklistsService = {
 
         const { data, error } = await supabase
             .from('frota_checklists')
-            .insert([payload])
+            .insert([payload] as any)
             .select()
             .single();
 

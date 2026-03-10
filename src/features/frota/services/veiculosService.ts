@@ -5,7 +5,7 @@ export const veiculosService = {
     async getVeiculos() {
         const { data, error } = await supabase
             .from('frota_veiculos')
-            .select('*')
+            .select('id, placa, marca_modelo, tipo, status, abastecimento, capacidade_bateria, created_at')
             .order('created_at', { ascending: false });
 
         if (error) throw error;

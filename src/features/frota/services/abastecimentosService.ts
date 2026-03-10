@@ -99,7 +99,7 @@ export const abastecimentosService = {
 
         const { data, error } = await supabase
             .from('frota_abastecimentos')
-            .insert([payload])
+            .insert([payload] as any)
             .select()
             .single();
 
@@ -113,7 +113,7 @@ export const abastecimentosService = {
     async updateAbastecimento(id: string, abastecimento: Partial<AbastecimentoFormData>): Promise<Abastecimento> {
         const { data, error } = await supabase
             .from('frota_abastecimentos')
-            .update(abastecimento)
+            .update(abastecimento as any)
             .eq('id', id)
             .select()
             .single();
