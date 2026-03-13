@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { supabase } from '../../../../services/supabase';
 import { useAuth } from '../../../../context/AuthContext';
 import { useModal } from '../../../../context/ModalContext';
+import type { UnreadTarefa } from '../types';
 
 interface TarefasNotificationContextType {
     unreadTaskIds: string[];
@@ -16,19 +18,20 @@ export const TarefasNotificationProvider: React.FC<{ children: ReactNode }> = ({
     const { showFeedback } = useModal();
     const [unreadTaskIds, setUnreadTaskIds] = useState<string[]>([]);
 
-    const fetchUnread = async () => {
+    const fetchUnread = React.useCallback(async () => {
         if (!user) return;
         try {
             const { data, error } = await supabase.rpc('get_unread_tarefas');
             if (error) throw error;
             if (data) {
                 // Ensure unique IDs
-                setUnreadTaskIds(Array.from(new Set(data.map((r: any) => r.tarefa_id))));
+                const tasks = data as UnreadTarefa[];
+                setUnreadTaskIds(Array.from(new Set(tasks.map(r => r.tarefa_id))));
             }
         } catch (error) {
             console.error('Error fetching unread tasks:', error);
         }
-    };
+    }, [user]);
 
     const markAsRead = async (tarefaId: string) => {
         if (!user) return;
@@ -73,17 +76,16 @@ export const TarefasNotificationProvider: React.FC<{ children: ReactNode }> = ({
 
                     if (!isInsert && !isUpdate) return;
 
-                    const record = payload.new as any;
+                    const record = payload.new as { id: string; titulo: string; status_tarefa: string; remetente_id: string };
 
                     // Small delay to ensure DB triggers/relationships sync before checking RPC
                     setTimeout(async () => {
-                        // Re-fetch everything, or we could manually check if user is involved
+                        // Re-fetch everything
                         await fetchUnread();
 
-                        // To show toast, we need to know if the user is involved. 
-                        // The easiest way is to fetch the unread list and see if this task is in it NOW.
                         const { data: latestUnread } = await supabase.rpc('get_unread_tarefas');
-                        const isUnread = latestUnread?.some((t: any) => t.tarefa_id === record.id);
+                        const tasks = latestUnread as UnreadTarefa[] | null;
+                        const isUnread = tasks?.some(t => t.tarefa_id === record.id);
 
                         // We might not want to toast the sender if they created it.
                         if (isUnread && record.remetente_id !== user.id) {
@@ -101,11 +103,9 @@ export const TarefasNotificationProvider: React.FC<{ children: ReactNode }> = ({
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'geral_tarefa_chats' },
                 (payload) => {
-                    const record = payload.new as any;
+                    const record = payload.new as { usuario_id: string };
                     if (record.usuario_id !== user.id) {
                         setTimeout(() => fetchUnread(), 200);
-                        // showFeedback('info', `Nova mensagem na tarefa`);
-                        // Opted out of chat toasts to prevent spam if they chat often, only marking as unread.
                     }
                 }
             )
@@ -114,7 +114,7 @@ export const TarefasNotificationProvider: React.FC<{ children: ReactNode }> = ({
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [user, showFeedback]);
+    }, [user, showFeedback, fetchUnread]);
 
     return (
         <TarefasNotificationContext.Provider value={{ unreadTaskIds, markAsRead, refreshUnread: fetchUnread }}>

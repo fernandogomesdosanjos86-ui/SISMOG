@@ -9,6 +9,7 @@ import BeneficiosKPIs from './components/BeneficiosKPIs';
 import BeneficiosTable from './components/BeneficiosTable';
 import GerarBeneficiosModal from './components/GerarBeneficiosModal';
 import { useDebounce } from '../../../hooks/useDebounce';
+import type { BeneficioCalculado } from './types';
 
 const Beneficios: React.FC = () => {
     // Current date for default competence YYYY-MM
@@ -25,7 +26,7 @@ const Beneficios: React.FC = () => {
 
     // Filtragem local textual (Posto, Funcionário, Cargo)
     const filteredDados = useMemo(() => {
-        const sortByName = (arr: typeof beneficios) =>
+        const sortByName = (arr: BeneficioCalculado[]) =>
             [...arr].sort((a, b) => (a.funcionarios?.nome || '').localeCompare(b.funcionarios?.nome || ''));
 
         if (!debouncedSearch) return sortByName(beneficios);
@@ -70,7 +71,7 @@ const Beneficios: React.FC = () => {
                 try {
                     await deleteBeneficio(id);
                     showFeedback('success', 'Registro excluído. Você pode gerá-lo novamente.');
-                } catch (error) {
+                } catch {
                     showFeedback('error', 'Falha ao excluir o registro.');
                 }
             }

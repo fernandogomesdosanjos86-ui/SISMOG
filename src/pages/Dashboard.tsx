@@ -41,7 +41,7 @@ const Dashboard: FC = () => {
         return tarefas.filter(t =>
             t.destinatarios?.some(d => d.usuario_id === user.id)
         );
-    }, [tarefas, user?.id]);
+    }, [tarefas, user]);
 
     const tarefasPendentes = minhasTarefas.filter(t => t.status_tarefa === 'Pendente').length;
 

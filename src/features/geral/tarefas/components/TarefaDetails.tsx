@@ -187,7 +187,7 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
                             )}
                         </div>
 
-                        {tarefa.missoes?.map((m: any, idx: number) => (
+                        {tarefa.missoes?.map((m, idx) => (
                             <div key={m.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-start justify-between group">
                                 <div className="flex-1 pr-4">
                                     <div className="flex items-center mb-1">

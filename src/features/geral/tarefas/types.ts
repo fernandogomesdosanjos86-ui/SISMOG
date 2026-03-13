@@ -71,3 +71,8 @@ export interface ChatFormData {
     chat: string;
     arquivo?: File | null;
 }
+
+export interface UnreadTarefa {
+    tarefa_id: string;
+    last_read: string | null;
+}

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1399,6 +1399,39 @@ export type Database = {
         }
         Relationships: []
       }
+      geral_tarefa_leituras: {
+        Row: {
+          tarefa_id: string
+          usuario_id: string
+          ultima_leitura: string
+        }
+        Insert: {
+          tarefa_id: string
+          usuario_id: string
+          ultima_leitura?: string
+        }
+        Update: {
+          tarefa_id?: string
+          usuario_id?: string
+          ultima_leitura?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geral_tarefa_leituras_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "geral_tarefas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geral_tarefa_leituras_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1434,6 +1467,13 @@ export type Database = {
         Returns: boolean
       }
       is_tarefa_sender: { Args: { check_tarefa_id: string }; Returns: boolean }
+      get_unread_tarefas: {
+        Args: never
+        Returns: {
+          tarefa_id: string
+          last_read: string | null
+        }[]
+      }
     }
     Enums: {
       empresa_enum: "SEMOG" | "FEMOG"

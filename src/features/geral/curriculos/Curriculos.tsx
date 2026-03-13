@@ -14,6 +14,7 @@ import CurriculoStatusBadge from './components/CurriculoStatusBadge';
 import type { Curriculo } from './types';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import FilterTabs from '../../../components/ui/FilterTabs';
 
 const Curriculos = () => {
     const { curriculos, isLoading, refetch, delete: del } = useCurriculos();
@@ -175,19 +176,18 @@ const Curriculos = () => {
             </div>
 
             {/* Status Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto">
-                {['TODOS', 'Pendente', 'Aprovado', 'Reprovado', 'Contratado'].map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => setStatusTab(tab)}
-                        className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${statusTab === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todos' : tab}
-                    </button>
-                ))}
+            <div className="mb-4">
+                <FilterTabs
+                    tabs={[
+                        { id: 'TODOS', label: 'Todos' },
+                        { id: 'Pendente', label: 'Pendente' },
+                        { id: 'Aprovado', label: 'Aprovado' },
+                        { id: 'Reprovado', label: 'Reprovado' },
+                        { id: 'Contratado', label: 'Contratado' }
+                    ]}
+                    activeTab={statusTab}
+                    onChange={setStatusTab}
+                />
             </div>
 
             <ResponsiveTable

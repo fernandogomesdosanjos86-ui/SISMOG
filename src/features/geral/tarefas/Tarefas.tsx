@@ -12,6 +12,7 @@ import TarefaStatusBadge from './components/TarefaStatusBadge';
 import { format, parseISO } from 'date-fns';
 import type { Tarefa } from './types';
 import { useTarefasNotification } from './context/TarefasNotificationContext';
+import FilterTabs from '../../../components/ui/FilterTabs';
 
 const prioridadeColors: Record<string, string> = {
     'Normal': 'bg-gray-100 text-gray-800',
@@ -239,19 +240,17 @@ const Tarefas = () => {
             </div>
 
             {/* View Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-full shadow-sm overflow-x-auto mb-4">
-                {['TODOS', 'Pendente', 'Em Andamento', 'Concluído'].map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => setStatusTab(tab)}
-                        className={`flex-1 px-4 sm:px-6 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-all ${statusTab === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todos os Status' : tab}
-                    </button>
-                ))}
+            <div className="mb-4">
+                <FilterTabs
+                    tabs={[
+                        { id: 'TODOS', label: 'Todos os Status' },
+                        { id: 'Pendente', label: 'Pendente' },
+                        { id: 'Em Andamento', label: 'Em Andamento' },
+                        { id: 'Concluído', label: 'Concluído' }
+                    ]}
+                    activeTab={statusTab}
+                    onChange={setStatusTab}
+                />
             </div>
 
             <ResponsiveTable

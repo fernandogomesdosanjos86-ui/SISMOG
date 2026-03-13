@@ -1,8 +1,43 @@
 import { supabase } from '../../../../services/supabase';
+import type { BeneficioCalculado } from '../types';
 
 interface GenerateParams {
     competencia: string;
     empresa: 'FEMOG' | 'SEMOG';
+}
+
+interface AlocacaoResult {
+    funcionario_id: string;
+    posto_id: string;
+    funcionarios: {
+        id: string;
+        empresa: string;
+        status: string;
+        valor_transporte_dia: number;
+        valor_combustivel_dia: number;
+        cargo_id: string;
+    } | null;
+}
+
+interface EscalaResult {
+    funcionario_id: string;
+    qnt_dias: number;
+    dias?: unknown; // Complex JSON structure, using unknown for safety
+}
+
+interface ApontamentoResult {
+    funcionario_id: string;
+    beneficios_pts: number | null;
+}
+
+interface CargoResult {
+    id: string;
+    valor_aux_alim: number | null;
+}
+
+interface GratificacaoResult {
+    funcionario_id: string;
+    incentivo_valor: number | null;
 }
 
 export async function gerarBeneficios({ competencia, empresa }: GenerateParams) {
@@ -25,8 +60,9 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
     const [anoStr, mesStr] = competencia.split('-');
 
     // 2. Coletar IDs para buscas em massa
-    const funcIds = alocacoes.map((a: any) => a.funcionario_id);
-    const cargoIds = Array.from(new Set(alocacoes.map((a: any) => a.funcionarios?.cargo_id).filter(Boolean))) as string[];
+    const typedAlocacoes = alocacoes as unknown as AlocacaoResult[];
+    const funcIds = typedAlocacoes.map(a => a.funcionario_id);
+    const cargoIds = Array.from(new Set(typedAlocacoes.map(a => a.funcionarios?.cargo_id).filter(Boolean))) as string[];
 
     // 3. Buscar Dias Trabalhar em supervisao_escalas (competência já é YYYY-MM)
     const { data: escalas, error: escError } = await supabase
@@ -69,8 +105,9 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         .in('id', cargoIds);
 
     if (carError) throw new Error(`Erro nos cargos: ${carError.message}`);
+    const typedCargos = cargos as unknown as CargoResult[];
     const cargosMap = new Map<string, { valor_aux_alim: number }>(
-        cargos.map((c: any) => [c.id, c])
+        typedCargos.map(c => [c.id, { valor_aux_alim: c.valor_aux_alim || 0 }])
     );
 
     // 6. Buscar Incentivos Mensais
@@ -86,8 +123,9 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
     if (gratError) throw new Error(`Erro nas gratificações: ${gratError.message}`);
 
     // Helper maps
-    const mapEscalas = new Map();
-    escalas.forEach((e: any) => {
+    const mapEscalas = new Map<string, number>();
+    const typedEscalas = escalas as unknown as EscalaResult[];
+    typedEscalas.forEach(e => {
         // Se a escala em si deve descontar he, a spec pede count na tabela onde "he = false".
         // O json de 'dias' pode ter objetos ou arrays com objetos {he:...}.
         // Assumindo q 'qnt_dias' já seja o total_trabalhado base e tirando he se aplicável. 
@@ -99,7 +137,7 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         let diasNormais = 0;
         if (Array.isArray(e.dias)) {
             // Se as escalas tem estrutura de array, conta os elementos:
-            diasNormais = e.dias.length || e.qnt_dias || 0;
+            diasNormais = (e.dias as unknown[]).length || e.qnt_dias || 0;
         } else {
             diasNormais = e.qnt_dias || 0;
         }
@@ -107,18 +145,21 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         mapEscalas.set(e.funcionario_id, (mapEscalas.get(e.funcionario_id) || 0) + diasNormais);
     });
 
-    const mapFaltas = new Map();
-    apontamentos.forEach((a: any) => {
+    const mapFaltas = new Map<string, number>();
+    const typedApontamentos = apontamentos as unknown as ApontamentoResult[];
+    typedApontamentos.forEach(a => {
         mapFaltas.set(a.funcionario_id, (mapFaltas.get(a.funcionario_id) || 0) + (a.beneficios_pts || 0));
     });
 
-    const mapIncentivos = new Map();
-    gratificacoes.forEach((g: any) => {
+    const mapIncentivos = new Map<string, number>();
+    const typedGratificacoes = gratificacoes as unknown as GratificacaoResult[];
+    typedGratificacoes.forEach(g => {
         mapIncentivos.set(g.funcionario_id, (mapIncentivos.get(g.funcionario_id) || 0) + (g.incentivo_valor || 0));
     });
 
     // 7. Preparar Payload Batch
-    const payloadToInsert: any[] = [];
+    type BeneficioInsert = Omit<BeneficioCalculado, 'id' | 'created_at' | 'total_dias' | 'funcionarios' | 'postos_trabalho' | 'cargos_salarios'>;
+    const payloadToInsert: BeneficioInsert[] = [];
 
     // Busca registros já existentes na competência para evitar sobrescrever / duplicar
     const { data: existentes, error: existError } = await supabase
@@ -128,15 +169,15 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         .eq('empresa', empresa);
 
     if (existError) throw new Error(`Erro buscando existentes: ${existError.message}`);
-    const existSet = new Set(existentes.map((e: any) => e.funcionario_id));
+    const existSet = new Set(existentes.map(e => e.funcionario_id));
 
-    alocacoes.forEach((aloc: any) => {
+    typedAlocacoes.forEach(aloc => {
         const funcId = aloc.funcionario_id;
 
         // Pular se já tem cálculo pra essa pessoa e não queremos duplicar
         if (existSet.has(funcId)) return;
 
-        const funcionarioInfo = aloc.funcionarios as any;
+        const funcionarioInfo = aloc.funcionarios;
         const cargoId = funcionarioInfo?.cargo_id;
 
         const baseAlimentacao = cargoId ? cargosMap.get(cargoId)?.valor_aux_alim || 0 : 0;

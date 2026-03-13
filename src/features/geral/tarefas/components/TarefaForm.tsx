@@ -73,7 +73,7 @@ export default function TarefaForm({ onSuccess, initialData }: TarefaFormProps) 
             }
             onSuccess();
             closeModal();
-        } catch (err: any) {
+        } catch (err) {
             console.error("Form submit error", err);
         } finally {
             setIsSubmitting(false);
