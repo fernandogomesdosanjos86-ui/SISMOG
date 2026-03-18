@@ -72,7 +72,11 @@ export interface ChatFormData {
     arquivo?: File | null;
 }
 
+export type TarefaEventType = 'nova' | 'status' | 'chat';
+
 export interface UnreadTarefa {
     tarefa_id: string;
     last_read: string | null;
+    event_type?: TarefaEventType; // Tracked in frontend via Realtime
 }
+

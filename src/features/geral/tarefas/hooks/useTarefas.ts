@@ -74,7 +74,7 @@ export const useTarefaDetail = (tarefaId: string) => {
     };
 };
 
-export const useMissoes = (_tarefaId: string) => {
+export const useMissoes = () => {
     const queryClient = useQueryClient();
     const { showFeedback } = useModal();
 

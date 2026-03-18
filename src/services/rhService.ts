@@ -1,6 +1,11 @@
 import { supabase } from './supabase';
 import type { CargoSalario, Funcionario, FuncionarioFormData } from '../features/rh/types';
 
+const formatarNome = (str: string) => {
+    if (!str) return str;
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+};
+
 export const rhService = {
     async getCargosSalarios() {
         const { data, error } = await supabase
@@ -53,13 +58,17 @@ export const rhService = {
             .order('nome', { ascending: true });
 
         if (error) throw error;
-        return data as Funcionario[];
+        const result = data as Funcionario[];
+        return result.map(f => ({
+            ...f,
+            nome: formatarNome(f.nome)
+        }));
     },
 
     async createFuncionario(funcionario: FuncionarioFormData) {
         const { data, error } = await supabase
             .from('funcionarios')
-            .insert(funcionario)
+            .insert({ ...funcionario, nome: formatarNome(funcionario.nome) })
             .select()
             .single();
 
@@ -68,9 +77,14 @@ export const rhService = {
     },
 
     async updateFuncionario(id: string, funcionario: Partial<Funcionario>) {
+        const payload = { ...funcionario };
+        if (payload.nome) {
+            payload.nome = formatarNome(payload.nome);
+        }
+
         const { data, error } = await supabase
             .from('funcionarios')
-            .update(funcionario)
+            .update(payload)
             .eq('id', id)
             .select()
             .single();

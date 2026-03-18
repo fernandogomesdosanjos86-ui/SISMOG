@@ -1,6 +1,13 @@
 import { NavLink } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Lock } from 'lucide-react';
+import { ChevronDown, ChevronRight, Lock, MessageSquare, ClipboardList, RefreshCw } from 'lucide-react';
 import type { NavItem } from './sidebarNavItems';
+
+export interface ChildBadgeInfo {
+    count: number;
+    chatCount: number;
+    novaCount: number;
+    statusCount: number;
+}
 
 interface SidebarNavItemProps {
     item: NavItem;
@@ -10,7 +17,7 @@ interface SidebarNavItemProps {
     onToggle: () => void;
     onClose: () => void;
     badge?: number;
-    childrenBadges?: Record<string, number>;
+    childrenBadges?: Record<string, ChildBadgeInfo>;
 }
 
 const SidebarNavItem: React.FC<SidebarNavItemProps> = ({
@@ -67,29 +74,47 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = ({
 
             <div className={`overflow-hidden transition-all duration-300 ${!isLocked && isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                 <ul className="bg-black/10 pb-2">
-                    {item.children?.map((child) => (
-                        <li key={child.path}>
-                            <NavLink
-                                to={child.path}
-                                onClick={onClose}
-                                className={({ isActive }) => `
-                                    flex items-center gap-3 pl-12 pr-6 py-2.5 text-sm transition-all duration-200
-                                    ${isActive
-                                        ? 'text-white font-medium border-l-4 border-blue-400 bg-white/5'
-                                        : 'text-blue-200/60 hover:text-white border-l-4 border-transparent'
-                                    }
-                                `}
-                            >
-                                <child.icon size={18} />
-                                <span className="flex-1">{child.label}</span>
-                                {!!childrenBadges?.[child.label] && childrenBadges[child.label] > 0 && (
-                                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center justify-center min-w-[18px]">
-                                        {childrenBadges[child.label] > 99 ? '99+' : childrenBadges[child.label]}
-                                    </span>
-                                )}
-                            </NavLink>
-                        </li>
-                    ))}
+                    {item.children?.map((child) => {
+                        const childBadge = childrenBadges?.[child.label];
+                        const hasAnyBadge = childBadge && childBadge.count > 0;
+                        return (
+                            <li key={child.path}>
+                                <NavLink
+                                    to={child.path}
+                                    onClick={onClose}
+                                    className={({ isActive }) => `
+                                        flex items-center gap-3 pl-12 pr-6 py-2.5 text-sm transition-all duration-200
+                                        ${isActive
+                                            ? 'text-white font-medium border-l-4 border-blue-400 bg-white/5'
+                                            : 'text-blue-200/60 hover:text-white border-l-4 border-transparent'
+                                        }
+                                    `}
+                                >
+                                    <child.icon size={18} />
+                                    <span className="flex-1">{child.label}</span>
+                                    {hasAnyBadge && (
+                                        <span className="flex items-center gap-0.5">
+                                            {childBadge.chatCount > 0 && (
+                                                <span title={`${childBadge.chatCount} mensagem(ns) não lida(s)`}>
+                                                    <MessageSquare size={13} className="text-blue-300" />
+                                                </span>
+                                            )}
+                                            {childBadge.novaCount > 0 && (
+                                                <span title={`${childBadge.novaCount} nova(s) tarefa(s)`}>
+                                                    <ClipboardList size={13} className="text-green-300" />
+                                                </span>
+                                            )}
+                                            {childBadge.statusCount > 0 && (
+                                                <span title={`${childBadge.statusCount} mudança(s) de status`}>
+                                                    <RefreshCw size={13} className="text-orange-300" />
+                                                </span>
+                                            )}
+                                        </span>
+                                    )}
+                                </NavLink>
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
         </div>

@@ -90,7 +90,7 @@ function ResponsiveTable<T>({
                                             : ''
                                             }`}
                                     >
-                                        {col.render ? col.render(item) : String((item as any)[col.key] ?? '-')}
+                                        {col.render ? col.render(item) : String((item as Record<string, unknown>)[col.key as string] ?? '-')}
                                     </td>
                                 ))}
                             </tr>

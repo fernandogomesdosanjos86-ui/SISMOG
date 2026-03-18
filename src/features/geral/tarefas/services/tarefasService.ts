@@ -1,7 +1,38 @@
 import { supabase } from '../../../../services/supabase';
-import type { Tarefa, TarefaFormData, TarefaChat, ChatFormData } from '../types';
+import type { Tarefa, TarefaFormData, TarefaChat, ChatFormData, StatusTarefaMissao } from '../types';
+import type { Database } from '../../../../types/database';
+
+type MissaoStatusEnum = Database['public']['Tables']['geral_missoes']['Update']['status_missao'];
+
+interface RawDestinatario {
+    id: string;
+    tarefa_id: string;
+    usuario_id: string;
+    usuario?: { id: string; nome: string } | null;
+}
+
+interface RawTarefaRow {
+    id: string;
+    remetente?: { id: string; nome: string } | null;
+    destinatarios?: RawDestinatario[] | null;
+    [key: string]: unknown;
+}
 
 export const tarefasService = {
+    async markAsRead(tarefaId: string): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { error } = await supabase
+            .from('geral_tarefa_leituras')
+            .upsert([{
+                tarefa_id: tarefaId,
+                usuario_id: user.id,
+                ultima_leitura: new Date().toISOString()
+            }], { onConflict: 'tarefa_id,usuario_id' });
+        
+        if (error) console.error('Error auto-marking task as read:', error);
+    },
+
     async getTarefas(): Promise<Tarefa[]> {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Usuário não autenticado");
@@ -26,11 +57,11 @@ export const tarefasService = {
         }
 
         // Map auth.users response since Supabase generic relations to auth schema might return arrays when joined
-        const rawData = data as any[];
+        const rawData = data as unknown as RawTarefaRow[];
         return (rawData || []).map(t => ({
             ...t,
             remetente: t.remetente ? { id: t.remetente.id, nome: t.remetente.nome } : undefined,
-            destinatarios: t.destinatarios?.map((d: any) => ({
+            destinatarios: t.destinatarios?.map((d: RawDestinatario) => ({
                 ...d,
                 usuario: d.usuario ? { id: d.usuario.id, nome: d.usuario.nome } : undefined
             }))
@@ -55,11 +86,11 @@ export const tarefasService = {
 
         if (error) throw error;
 
-        const t = data as any;
+        const t = data as unknown as RawTarefaRow;
         return {
             ...t,
             remetente: t.remetente ? { id: t.remetente.id, nome: t.remetente.nome } : undefined,
-            destinatarios: t.destinatarios?.map((d: any) => ({
+            destinatarios: t.destinatarios?.map((d: RawDestinatario) => ({
                 ...d,
                 usuario: d.usuario ? { id: d.usuario.id, nome: d.usuario.nome } : undefined
             }))
@@ -123,6 +154,9 @@ export const tarefasService = {
         if (missoesError) {
             console.error("Error inserting missoes:", missoesError);
         }
+
+        // Auto-read the task for the creator to prevent 'new task' notification
+        await this.markAsRead(tarefa.id);
 
         return this.getTarefaById(tarefa.id);
     },
@@ -221,6 +255,9 @@ export const tarefasService = {
                 }
             }
         }
+
+        // Auto-read
+        await this.markAsRead(id);
     },
 
     async deleteTarefa(id: string): Promise<void> {
@@ -242,18 +279,31 @@ export const tarefasService = {
             }]);
 
         if (error) throw error;
+        
+        await this.markAsRead(tarefaId);
     },
 
     async updateMissaoStatus(missaoId: string, novoStatus: Tarefa['status_tarefa']): Promise<void> {
         const { error } = await supabase
             .from('geral_missoes')
             .update({
-                status_missao: novoStatus as any,
+                status_missao: novoStatus as StatusTarefaMissao as MissaoStatusEnum,
                 updated_at: new Date().toISOString()
             })
             .eq('id', missaoId);
 
         if (error) throw error;
+
+        // Auto-read for the user who updated the status
+        const { data: missao } = await supabase
+            .from('geral_missoes')
+            .select('tarefa_id')
+            .eq('id', missaoId)
+            .single();
+
+        if (missao) {
+            await this.markAsRead(missao.tarefa_id);
+        }
     },
 
     async getChatsByTarefa(tarefaId: string): Promise<TarefaChat[]> {
@@ -268,7 +318,8 @@ export const tarefasService = {
 
         if (error) throw error;
 
-        const rawData = data as any[];
+        interface RawChat { id: string; usuario?: { id: string; nome: string } | null; [key: string]: unknown; }
+        const rawData = data as unknown as RawChat[];
         return (rawData || []).map(c => ({
             ...c,
             usuario: c.usuario ? { id: c.usuario.id, nome: c.usuario.nome } : undefined
@@ -306,5 +357,7 @@ export const tarefasService = {
             }]);
 
         if (error) throw error;
+        
+        await this.markAsRead(tarefaId);
     }
 };

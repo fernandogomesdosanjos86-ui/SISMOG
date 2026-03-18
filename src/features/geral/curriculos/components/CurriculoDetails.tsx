@@ -41,7 +41,7 @@ const CurriculoDetails = ({ curriculo }: CurriculoDetailsProps) => (
                     <Info size={16} className="mr-2" /> Indicação
                 </div>
                 <div className="text-gray-900 font-medium text-sm">
-                    {curriculo.indicacao || 'Nenhûma / Direta'}
+                    {curriculo.indicacao || 'Nenhuma / Direta'}
                 </div>
             </div>
 

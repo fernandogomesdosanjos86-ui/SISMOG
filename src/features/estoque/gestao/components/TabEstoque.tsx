@@ -13,9 +13,11 @@ const ITEMS_PER_PAGE = 50;
 
 const TabEstoque: React.FC<TabEstoqueProps> = ({ produtos, isLoading, searchTerm, tipoFilter }) => {
 
+    const normalizeSearch = (str: string) => str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
+
     const filtered = produtos.filter(p => {
         const matchesTipo = tipoFilter === 'TODOS' || p.tipo === tipoFilter;
-        const matchesSearch = p.codigo.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = normalizeSearch(p.codigo).includes(normalizeSearch(searchTerm));
         return matchesTipo && matchesSearch;
     });
 

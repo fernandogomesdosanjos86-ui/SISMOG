@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { navItems } from './sidebar/sidebarNavItems';
 import SidebarNavItem from './sidebar/SidebarNavItem';
+import type { ChildBadgeInfo } from './sidebar/SidebarNavItem';
 import SidebarUserFooter from './sidebar/SidebarUserFooter';
 import { APP_ROUTES } from '../config/routes';
 import { useTarefasNotification } from '../features/geral/tarefas/context/TarefasNotificationContext';
@@ -17,7 +18,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const location = useLocation();
-  const { unreadTaskIds } = useTarefasNotification();
+  const { unreadTaskIds, unreadChatCount, unreadNovaCount, unreadStatusCount } = useTarefasNotification();
   const unreadTarefasCount = unreadTaskIds.length;
 
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
@@ -97,14 +98,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               const isActiveParent = hasChildren && item.children?.some(child => location.pathname === child.path);
               const isLocked = item.hasAccess ? !item.hasAccess(user) : false;
 
-              let parentBadge = undefined;
-              let childrenBadges: Record<string, number> = {};
+              let parentBadge: number | undefined = undefined;
+              const childrenBadges: Record<string, ChildBadgeInfo> = {};
 
               if (item.label === 'Geral' && unreadTarefasCount > 0) {
                 if (!isExpanded) {
                   parentBadge = unreadTarefasCount;
                 }
-                childrenBadges['Tarefas'] = unreadTarefasCount;
+                childrenBadges['Tarefas'] = {
+                  count: unreadTarefasCount,
+                  chatCount: unreadChatCount,
+                  novaCount: unreadNovaCount,
+                  statusCount: unreadStatusCount,
+                };
               }
 
               return (

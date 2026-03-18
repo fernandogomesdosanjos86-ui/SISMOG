@@ -33,8 +33,10 @@ const TabColetivo: React.FC<TabColetivoProps> = ({ onRefresh, deleteMov, searchT
     React.useEffect(() => { loadResumo(); }, []);
     React.useEffect(() => { loadResumo(); }, [onRefresh]);
 
+    const normalizeSearch = (str: string) => str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
+
     const filtered = resumo.filter(r =>
-        r.nome.toLowerCase().includes(searchTerm.toLowerCase())
+        normalizeSearch(r.nome).includes(normalizeSearch(searchTerm))
     );
 
     const handleView = async (item: ResumoPosto) => {

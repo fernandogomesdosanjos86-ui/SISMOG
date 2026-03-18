@@ -4,7 +4,7 @@ import PrimaryButton from '../../../components/PrimaryButton';
 import ResponsiveTable from '../../../components/ResponsiveTable';
 import { useModal } from '../../../context/ModalContext';
 import { useAuth } from '../../../context/AuthContext';
-import { Plus, Search, CheckCircle, Clock, AlertCircle, CircleDashed } from 'lucide-react';
+import { Plus, Search, CheckCircle, Clock, AlertCircle, CircleDashed, MessageSquare, ClipboardList, RefreshCw } from 'lucide-react';
 import { useTarefas } from './hooks/useTarefas';
 import TarefaForm from './components/TarefaForm';
 import TarefaDetails from './components/TarefaDetails';
@@ -30,7 +30,20 @@ const Tarefas = () => {
     const { user } = useAuth();
     const { tarefas, isLoading, refetch, delete: del } = useTarefas();
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
-    const { unreadTaskIds } = useTarefasNotification();
+    const { unreadTaskIds, unreadEvents } = useTarefasNotification();
+
+    // Helper to render notification icons for a given task ID
+    const renderNotifIcons = (id: string) => {
+        const eventType = unreadEvents.get(id);
+        if (!eventType) return null;
+        return (
+            <span className="flex items-center gap-0.5 ml-1" title={`Nova ${eventType === 'chat' ? 'mensagem' : eventType === 'nova' ? 'tarefa' : 'mudança de status'}`}>
+                {eventType === 'chat' && <MessageSquare size={13} className="text-blue-500 fill-blue-100" />}
+                {eventType === 'nova' && <ClipboardList size={13} className="text-green-500" />}
+                {eventType === 'status' && <RefreshCw size={13} className="text-orange-500" />}
+            </span>
+        );
+    };
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
@@ -73,7 +86,7 @@ const Tarefas = () => {
         currentPage * itemsPerPage
     );
 
-    // Reset page when filters change
+    // Reset page on filter change
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, prioridadeFilter, statusTab]);
@@ -122,11 +135,9 @@ const Tarefas = () => {
             render: (i: Tarefa) => {
                 const isUnread = unreadTaskIds.includes(i.id);
                 return (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center">
                         <span className="font-semibold text-gray-900">{i.titulo}</span>
-                        {isUnread && (
-                            <span className="bg-blue-500 rounded-full h-2 w-2 shadow-[0_0_8px_rgba(59,130,246,0.8)]" title="Nova atualização ou mensagem" />
-                        )}
+                        {isUnread && renderNotifIcons(i.id)}
                     </div>
                 );
             }
@@ -172,10 +183,10 @@ const Tarefas = () => {
         <div className="space-y-6">
             <PageHeader
                 title="Quadro de Tarefas"
-                subtitle="Acompanhamento e delegação de missões corporativas"
+                subtitle="Gestão de tarefas e missões"
                 action={
                     <div className="w-full sm:w-auto">
-                        <PrimaryButton onClick={() => openFormModal('Nova Tarefa (Ordem de Serviço)', <TarefaForm onSuccess={refetch} />)} className="w-full justify-center">
+                        <PrimaryButton onClick={() => openFormModal('Nova Tarefa', <TarefaForm onSuccess={refetch} />)} className="w-full justify-center">
                             <Plus size={20} className="mr-2" /> Nova Tarefa
                         </PrimaryButton>
                     </div>
@@ -267,11 +278,9 @@ const Tarefas = () => {
                     return (
                         <div className={`border-l-4 pl-3 ${i.prioridade === 'Urgente' ? 'border-l-red-500' : 'border-l-gray-300'}`}>
                             <div className="flex justify-between items-start mb-1">
-                                <div className="flex flex-1 items-center gap-2 pr-2">
+                                <div className="flex flex-1 items-center gap-1 pr-2">
                                     <div className="font-bold text-gray-900 leading-tight">{i.titulo}</div>
-                                    {isUnread && (
-                                        <span className="bg-blue-500 rounded-full flex-shrink-0 h-2 w-2 shadow-[0_0_8px_rgba(59,130,246,0.8)]" title="Nova atualização ou mensagem" />
-                                    )}
+                                    {isUnread && renderNotifIcons(i.id)}
                                 </div>
                                 <TarefaStatusBadge status={i.status_tarefa} />
                             </div>

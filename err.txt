@@ -1,0 +1,8 @@
+src/components/sidebar/SidebarNavItem.tsx(98,100): error TS2322: Type '{ size: number; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+src/components/sidebar/SidebarNavItem.tsx(101,101): error TS2322: Type '{ size: number; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+src/components/sidebar/SidebarNavItem.tsx(104,98): error TS2322: Type '{ size: number; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+src/features/geral/tarefas/components/TarefaDetails.tsx(44,75): error TS2554: Expected 0 arguments, but got 1.
+src/features/geral/tarefas/Tarefas.tsx(1,8): error TS6133: 'React' is declared but its value is never read.

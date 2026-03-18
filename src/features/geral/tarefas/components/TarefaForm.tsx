@@ -21,7 +21,11 @@ export default function TarefaForm({ onSuccess, initialData }: TarefaFormProps) 
 
     useEffect(() => {
         const fetchUsers = async () => {
-            const { data, error } = await supabase.from('usuarios').select('id, nome').eq('ativo', true);
+            const { data, error } = await supabase
+                .from('usuarios')
+                .select('id, nome')
+                .eq('ativo', true)
+                .in('permissao', ['Adm', 'Gestor']);
             if (!error && data) {
                 setAvailableUsers(data);
             }

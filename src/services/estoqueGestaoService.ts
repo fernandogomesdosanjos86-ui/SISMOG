@@ -1,6 +1,11 @@
 import { supabase } from './supabase';
 import type { Produto, ProdutoFormData, Movimentacao, MovimentacaoFormData } from '../features/estoque/gestao/types';
 
+const removeAcentos = (str: string) => {
+    if (!str) return str;
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+
 export const estoqueGestaoService = {
     // ========== PRODUTOS ==========
 
@@ -31,6 +36,7 @@ export const estoqueGestaoService = {
 
         return (produtos || []).map(p => ({
             ...p,
+            codigo: removeAcentos(p.codigo),
             em_estoque: saldoMap[p.id] || 0,
         })) as unknown as (Produto & { em_estoque: number })[];
     },
@@ -123,7 +129,13 @@ export const estoqueGestaoService = {
             .order('data', { ascending: false });
 
         if (error) throw error;
-        return data as Movimentacao[];
+        const movs = data as Movimentacao[];
+        movs.forEach(m => {
+            if (m.produto?.codigo) {
+                m.produto.codigo = removeAcentos(m.produto.codigo);
+            }
+        });
+        return movs;
     },
 
     async getSaldoEstoque(produtoId: string): Promise<number> {
@@ -315,7 +327,13 @@ export const estoqueGestaoService = {
             .order('data', { ascending: false });
 
         if (error) throw error;
-        return data as Movimentacao[];
+        const movs = data as Movimentacao[];
+        movs.forEach(m => {
+            if (m.produto?.codigo) {
+                m.produto.codigo = removeAcentos(m.produto.codigo);
+            }
+        });
+        return movs;
     },
 
     async getMovimentacoesPorPosto(postoId: string) {
@@ -330,6 +348,12 @@ export const estoqueGestaoService = {
             .order('data', { ascending: false });
 
         if (error) throw error;
-        return data as Movimentacao[];
+        const movs = data as Movimentacao[];
+        movs.forEach(m => {
+            if (m.produto?.codigo) {
+                m.produto.codigo = removeAcentos(m.produto.codigo);
+            }
+        });
+        return movs;
     },
 };

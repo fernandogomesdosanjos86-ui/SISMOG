@@ -41,7 +41,7 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
     const canInteract = isSender || isDestinatario;
 
     // Hooks
-    const { updateMissaoStatus, isUpdating: updatingMissao } = useMissoes(tarefa.id);
+    const { updateMissaoStatus, isUpdating: updatingMissao } = useMissoes();
     const { chats, sendMessage, isSending } = useTarefaChat(tarefa.id);
 
     // Chat State
