@@ -72,6 +72,7 @@ export interface Gratificacao {
     gratificacao_percentual?: number;
     incentivo_valor?: number;
     observacao?: string;
+    status: boolean;
     created_at?: string;
     // Joined
     funcionario?: {

@@ -376,5 +376,68 @@ export const financeiroService = {
         };
         const total = Object.values(ret).reduce((acc, curr) => acc + curr, 0);
         return { ...ret, totalRetencoes: total };
+    },
+
+    // --- Documentos de Contratos ---
+    async getDocumentosPorContrato(contrato_id: string) {
+        const { data, error } = await supabase
+            .from('financeiro_contratos_documentos')
+            .select('id, contrato_id, descricao, arquivo_url, created_at, created_by')
+            .eq('contrato_id', contrato_id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data as any as import('../features/financeiro/types').ContratoDocumento[];
+    },
+
+    async uploadDocumentoContrato(file: File) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('contratos_documentos')
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('contratos_documentos')
+            .getPublicUrl(filePath);
+
+        return publicUrl;
+    },
+
+    async createDocumentoContrato(documento: import('../features/financeiro/types').ContratoDocumentoFormData) {
+        const { data, error } = await supabase
+            .from('financeiro_contratos_documentos')
+            .insert(documento as any)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as any as import('../features/financeiro/types').ContratoDocumento;
+    },
+
+    async deleteDocumentoContrato(id: string, arquivoUrl?: string) {
+        const { error } = await supabase
+            .from('financeiro_contratos_documentos')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        if (arquivoUrl) {
+            try {
+                const fileName = arquivoUrl.split('/').pop();
+                if (fileName) {
+                    await supabase.storage
+                        .from('contratos_documentos')
+                        .remove([fileName]);
+                }
+            } catch (err) {
+                console.error("Erro ao deletar arquivo físico do Storage", err);
+            }
+        }
     }
 };

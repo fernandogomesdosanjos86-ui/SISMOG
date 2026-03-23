@@ -452,6 +452,41 @@ export type Database = {
           },
         ]
       }
+      financeiro_contratos_documentos: {
+        Row: {
+          arquivo_url: string
+          contrato_id: string
+          created_at: string | null
+          created_by: string | null
+          descricao: string
+          id: string
+        }
+        Insert: {
+          arquivo_url: string
+          contrato_id: string
+          created_at?: string | null
+          created_by?: string | null
+          descricao: string
+          id?: string
+        }
+        Update: {
+          arquivo_url?: string
+          contrato_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          descricao?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_contratos_documentos_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       frota_abastecimentos: {
         Row: {
           created_at: string
@@ -855,6 +890,32 @@ export type Database = {
           },
         ]
       }
+      geral_tarefa_leituras: {
+        Row: {
+          tarefa_id: string
+          ultima_leitura: string
+          usuario_id: string
+        }
+        Insert: {
+          tarefa_id: string
+          ultima_leitura?: string
+          usuario_id: string
+        }
+        Update: {
+          tarefa_id?: string
+          ultima_leitura?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geral_tarefa_leituras_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "geral_tarefas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geral_tarefas: {
         Row: {
           created_at: string
@@ -1095,6 +1156,7 @@ export type Database = {
           id: string
           incentivo_valor: number | null
           observacao: string | null
+          status: boolean | null
           tipo: string
         }
         Insert: {
@@ -1106,6 +1168,7 @@ export type Database = {
           id?: string
           incentivo_valor?: number | null
           observacao?: string | null
+          status?: boolean | null
           tipo: string
         }
         Update: {
@@ -1117,6 +1180,7 @@ export type Database = {
           id?: string
           incentivo_valor?: number | null
           observacao?: string | null
+          status?: boolean | null
           tipo?: string
         }
         Relationships: [
@@ -1399,39 +1463,6 @@ export type Database = {
         }
         Relationships: []
       }
-      geral_tarefa_leituras: {
-        Row: {
-          tarefa_id: string
-          usuario_id: string
-          ultima_leitura: string
-        }
-        Insert: {
-          tarefa_id: string
-          usuario_id: string
-          ultima_leitura?: string
-        }
-        Update: {
-          tarefa_id?: string
-          usuario_id?: string
-          ultima_leitura?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "geral_tarefa_leituras_tarefa_id_fkey"
-            columns: ["tarefa_id"]
-            isOneToOne: false
-            referencedRelation: "geral_tarefas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "geral_tarefa_leituras_usuario_id_fkey"
-            columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -1453,6 +1484,12 @@ export type Database = {
           total_movimentacoes: number
         }[]
       }
+      get_unread_tarefas: {
+        Args: never
+        Returns: {
+          tarefa_id: string
+        }[]
+      }
       get_user_permissao: { Args: never; Returns: string }
       get_user_setor: { Args: never; Returns: string }
       has_financeiro_access: { Args: never; Returns: boolean }
@@ -1467,27 +1504,20 @@ export type Database = {
         Returns: boolean
       }
       is_tarefa_sender: { Args: { check_tarefa_id: string }; Returns: boolean }
-      get_unread_tarefas: {
-        Args: never
-        Returns: {
-          tarefa_id: string
-          last_read: string | null
-        }[]
-      }
     }
     Enums: {
       empresa_enum: "SEMOG" | "FEMOG"
-      equipamento_categoria: "Armamentos" | "Coletes BalÃ­sticos" | "MuniÃ§Ãµes"
+      equipamento_categoria: "Armamentos" | "Coletes Balísticos" | "Munições"
       equipamento_status: "Ativo" | "Inativo"
       prioridade_tarefa: "Normal" | "Urgente"
-      status_tarefa_missao: "Pendente" | "Em Andamento" | "ConcluÃ­do"
+      status_tarefa_missao: "Pendente" | "Em Andamento" | "Concluído"
       user_permission: "Adm" | "Gestor" | "Operador"
       user_sector:
-        | "DireÃ§Ã£o"
+        | "Direção"
         | "Dep. Pessoal"
         | "Frota"
         | "Financeiro"
-        | "SupervisÃ£o"
+        | "Supervisão"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1616,19 +1646,18 @@ export const Constants = {
   public: {
     Enums: {
       empresa_enum: ["SEMOG", "FEMOG"],
-      equipamento_categoria: ["Armamentos", "Coletes BalÃ­sticos", "MuniÃ§Ãµes"],
+      equipamento_categoria: ["Armamentos", "Coletes Balísticos", "Munições"],
       equipamento_status: ["Ativo", "Inativo"],
       prioridade_tarefa: ["Normal", "Urgente"],
-      status_tarefa_missao: ["Pendente", "Em Andamento", "ConcluÃ­do"],
+      status_tarefa_missao: ["Pendente", "Em Andamento", "Concluído"],
       user_permission: ["Adm", "Gestor", "Operador"],
       user_sector: [
-        "DireÃ§Ã£o",
+        "Direção",
         "Dep. Pessoal",
         "Frota",
         "Financeiro",
-        "SupervisÃ£o",
+        "Supervisão",
       ],
     },
   },
 } as const
-

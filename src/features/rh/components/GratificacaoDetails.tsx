@@ -40,6 +40,7 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName,
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor/Percentual</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motivo</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
                         </tr>
                     </thead>
@@ -60,6 +61,11 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName,
                                 </td>
                                 <td className="px-4 py-3 text-sm text-gray-700 max-w-sm truncate">
                                     {item.observacao || '-'}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${item.status ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                        {item.status ? 'Ativo' : 'Inativo'}
+                                    </span>
                                 </td>
                                 <td className="px-4 py-3 text-right text-sm">
                                     <div className="flex justify-end gap-2">
@@ -85,10 +91,15 @@ const GratificacaoDetails: React.FC<GratificacaoDetailsProps> = ({ employeeName,
                 {gratificacoes.map((item: Gratificacao) => (
                     <div key={item.id} className="bg-white border text-sm border-gray-200 p-4 rounded-xl shadow-sm relative">
                         <div className="flex justify-between items-start mb-2">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${item.tipo === 'Folha de Pagamento' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
-                                }`}>
-                                {item.tipo}
-                            </span>
+                            <div className="flex gap-2 items-center">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${item.tipo === 'Folha de Pagamento' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                                    }`}>
+                                    {item.tipo}
+                                </span>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${item.status ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                    {item.status ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </div>
                             <p className="text-xs text-gray-500 font-medium">{format(new Date(item.data + 'T12:00:00'), 'dd/MM/yyyy')}</p>
                         </div>
 

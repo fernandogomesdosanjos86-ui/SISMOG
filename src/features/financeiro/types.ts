@@ -82,3 +82,14 @@ export interface Recebimento {
     updated_at?: string;
     faturamentos?: Faturamento; // For join
 }
+
+export interface ContratoDocumento {
+    id: string;
+    contrato_id: string;
+    descricao: string;
+    arquivo_url: string;
+    created_at?: string;
+    created_by?: string;
+}
+
+export type ContratoDocumentoFormData = Omit<ContratoDocumento, 'id' | 'created_at' | 'created_by'>;

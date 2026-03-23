@@ -110,13 +110,12 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         typedCargos.map(c => [c.id, { valor_aux_alim: c.valor_aux_alim || 0 }])
     );
 
-    // 6. Buscar Incentivos Mensais
+    // 6. Buscar Incentivos Ativos (ignorando a data, priorizando o status)
     const { data: gratificacoes, error: gratError } = await supabase
         .from('rh_gratificacoes')
         .select('funcionario_id, incentivo_valor')
         .eq('tipo', 'Incentivo')
-        .gte('data', new Date(parseInt(anoStr), parseInt(mesStr) - 1, 1).toISOString())
-        .lte('data', new Date(parseInt(anoStr), parseInt(mesStr), 0).toISOString())
+        .eq('status', true)
         .eq('empresa', empresa)
         .in('funcionario_id', funcIds);
 

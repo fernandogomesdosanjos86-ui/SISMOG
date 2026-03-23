@@ -30,6 +30,7 @@ export const queryKeys = {
         all: ['contratos'] as const,
         list: () => [...queryKeys.contratos.all, 'list'] as const,
         detail: (id: string) => [...queryKeys.contratos.all, 'detail', id] as const,
+        documentos: (contratoId: string) => [...queryKeys.contratos.all, 'documentos', contratoId] as const,
     },
     faturamentos: {
         all: ['faturamentos'] as const,

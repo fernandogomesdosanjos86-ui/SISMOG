@@ -4,12 +4,54 @@ import { Info, Calendar, DollarSign, CalendarDays, FileText } from 'lucide-react
 import { formatCurrency } from '../../../utils/format';
 import CompanyBadge from '../../../components/CompanyBadge';
 import StatusBadge from '../../../components/StatusBadge';
+import ResponsiveTable from '../../../components/ResponsiveTable';
+import PrimaryButton from '../../../components/PrimaryButton';
+import { useContratoDocumentos } from '../hooks/useContratoDocumentos';
+import { useModal } from '../../../context/ModalContext';
+import DocumentoForm from './DocumentoForm';
+import { Download, Trash2, FileUp } from 'lucide-react';
 
 interface ContratoDetailsProps {
     contrato: Contrato;
 }
 
-const ContratoDetails: React.FC<ContratoDetailsProps> = ({ contrato }) => (
+const ContratoDetails: React.FC<ContratoDetailsProps> = ({ contrato }) => {
+    const { documentos, isLoading, refetch, delete: deleteDoc } = useContratoDocumentos(contrato.id);
+    const { openFormModal, openConfirmModal, showFeedback } = useModal();
+
+    const handleUpload = () => {
+        openFormModal('Anexar Documento', <DocumentoForm contratoId={contrato.id} onSuccess={refetch} />);
+    };
+
+    const handleDelete = (id: string, url: string) => {
+        openConfirmModal('Excluir Documento', 'Tem certeza que deseja apagar este arquivo?', async () => {
+            try {
+                await deleteDoc({ id, arquivoUrl: url });
+                showFeedback('success', 'Documento excluído!');
+            } catch {
+                showFeedback('error', 'Erro ao excluir documento.');
+            }
+        });
+    };
+
+    const columns = [
+        { key: 'data', header: 'Data', render: (i: any) => new Date(i.created_at).toLocaleDateString('pt-BR') },
+        { key: 'descricao', header: 'Descrição', render: (i: any) => <span className="font-medium text-gray-900">{i.descricao}</span> },
+        {
+            key: 'acoes', header: 'Ações', render: (i: any) => (
+                <div className="flex gap-3 justify-end">
+                    <a href={i.arquivo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 p-1 bg-blue-50 rounded-lg">
+                        <Download size={18} />
+                    </a>
+                    <button onClick={() => handleDelete(i.id, i.arquivo_url)} className="text-red-600 hover:text-red-800 p-1 bg-red-50 rounded-lg">
+                        <Trash2 size={18} />
+                    </button>
+                </div>
+            )
+        }
+    ];
+
+    return (
     <div className="space-y-6">
         <div className="flex items-start justify-between border-b border-gray-100 pb-5">
             <div>
@@ -81,7 +123,51 @@ const ContratoDetails: React.FC<ContratoDetailsProps> = ({ contrato }) => (
                 </div>
             </div>
         )}
+
+        {/* Documentos View */}
+        <div className="border-t pt-4">
+            <div className="flex justify-between items-center mb-4">
+                <h4 className="font-semibold text-gray-900 flex items-center gap-2 text-sm">
+                    <FileText size={16} className="text-blue-500" />
+                    Documentos e Anexos
+                </h4>
+                <PrimaryButton onClick={handleUpload}>
+                    <FileUp size={16} className="mr-2" /> Anexar
+                </PrimaryButton>
+            </div>
+            
+            <div className="border rounded-xl bg-white overflow-hidden shadow-sm">
+                <ResponsiveTable
+                    data={documentos}
+                    columns={columns}
+                    emptyMessage="Nenhum documento anexado a este contrato."
+                    keyExtractor={(i) => i.id}
+                    loading={isLoading}
+                    getRowBorderColor={() => 'border-gray-200'}
+                    renderCard={(i: any) => (
+                        <div className="border-l-4 border-l-blue-500 pl-3">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-sm mb-1">{i.descricao}</h4>
+                                    <span className="text-xs text-gray-500">{new Date(i.created_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <a href={i.arquivo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-lg">
+                                        <Download size={16} />
+                                    </a>
+                                    <button onClick={() => handleDelete(i.id, i.arquivo_url)} className="text-red-600 bg-red-50 p-2 rounded-lg">
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                />
+            </div>
+        </div>
+
     </div>
-);
+    );
+};
 
 export default ContratoDetails;
