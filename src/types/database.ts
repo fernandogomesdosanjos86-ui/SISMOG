@@ -1424,6 +1424,96 @@ export type Database = {
           },
         ]
       }
+      supervisao_trocas_plantao: {
+        Row: {
+          created_at: string | null
+          data_analise: string | null
+          data_original: string
+          data_reposicao: string
+          data_solicitacao: string
+          de_acordo: boolean | null
+          empresa: Database["public"]["Enums"]["empresa_enum"]
+          funcionario_id: string
+          funcionario_troca_id: string
+          id: string
+          posto_id: string
+          responsavel_analise_id: string | null
+          solicitante_id: string
+          status: Database["public"]["Enums"]["status_troca_plantao"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_analise?: string | null
+          data_original: string
+          data_reposicao: string
+          data_solicitacao?: string
+          de_acordo?: boolean | null
+          empresa: Database["public"]["Enums"]["empresa_enum"]
+          funcionario_id: string
+          funcionario_troca_id: string
+          id?: string
+          posto_id: string
+          responsavel_analise_id?: string | null
+          solicitante_id: string
+          status?: Database["public"]["Enums"]["status_troca_plantao"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_analise?: string | null
+          data_original?: string
+          data_reposicao?: string
+          data_solicitacao?: string
+          de_acordo?: boolean | null
+          empresa?: Database["public"]["Enums"]["empresa_enum"]
+          funcionario_id?: string
+          funcionario_troca_id?: string
+          id?: string
+          posto_id?: string
+          responsavel_analise_id?: string | null
+          solicitante_id?: string
+          status?: Database["public"]["Enums"]["status_troca_plantao"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supervisao_trocas_plantao_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisao_trocas_plantao_funcionario_troca_id_fkey"
+            columns: ["funcionario_troca_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisao_trocas_plantao_posto_id_fkey"
+            columns: ["posto_id"]
+            isOneToOne: false
+            referencedRelation: "postos_trabalho"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisao_trocas_plantao_responsavel_analise_id_fkey"
+            columns: ["responsavel_analise_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisao_trocas_plantao_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usuarios: {
         Row: {
           ativo: boolean | null
@@ -1511,6 +1601,12 @@ export type Database = {
       equipamento_status: "Ativo" | "Inativo"
       prioridade_tarefa: "Normal" | "Urgente"
       status_tarefa_missao: "Pendente" | "Em Andamento" | "Concluído"
+      status_troca_plantao:
+        | "Pendente"
+        | "Em Análise"
+        | "Cancelado"
+        | "Autorizado"
+        | "Negado"
       user_permission: "Adm" | "Gestor" | "Operador"
       user_sector:
         | "Direção"
@@ -1650,6 +1746,13 @@ export const Constants = {
       equipamento_status: ["Ativo", "Inativo"],
       prioridade_tarefa: ["Normal", "Urgente"],
       status_tarefa_missao: ["Pendente", "Em Andamento", "Concluído"],
+      status_troca_plantao: [
+        "Pendente",
+        "Em Análise",
+        "Cancelado",
+        "Autorizado",
+        "Negado",
+      ],
       user_permission: ["Adm", "Gestor", "Operador"],
       user_sector: [
         "Direção",

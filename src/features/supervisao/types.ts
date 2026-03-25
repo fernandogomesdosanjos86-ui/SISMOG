@@ -97,3 +97,32 @@ export interface Escala {
         }
     };
 }
+
+export type StatusTrocaPlantao = 'Pendente' | 'Em Análise' | 'Cancelado' | 'Autorizado' | 'Negado';
+
+export interface TrocaPlantao {
+    id: string;
+    data_solicitacao: string;
+    empresa: 'FEMOG' | 'SEMOG';
+    funcionario_id: string;
+    posto_id: string;
+    data_original: string;
+    data_reposicao: string;
+    funcionario_troca_id: string;
+    solicitante_id: string;
+    de_acordo: boolean | null;
+    status: StatusTrocaPlantao;
+    data_analise?: string | null;
+    responsavel_analise_id?: string | null;
+    created_at: string;
+    updated_at: string;
+    // Joined Fields for Display
+    funcionario?: { nome: string; cpf?: string };
+    posto?: { nome: string };
+    funcionario_troca?: { nome: string; cpf?: string };
+    solicitante?: { nome: string };
+    responsavel_analise?: { nome: string };
+}
+
+export type TrocaPlantaoFormData = Omit<TrocaPlantao, 'id' | 'data_solicitacao' | 'de_acordo' | 'status' | 'data_analise' | 'responsavel_analise_id' | 'created_at' | 'updated_at' | 'funcionario' | 'posto' | 'funcionario_troca' | 'solicitante' | 'responsavel_analise'>;
+

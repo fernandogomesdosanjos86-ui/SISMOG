@@ -5,6 +5,8 @@ import { useModal } from '../context/ModalContext';
 import ChecklistForm from '../features/frota/components/ChecklistForm';
 import MovimentacaoForm from '../features/frota/components/MovimentacaoForm';
 import UserSettingsForm from '../components/UserSettingsForm';
+import TrocaPlantaoForm from '../features/supervisao/pages/TrocaPlantaoForm';
+import PortalTrocasList from '../features/supervisao/pages/PortalTrocasList';
 
 const PortalColaborador: React.FC = () => {
     const { user, signOut } = useAuth();
@@ -14,7 +16,9 @@ const PortalColaborador: React.FC = () => {
     const displayName = user?.user_metadata?.nome || 'Colaborador';
     const nameParts = displayName.split(' ');
     const firstName = nameParts[0];
-    const secondName = nameParts.length > 1 ? nameParts[1] : '';
+    // If the second word is short (preposition like 'da', 'de', 'dos' ≤3 chars), use the third word instead
+    const rawSecond = nameParts[1] || '';
+    const secondName = rawSecond.length <= 3 && nameParts.length > 2 ? nameParts[2] : rawSecond;
 
     const handleLogout = async () => {
         await signOut();
@@ -31,6 +35,15 @@ const PortalColaborador: React.FC = () => {
     const handleOpenMovimentacao = () => {
         openFormModal('Nova Movimentação', <MovimentacaoForm onSuccess={closeModal} />);
     };
+
+    const handleOpenTrocaForm = () => {
+        openFormModal('Nova Solicitação', <TrocaPlantaoForm />);
+    };
+
+    const handleOpenTrocaList = () => {
+        openFormModal('Minhas Trocas de Plantão', <PortalTrocasList />);
+    };
+
 
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
@@ -114,24 +127,24 @@ const PortalColaborador: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Section: Troca de Plantão */}
+                {/* Section: Trocas de Plantão */}
                 <section className="space-y-3 pt-4">
-                    <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider px-1">Troca de Plantão</h2>
+                    <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider px-1">Trocas de Plantão  (Em Desenvolvimento)</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <button
-                            disabled
-                            className="bg-white/50 border border-gray-200 p-4 rounded-xl flex flex-col items-center justify-center gap-2 opacity-60 cursor-not-allowed min-h-[110px]"
+                            onClick={handleOpenTrocaForm}
+                            className="bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer min-h-[110px] group shadow-sm"
                         >
-                            <CalendarSync size={24} className="text-gray-400" />
-                            <h3 className="font-semibold text-gray-600 text-sm">Solicitar Troca</h3>
+                            <CalendarSync size={24} className="text-blue-500 group-hover:text-blue-600 transition-colors" />
+                            <h3 className="font-semibold text-gray-700 group-hover:text-blue-800 text-sm">Solicitar Troca</h3>
                         </button>
 
                         <button
-                            disabled
-                            className="bg-white/50 border border-gray-200 p-4 rounded-xl flex flex-col items-center justify-center gap-2 opacity-60 cursor-not-allowed min-h-[110px]"
+                            onClick={handleOpenTrocaList}
+                            className="bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-300 p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer min-h-[110px] group shadow-sm"
                         >
-                            <ActivitySquare size={24} className="text-gray-400" />
-                            <h3 className="font-semibold text-gray-600 text-sm">Acompanhar</h3>
+                            <ActivitySquare size={24} className="text-orange-500 group-hover:text-orange-600 transition-colors" />
+                            <h3 className="font-semibold text-gray-700 group-hover:text-orange-800 text-sm">Acompanhar</h3>
                         </button>
                     </div>
                 </section>

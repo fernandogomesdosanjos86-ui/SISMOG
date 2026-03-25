@@ -1,0 +1,17 @@
+src/features/supervisao/pages/TrocaPlantao.tsx(2,24): error TS6133: 'Filter' is declared but its value is never read.
+src/features/supervisao/pages/TrocaPlantao.tsx(17,28): error TS2339: Property 'openDetailsModal' does not exist on type 'ModalContextType'.
+src/features/supervisao/pages/TrocaPlantao.tsx(27,9): error TS2339: Property 'refetch' does not exist on type '{ trocas: TrocaPlantao[]; isLoading: boolean; mesesDisponiveis: string[]; isLoadingMeses: boolean; create: UseMutateAsyncFunction<TrocaPlantao, Error, TrocaPlantaoFormData, unknown>; ... 8 more ...; isWorking: boolean; }'.
+src/features/supervisao/pages/TrocaPlantao.tsx(77,77): error TS2322: Type '{ status: any; }' is not assignable to type 'IntrinsicAttributes & StatusBadgeProps'.
+  Property 'status' does not exist on type 'IntrinsicAttributes & StatusBadgeProps'.
+src/features/supervisao/pages/TrocaPlantao.tsx(198,46): error TS2322: Type '{ status: any; }' is not assignable to type 'IntrinsicAttributes & StatusBadgeProps'.
+  Property 'status' does not exist on type 'IntrinsicAttributes & StatusBadgeProps'.
+src/features/supervisao/pages/TrocaPlantaoDetails.tsx(8,59): error TS6133: 'CheckCircle2' is declared but its value is never read.
+src/features/supervisao/pages/TrocaPlantaoDetails.tsx(15,19): error TS2339: Property 'isOperador' does not exist on type 'AuthContextType'.
+src/features/supervisao/pages/TrocaPlantaoDetails.tsx(15,31): error TS2339: Property 'isGestor' does not exist on type 'AuthContextType'.
+src/features/supervisao/pages/TrocaPlantaoDetails.tsx(15,41): error TS2339: Property 'isAdmin' does not exist on type 'AuthContextType'.
+src/features/supervisao/pages/TrocaPlantaoDetails.tsx(24,54): error TS2339: Property 'cpf' does not exist on type 'User'.
+src/features/supervisao/pages/TrocaPlantaoDetails.tsx(85,30): error TS2322: Type '{ status: any; }' is not assignable to type 'IntrinsicAttributes & StatusBadgeProps'.
+  Property 'status' does not exist on type 'IntrinsicAttributes & StatusBadgeProps'.
+src/features/supervisao/pages/TrocaPlantaoDetails.tsx(162,30): error TS2304: Cannot find name 'Handshake'.
+src/features/supervisao/pages/TrocaPlantaoForm.tsx(13,19): error TS2339: Property 'isOperador' does not exist on type 'AuthContextType'.
+src/features/supervisao/pages/TrocaPlantaoForm.tsx(32,54): error TS2339: Property 'cpf' does not exist on type 'User'.

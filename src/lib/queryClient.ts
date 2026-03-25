@@ -80,6 +80,12 @@ export const queryKeys = {
         list: (postoId: string, competencia: string) => [...queryKeys.escalas.all, 'list', postoId, competencia] as const,
         postosComEscala: (competencia: string) => [...queryKeys.escalas.all, 'postosComEscala', competencia] as const,
     },
+    trocasPlantao: {
+        all: ['trocasPlantao'] as const,
+        list: (monthYear?: string, empresa?: string, searchTerm?: string) => 
+            [...queryKeys.trocasPlantao.all, 'list', monthYear, empresa, searchTerm] as const,
+        meses: () => [...queryKeys.trocasPlantao.all, 'meses'] as const,
+    },
     // Gestão de Estoque
     estoqueProdutos: {
         all: ['estoqueProdutos'] as const,

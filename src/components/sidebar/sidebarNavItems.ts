@@ -1,6 +1,6 @@
 import {
     Home, Settings, Users, FileText, BarChart2, DollarSign, Box, Briefcase, Package,
-    Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin, PieChart
+    Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin, PieChart, Handshake
 } from 'lucide-react';
 import { APP_ROUTES } from '../../config/routes';
 
@@ -52,7 +52,8 @@ export const navItems: NavItem[] = [
             { icon: FileText, label: 'Gestão de Postos', path: APP_ROUTES.SUPERVISAO.POSTOS },
             { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS },
             { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS },
-            { icon: Calendar, label: 'Escalas', path: APP_ROUTES.SUPERVISAO.ESCALAS }
+            { icon: Calendar, label: 'Escalas', path: APP_ROUTES.SUPERVISAO.ESCALAS },
+            { icon: Handshake, label: 'Troca de Plantão', path: APP_ROUTES.SUPERVISAO.TROCA_PLANTAO }
         ]
     },
     {

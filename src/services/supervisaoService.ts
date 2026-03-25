@@ -120,5 +120,26 @@ export const supervisaoService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    /** Fetch all non-HE (official) allocations for a specific funcionario */
+    async getAlocacoesByFuncionario(funcionarioId: string) {
+        const { data, error } = await supabase
+            .from('alocacoes_funcionarios')
+            .select(`
+                *,
+                posto:postos_trabalho(id, nome, empresa, status)
+            `)
+            .eq('funcionario_id', funcionarioId)
+            .eq('he', false);
+
+        if (error) throw error;
+        return data as Array<{
+            id: string;
+            funcionario_id: string;
+            posto_id: string;
+            he: boolean;
+            posto: { id: string; nome: string; empresa: string; status: string } | null;
+        }>;
     }
 };
