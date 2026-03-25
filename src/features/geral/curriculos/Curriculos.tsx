@@ -16,6 +16,8 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import FilterTabs from '../../../components/ui/FilterTabs';
 
+import { normalizeSearchString } from '../../../utils/normalization';
+
 const Curriculos = () => {
     const { curriculos, isLoading, refetch, delete: del } = useCurriculos();
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
@@ -38,11 +40,11 @@ const Curriculos = () => {
             const matchStatus = statusTab === 'TODOS' || i.status === statusTab;
             const matchCargo = cargoFilter === 'TODOS' || i.cargo === cargoFilter;
 
-            const term = debouncedSearch.toLowerCase();
+            const searchNormalized = normalizeSearchString(debouncedSearch);
             const matchSearch =
-                (i.nome && i.nome.toLowerCase().includes(term)) ||
-                (i.cargo && i.cargo.toLowerCase().includes(term)) ||
-                (i.indicacao && i.indicacao.toLowerCase().includes(term));
+                normalizeSearchString(i.nome).includes(searchNormalized) ||
+                normalizeSearchString(i.cargo).includes(searchNormalized) ||
+                normalizeSearchString(i.indicacao).includes(searchNormalized);
 
             return matchStatus && matchCargo && matchSearch;
         });

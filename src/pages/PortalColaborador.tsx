@@ -13,7 +13,7 @@ const PortalColaborador: React.FC = () => {
     const { openFormModal, closeModal } = useModal();
 
     // Safely extract name (as done in Sidebar)
-    const displayName = user?.user_metadata?.nome || 'Colaborador';
+    const displayName = user?.user_metadata?.['nome'] || 'Colaborador';
     const nameParts = displayName.split(' ');
     const firstName = nameParts[0];
     // If the second word is short (preposition like 'da', 'de', 'dos' ≤3 chars), use the third word instead

@@ -18,7 +18,7 @@ const ProtectedRoute = () => {
         return <Navigate to="/login" replace />;
     }
 
-    const permissao = user.user_metadata?.permissao?.toLowerCase() || '';
+    const permissao = (user.user_metadata?.['permissao'] as string)?.toLowerCase() || '';
     const isOperador = permissao === 'operador';
     const isPortalOperador = location.pathname === APP_ROUTES.PORTAL_COLABORADOR;
 

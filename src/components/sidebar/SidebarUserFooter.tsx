@@ -16,13 +16,13 @@ const SidebarUserFooter: React.FC = () => {
             <div className="flex items-center gap-3">
                 <div className="overflow-hidden">
                     <p className="text-sm font-semibold truncate text-white max-w-[140px]">
-                        {user?.user_metadata?.nome?.split(' ').slice(0, 2).join(' ') || 'Usuário'}
+                        {(user?.user_metadata?.['nome'] as string)?.split(' ').slice(0, 2).join(' ') || 'Usuário'}
                     </p>
                     <p className="text-xs text-blue-200/70 truncate flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                        {user?.user_metadata?.permissao || 'Visitante'}
-                        {user?.user_metadata?.permissao?.toLowerCase() === 'gestor' && user?.user_metadata?.setor
-                            ? ` ${user.user_metadata.setor}`
+                        {user?.user_metadata?.['permissao'] || 'Visitante'}
+                        {(user?.user_metadata?.['permissao'] as string)?.toLowerCase() === 'gestor' && user?.user_metadata?.['setor']
+                            ? ` ${user.user_metadata['setor']}`
                             : ''}
                     </p>
                 </div>

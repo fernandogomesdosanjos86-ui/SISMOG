@@ -34,9 +34,9 @@ const PortalTrocasList: React.FC = () => {
     const { openViewModal, openConfirmModal, openFormModal } = useModal();
     const { trocas, isLoading, delete: deleteTroca } = useTrocasPlantao({}); // Sem filtros, o RLS foca no usuário logado
 
-    const isOperador = user?.user_metadata?.permissao === 'Operador';
-    const isGestor = user?.user_metadata?.permissao === 'Gestor';
-    const isAdmin = user?.user_metadata?.permissao === 'Adm';
+    const isOperador = user?.user_metadata?.['permissao'] === 'Operador';
+    const isGestor = user?.user_metadata?.['permissao'] === 'Gestor';
+    const isAdmin = user?.user_metadata?.['permissao'] === 'Adm';
     const isManagement = isGestor || isAdmin;
 
     const sortedTrocas = useMemo(() => {

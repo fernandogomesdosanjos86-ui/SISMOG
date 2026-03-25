@@ -1,3 +1,4 @@
+import { normalizeSearchString } from '../../../utils/normalization';
 import { supabase } from '../../../services/supabase';
 import type { Abastecimento, AbastecimentoFormData, AbastecimentosFilters, PaginatedResponse } from '../types';
 import { startOfMonth, endOfMonth, parseISO } from 'date-fns';
@@ -30,8 +31,37 @@ export const abastecimentosService = {
             query = query.gte('data', startStr).lte('data', endStr);
         }
 
+        // Se houver termo de busca, buscamos uma quantidade maior para filtrar no cliente
         if (searchTerm) {
-            query = query.or(`responsavel.ilike.%${searchTerm}%,frota_veiculos.marca_modelo.ilike.%${searchTerm}%,frota_veiculos.placa.ilike.%${searchTerm}%`);
+            const { data, error } = await query; // Buscar todos (limite padrão ~1000)
+
+            if (error) {
+                console.error('Error fetching abastecimentos for search:', error);
+                throw new Error('Erro ao buscar abastecimentos');
+            }
+
+            const searchNormalized = normalizeSearchString(searchTerm);
+
+            const filteredData = (data as any[]).filter(item => {
+                const responsavelMatch = normalizeSearchString(item.responsavel).includes(searchNormalized);
+                const veiculoMatch = normalizeSearchString(item.frota_veiculos?.marca_modelo).includes(searchNormalized);
+                const placaMatch = normalizeSearchString(item.frota_veiculos?.placa).includes(searchNormalized);
+
+                return responsavelMatch || veiculoMatch || placaMatch;
+            }).map(item => ({
+                ...item,
+                frota_veiculos: Array.isArray(item.frota_veiculos) ? item.frota_veiculos[0] : item.frota_veiculos
+            })) as Abastecimento[];
+
+            const count = filteredData.length;
+            const paginatedData = filteredData.slice(from, to + 1);
+
+            return {
+                data: paginatedData,
+                count: count,
+                page,
+                totalPages: Math.ceil(count / pageSize)
+            };
         }
 
         const { data, error, count } = await query.range(from, to);

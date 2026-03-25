@@ -1,3 +1,4 @@
+import { normalizeSearchString } from '../../../utils/normalization';
 import { supabase } from '../../../services/supabase';
 import type { TrocaPlantao, TrocaPlantaoFormData, StatusTrocaPlantao } from '../types';
 
@@ -39,14 +40,13 @@ export const trocaPlantaoService = {
         let filteredData = data as unknown as TrocaPlantao[];
         
         if (options?.searchTerm) {
-            const normalizeStr = (str?: string | null) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : '';
-            const term = normalizeStr(options.searchTerm);
+            const term = normalizeSearchString(options.searchTerm);
             
             filteredData = filteredData.filter(t => 
-                normalizeStr(t.funcionario?.nome).includes(term) ||
-                normalizeStr(t.funcionario_troca?.nome).includes(term) ||
-                normalizeStr(t.solicitante?.nome).includes(term) ||
-                normalizeStr(t.posto?.nome).includes(term)
+                normalizeSearchString(t.funcionario?.nome).includes(term) ||
+                normalizeSearchString(t.funcionario_troca?.nome).includes(term) ||
+                normalizeSearchString(t.solicitante?.nome).includes(term) ||
+                normalizeSearchString(t.posto?.nome).includes(term)
             );
         }
 

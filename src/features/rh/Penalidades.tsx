@@ -12,6 +12,8 @@ import PenalidadeForm from './components/PenalidadeForm';
 import PenalidadeDetails from './components/PenalidadeDetails';
 import type { Penalidade } from './types';
 
+import { normalizeSearchString } from '../../utils/normalization';
+
 const Penalidades: React.FC = () => {
     const { penalidades, isLoading, deletePenalidade } = usePenalidades();
     const { openConfirmModal, openFormModal, openViewModal, closeModal } = useModal();
@@ -23,7 +25,7 @@ const Penalidades: React.FC = () => {
     // Filtros Locais
     const filteredData = penalidades.filter(p => {
         const matchesCompany = companyFilter === 'TODOS' || p.empresa === companyFilter;
-        const matchesSearch = (p.funcionario?.nome || '').toLowerCase().includes(debouncedSearch.toLowerCase());
+        const matchesSearch = normalizeSearchString(p.funcionario?.nome).includes(normalizeSearchString(debouncedSearch));
         return matchesCompany && matchesSearch;
     });
 

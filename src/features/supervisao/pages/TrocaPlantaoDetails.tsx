@@ -23,9 +23,9 @@ interface TrocaPlantaoDetailsProps {
 
 const TrocaPlantaoDetails: React.FC<TrocaPlantaoDetailsProps> = ({ trocaId }) => {
     const { user } = useAuth();
-    const isOperador = user?.user_metadata?.permissao === 'Operador';
-    const isGestor = user?.user_metadata?.permissao === 'Gestor';
-    const isAdmin = user?.user_metadata?.permissao === 'Adm';
+    const isOperador = user?.user_metadata?.['permissao'] === 'Operador';
+    const isGestor = user?.user_metadata?.['permissao'] === 'Gestor';
+    const isAdmin = user?.user_metadata?.['permissao'] === 'Adm';
 
     const { closeModal, showFeedback, openConfirmModal } = useModal();
     const { trocas, cancelar, aceitarCobertura, aprovarReprovar, isWorking } = useTrocasPlantao();
@@ -34,8 +34,9 @@ const TrocaPlantaoDetails: React.FC<TrocaPlantaoDetailsProps> = ({ trocaId }) =>
     const troca = useMemo(() => trocas.find(t => t.id === trocaId), [trocas, trocaId]);
 
     const operadorMatchId = useMemo(() => {
-        if (!user || !user.user_metadata?.cpf) return null;
-        const secureSessionCpf = user.user_metadata.cpf.replace(/\D/g, '');
+        const userCpf = user?.user_metadata?.['cpf'];
+        if (!user || !userCpf) return null;
+        const secureSessionCpf = (userCpf as string).replace(/\D/g, '');
         return funcionarios.find(f => f.cpf && f.cpf.replace(/\D/g, '') === secureSessionCpf)?.id || null;
     }, [user, funcionarios]);
 

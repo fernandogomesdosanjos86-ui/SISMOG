@@ -13,6 +13,8 @@ import FuncionarioForm from './components/FuncionarioForm';
 import FuncionarioDetails from './components/FuncionarioDetails';
 import type { Funcionario } from './types';
 
+import { normalizeSearchString } from '../../utils/normalization';
+
 const Funcionarios: React.FC = () => {
     const { funcionarios, isLoading, refetch, delete: deleteFuncionario } = useFuncionarios();
     const { openViewModal, openConfirmModal, openFormModal, showFeedback } = useModal();
@@ -30,16 +32,16 @@ const Funcionarios: React.FC = () => {
         const matchesCompany = companyFilter === 'TODOS' || func.empresa === companyFilter;
         const matchesStatus = statusFilter === 'TODOS' || func.status === statusFilter;
 
-        const searchLower = debouncedSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+        const searchLower = normalizeSearchString(debouncedSearch);
 
-        const nomeUpperRaw = func.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+        const nomeNormalized = normalizeSearchString(func.nome);
         const cpfRaw = (func.cpf || '').replace(/\D/g, '');
-        const cargoRaw = (func.cargos_salarios?.cargo || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+        const cargoNormalized = normalizeSearchString(func.cargos_salarios?.cargo);
 
         const matchesSearch =
-            nomeUpperRaw.includes(searchLower) ||
+            nomeNormalized.includes(searchLower) ||
             cpfRaw.includes(searchLower) ||
-            cargoRaw.includes(searchLower);
+            cargoNormalized.includes(searchLower);
 
         return matchesCompany && matchesStatus && matchesSearch;
     });

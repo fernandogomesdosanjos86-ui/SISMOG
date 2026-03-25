@@ -101,19 +101,22 @@ const UserCard: FC<{ user: User }> = ({ user }) => (
     </div>
 );
 
+import { normalizeSearchString } from '../../../utils/normalization';
+
 const UserList = () => {
     const { users, isLoading, error, deleteUser } = useUsers();
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
     const { user: currentUser } = useAuth(); // Get current user
     const [searchTerm, setSearchTerm] = useState('');
 
-    const isAdmin = currentUser?.user_metadata?.permissao === 'Adm';
+    const isAdmin = currentUser?.user_metadata?.['permissao'] === 'Adm';
 
-    const filteredUsers = users?.filter(user =>
-        user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.cpf.includes(searchTerm)
-    ) || [];
+    const filteredUsers = users?.filter(user => {
+        const searchNormalized = normalizeSearchString(searchTerm);
+        return normalizeSearchString(user.nome).includes(searchNormalized) ||
+            normalizeSearchString(user.email).includes(searchNormalized) ||
+            (user.cpf || '').includes(searchTerm);
+    }) || [];
 
     const handleRowClick = (user: User) => {
         openViewModal(

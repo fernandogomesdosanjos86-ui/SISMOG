@@ -11,6 +11,8 @@ import { formatCurrency } from '../../utils/format';
 import PrimaryButton from '../../components/PrimaryButton';
 import CompanyBadge from '../../components/CompanyBadge';
 
+import { normalizeSearchString } from '../../utils/normalization';
+
 const CargosSalarios: React.FC = () => {
     const { openConfirmModal, openFormModal, openViewModal, closeModal, showFeedback } = useModal();
     const [cargos, setCargos] = useState<CargoSalario[]>([]);
@@ -79,9 +81,9 @@ const CargosSalarios: React.FC = () => {
 
     const filteredCargos = cargos.filter(cargo => {
         const matchesCompany = activeTab === 'TODOS' || cargo.empresa === activeTab;
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = cargo.cargo.toLowerCase().includes(searchLower) ||
-            (cargo.uf || '').toLowerCase().includes(searchLower);
+        const searchNormalized = normalizeSearchString(searchTerm);
+        const matchesSearch = normalizeSearchString(cargo.cargo).includes(searchNormalized) ||
+            normalizeSearchString(cargo.uf).includes(searchNormalized);
         return matchesCompany && matchesSearch;
     });
 

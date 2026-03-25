@@ -36,9 +36,9 @@ const TrocaPlantao: React.FC = () => {
     const { user } = useAuth();
     
     // RBAC booleans
-    const isOperador = user?.user_metadata?.permissao === 'Operador';
-    const isGestor = user?.user_metadata?.permissao === 'Gestor';
-    const isAdmin = user?.user_metadata?.permissao === 'Adm';
+    const isOperador = user?.user_metadata?.['permissao'] === 'Operador';
+    const isGestor = user?.user_metadata?.['permissao'] === 'Gestor';
+    const isAdmin = user?.user_metadata?.['permissao'] === 'Adm';
     const isManagement = isGestor || isAdmin;
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().substring(0, 7));
     const [empresa, setEmpresa] = useState<'FEMOG' | 'SEMOG' | ''>('');

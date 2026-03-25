@@ -1,3 +1,4 @@
+import { normalizeSearchString } from '../../../utils/normalization';
 import { supabase } from '../../../services/supabase';
 import type { Movimentacao, MovimentacaoFormData, MovimentacoesFilters, PaginatedResponse } from '../types';
 import { endOfMonth } from 'date-fns';
@@ -36,8 +37,34 @@ export const movimentacoesService = {
                 .lte('data_hora_inicial', endDt.toISOString());
         }
 
+        // Se houver termo de busca, buscamos uma quantidade maior para filtrar no cliente
         if (searchTerm) {
-            query = query.or(`responsavel.ilike.%${searchTerm}%,veiculo.marca_modelo.ilike.%${searchTerm}%,veiculo.placa.ilike.%${searchTerm}%`);
+            const { data, error } = await query; // Buscar todos (limite ~1000)
+
+            if (error) {
+                console.error('Error fetching movimentacoes for search:', error);
+                throw error;
+            }
+
+            const searchNormalized = normalizeSearchString(searchTerm);
+
+            const filteredData = (data as any[]).filter(item => {
+                const responsavelMatch = normalizeSearchString(item.responsavel).includes(searchNormalized);
+                const veiculoMatch = normalizeSearchString(item.veiculo?.marca_modelo).includes(searchNormalized);
+                const placaMatch = normalizeSearchString(item.veiculo?.placa).includes(searchNormalized);
+
+                return responsavelMatch || veiculoMatch || placaMatch;
+            });
+
+            const count = filteredData.length;
+            const paginatedData = filteredData.slice(from, to + 1);
+
+            return {
+                data: paginatedData,
+                count: count,
+                page,
+                totalPages: Math.ceil(count / pageSize)
+            };
         }
 
         const { data, error, count } = await query.range(from, to);

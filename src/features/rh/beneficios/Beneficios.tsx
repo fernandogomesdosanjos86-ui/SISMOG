@@ -9,6 +9,7 @@ import BeneficiosKPIs from './components/BeneficiosKPIs';
 import BeneficiosTable from './components/BeneficiosTable';
 import GerarBeneficiosModal from './components/GerarBeneficiosModal';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { normalizeSearchString } from '../../../utils/normalization';
 import type { BeneficioCalculado } from './types';
 
 const Beneficios: React.FC = () => {
@@ -31,12 +32,12 @@ const Beneficios: React.FC = () => {
 
         if (!debouncedSearch) return sortByName(beneficios);
 
-        const searchLower = debouncedSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+        const searchLower = normalizeSearchString(debouncedSearch);
 
         const filtrados = beneficios.filter(b => {
-            const nome = (b.funcionarios?.nome || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
-            const cargo = (b.cargos_salarios?.cargo || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
-            const posto = (b.postos_trabalho?.nome || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W/g, "").toLowerCase();
+            const nome = normalizeSearchString(b.funcionarios?.nome);
+            const cargo = normalizeSearchString(b.cargos_salarios?.cargo);
+            const posto = normalizeSearchString(b.postos_trabalho?.nome);
 
             return nome.includes(searchLower) || cargo.includes(searchLower) || posto.includes(searchLower);
         });

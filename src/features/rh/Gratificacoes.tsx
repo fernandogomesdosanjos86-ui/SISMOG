@@ -12,6 +12,8 @@ import GratificacaoForm from './components/GratificacaoForm';
 import GratificacaoDetails from './components/GratificacaoDetails';
 import type { Gratificacao } from './types';
 
+import { normalizeSearchString } from '../../utils/normalization';
+
 const Gratificacoes: React.FC = () => {
     const { gratificacoes, isLoading, deleteGratificacao } = useGratificacoes();
     const { openConfirmModal, openFormModal, openViewModal, closeModal } = useModal();
@@ -25,7 +27,7 @@ const Gratificacoes: React.FC = () => {
     const filteredData = gratificacoes.filter(g => {
         const matchesCompany = companyFilter === 'TODOS' || g.empresa === companyFilter;
         const matchesTipo = tipoFilter === 'TODOS' || g.tipo === tipoFilter;
-        const matchesSearch = (g.funcionario?.nome || '').toLowerCase().includes(debouncedSearch.toLowerCase());
+        const matchesSearch = normalizeSearchString(g.funcionario?.nome).includes(normalizeSearchString(debouncedSearch));
         return matchesCompany && matchesTipo && matchesSearch;
     });
 

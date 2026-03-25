@@ -16,7 +16,7 @@ interface TrocaPlantaoFormProps {
 
 const TrocaPlantaoForm: React.FC<TrocaPlantaoFormProps> = ({ initialData }) => {
     const { user } = useAuth();
-    const isOperador = user?.user_metadata?.permissao === 'Operador';
+    const isOperador = user?.user_metadata?.['permissao'] === 'Operador';
     const { closeModal, showFeedback } = useModal();
     const { create, update, isCreating, isUpdating } = useTrocasPlantao();
     
@@ -33,8 +33,9 @@ const TrocaPlantaoForm: React.FC<TrocaPlantaoFormProps> = ({ initialData }) => {
 
     // --- Operator Identity: ALL records matching the CPF (can be 2 if in both companies) ---
     const operadorMatches = useMemo(() => {
-        if (!isOperador || !user || !user.user_metadata?.cpf) return [];
-        const secureCpfSession = user.user_metadata.cpf.replace(/\D/g, '');
+        const userCpf = user?.user_metadata?.['cpf'];
+        if (!isOperador || !user || !userCpf) return [];
+        const secureCpfSession = (userCpf as string).replace(/\D/g, '');
         return funcionarios.filter(f => f.cpf && f.cpf.replace(/\D/g, '') === secureCpfSession);
     }, [isOperador, user, funcionarios]);
 

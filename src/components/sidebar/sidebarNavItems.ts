@@ -73,8 +73,8 @@ export const navItems: NavItem[] = [
         label: 'Financeiro',
         path: APP_ROUTES.FINANCEIRO.ROOT,
         hasAccess: (user: any) => {
-            const p = user?.user_metadata?.permissao?.toLowerCase();
-            const s = user?.user_metadata?.setor?.toLowerCase();
+            const p = (user?.user_metadata?.['permissao'] as string)?.toLowerCase();
+            const s = (user?.user_metadata?.['setor'] as string)?.toLowerCase();
             if (p === 'adm') return true;
             if (p === 'gestor' && (s === 'financeiro' || s === 'direção')) return true;
             return false;
