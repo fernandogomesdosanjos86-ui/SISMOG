@@ -4,7 +4,7 @@ import type { BancoHoras, BancoHorasFormData } from '../features/supervisao/type
 export const bancoHorasService = {
     async getBancoHoras() {
         const { data, error } = await supabase
-            .from('supervisao_banco_horas')
+            .from('supervisao_banco_horas' as any)
             .select(`
                 *,
                 funcionario:funcionarios(nome)
@@ -17,7 +17,7 @@ export const bancoHorasService = {
 
     async createBancoHoras(data: BancoHorasFormData) {
         const { data: newBancoHoras, error } = await supabase
-            .from('supervisao_banco_horas')
+            .from('supervisao_banco_horas' as any)
             .insert(data)
             .select()
             .single();
@@ -28,7 +28,7 @@ export const bancoHorasService = {
 
     async updateBancoHoras(id: string, data: Partial<BancoHorasFormData>) {
         const { data: updatedBancoHoras, error } = await supabase
-            .from('supervisao_banco_horas')
+            .from('supervisao_banco_horas' as any)
             .update(data)
             .eq('id', id)
             .select()
@@ -40,7 +40,7 @@ export const bancoHorasService = {
 
     async deleteBancoHoras(id: string) {
         const { error } = await supabase
-            .from('supervisao_banco_horas')
+            .from('supervisao_banco_horas' as any)
             .delete()
             .eq('id', id);
 

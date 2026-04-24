@@ -185,7 +185,6 @@ const BancoHoras: React.FC = () => {
                     value={formatMinutesToHHmm(totalMinutos)}
                     icon={Clock}
                     type="total"
-                    className={totalMinutos < 0 ? "border-red-500" : "border-green-500"}
                 />
                 <StatCard
                     title="Banco de Horas FEMOG"
