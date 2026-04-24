@@ -126,3 +126,20 @@ export interface TrocaPlantao {
 
 export type TrocaPlantaoFormData = Omit<TrocaPlantao, 'id' | 'data_solicitacao' | 'de_acordo' | 'status' | 'data_analise' | 'responsavel_analise_id' | 'created_at' | 'updated_at' | 'funcionario' | 'posto' | 'funcionario_troca' | 'solicitante' | 'responsavel_analise'>;
 
+export type TipoBancoHoras = 'Positiva' | 'Negativa' | 'Compensação';
+
+export interface BancoHoras {
+    id: string;
+    empresa: 'FEMOG' | 'SEMOG';
+    data: string; // YYYY-MM-DD
+    descricao: string;
+    tipo: TipoBancoHoras;
+    funcionario_id: string;
+    duracao_minutos: number;
+    created_at: string;
+    updated_at: string;
+    // Joined fields
+    funcionario?: { nome: string; cpf?: string };
+}
+
+export type BancoHorasFormData = Omit<BancoHoras, 'id' | 'created_at' | 'updated_at' | 'funcionario'>;

@@ -51,6 +51,7 @@ export const navItems: NavItem[] = [
         children: [
             { icon: FileText, label: 'Gestão de Postos', path: APP_ROUTES.SUPERVISAO.POSTOS },
             { icon: DollarSign, label: 'Serviços Extras', path: APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS },
+            { icon: Calendar, label: 'Banco de Horas', path: APP_ROUTES.SUPERVISAO.BANCO_HORAS },
             { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS },
             { icon: Calendar, label: 'Escalas', path: APP_ROUTES.SUPERVISAO.ESCALAS },
             { icon: Handshake, label: 'Troca de Plantão', path: APP_ROUTES.SUPERVISAO.TROCA_PLANTAO }

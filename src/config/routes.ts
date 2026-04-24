@@ -28,6 +28,7 @@ export const APP_ROUTES = {
         ROOT: '#supervisao',
         POSTOS: '/supervisao/postos',
         SERVICOS_EXTRAS: '/supervisao/servicos-extras',
+        BANCO_HORAS: '/supervisao/banco-horas',
         APONTAMENTOS: '/supervisao/apontamentos',
         ESCALAS: '/supervisao/escalas',
         TROCA_PLANTAO: '/supervisao/troca-plantao',
