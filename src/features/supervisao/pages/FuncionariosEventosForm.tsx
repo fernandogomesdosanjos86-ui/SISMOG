@@ -28,7 +28,7 @@ const FuncionariosEventosForm: React.FC<FuncionariosEventosFormProps> = ({ initi
     const [numero_cnv, setNumeroCnv] = useState(initialData?.numero_cnv || '');
     const [validade_cnv, setValidadeCnv] = useState(initialData?.validade_cnv || '');
     const [status, setStatus] = useState<StatusEvento | ''>(initialData?.status || 'Apto');
-    const [avaliacao, setAvaliacao] = useState<number>(initialData?.avaliacao || 5);
+    const [avaliacao, setAvaliacao] = useState<number>(initialData?.avaliacao ?? 0);
     const [observacoes, setObservacoes] = useState(initialData?.observacoes || '');
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -39,20 +39,20 @@ const FuncionariosEventosForm: React.FC<FuncionariosEventosFormProps> = ({ initi
             return;
         }
 
-        const payload: FuncionarioEventoFormData = {
+        const payload = {
             data,
             funcionario_nome,
-            cpf,
-            telefone,
-            pix,
+            cpf: cpf || null,
+            telefone: telefone || null,
+            pix: pix || null,
             cargo,
             grandes_eventos,
-            validade_reciclagem,
-            numero_cnv,
-            validade_cnv,
+            validade_reciclagem: validade_reciclagem || null,
+            numero_cnv: numero_cnv || null,
+            validade_cnv: validade_cnv || null,
             status,
             avaliacao,
-            observacoes
+            observacoes: observacoes || null
         } as any;
 
         try {
@@ -65,9 +65,10 @@ const FuncionariosEventosForm: React.FC<FuncionariosEventosFormProps> = ({ initi
                 showFeedback('success', 'Registro criado com sucesso!');
             }
             onSuccess();
-        } catch (error) {
-            console.error(error);
-            showFeedback('error', 'Erro ao salvar registro.');
+        } catch (error: any) {
+            console.error('Erro ao salvar:', error);
+            const msg = error?.message || error?.toString() || 'Erro ao salvar registro.';
+            showFeedback('error', msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -175,10 +176,10 @@ const FuncionariosEventosForm: React.FC<FuncionariosEventosFormProps> = ({ initi
                     required
                 />
                 <div className="flex flex-col space-y-1">
-                    <label className="text-sm font-semibold text-gray-700">Avaliação (1 a 5 estrelas)</label>
+                    <label className="text-sm font-semibold text-gray-700">Avaliação (0 a 5 estrelas)</label>
                     <input
                         type="number"
-                        min="1"
+                        min="0"
                         max="5"
                         value={avaliacao}
                         onChange={(e) => setAvaliacao(Number(e.target.value))}
