@@ -143,3 +143,27 @@ export interface BancoHoras {
 }
 
 export type BancoHorasFormData = Omit<BancoHoras, 'id' | 'created_at' | 'updated_at' | 'funcionario'>;
+
+export type CargoEvento = 'Vigilante' | 'Supervisor' | 'Apoio' | 'Outro';
+export type StatusEvento = 'Apto' | 'Inapto';
+
+export interface FuncionarioEvento {
+    id: string;
+    data: string; // YYYY-MM-DD
+    funcionario_nome: string;
+    cpf: string;
+    telefone: string;
+    pix: string;
+    cargo: CargoEvento;
+    grandes_eventos: boolean;
+    validade_reciclagem: string; // YYYY-MM-DD
+    numero_cnv: string;
+    validade_cnv: string; // YYYY-MM-DD
+    status: StatusEvento;
+    avaliacao: number; // 1 to 5
+    observacoes: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export type FuncionarioEventoFormData = Omit<FuncionarioEvento, 'id' | 'created_at' | 'updated_at'>;

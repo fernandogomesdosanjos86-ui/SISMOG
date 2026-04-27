@@ -23,6 +23,7 @@ const Beneficios = lazy(() => import('./features/rh/beneficios/Beneficios'));
 const GestaoPostos = lazy(() => import('./features/supervisao/GestaoPostos'));
 const ServicosExtras = lazy(() => import('./features/supervisao/ServicosExtras'));
 const BancoHoras = lazy(() => import('./features/supervisao/BancoHoras'));
+const FuncionariosEventos = lazy(() => import('./features/supervisao/FuncionariosEventos'));
 const Apontamentos = lazy(() => import('./features/supervisao/Apontamentos'));
 const Escalas = lazy(() => import('./features/supervisao/Escalas'));
 const TrocaPlantao = lazy(() => import('./features/supervisao/pages/TrocaPlantao'));
@@ -73,6 +74,7 @@ function App() {
             {/* Supervisão */}
             <Route path={APP_ROUTES.SUPERVISAO.POSTOS} element={<GestaoPostos />} />
             <Route path={APP_ROUTES.SUPERVISAO.SERVICOS_EXTRAS} element={<ServicosExtras />} />
+            <Route path={APP_ROUTES.SUPERVISAO.FUNCIONARIOS_EVENTOS} element={<FuncionariosEventos />} />
             <Route path={APP_ROUTES.SUPERVISAO.BANCO_HORAS} element={<BancoHoras />} />
             <Route path={APP_ROUTES.SUPERVISAO.APONTAMENTOS} element={<Apontamentos />} />
             <Route path={APP_ROUTES.SUPERVISAO.ESCALAS} element={<Escalas />} />
