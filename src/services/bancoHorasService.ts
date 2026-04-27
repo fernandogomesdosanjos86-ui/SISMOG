@@ -12,7 +12,7 @@ export const bancoHorasService = {
             .order('data', { ascending: false });
 
         if (error) throw error;
-        return data as BancoHoras[];
+        return (data as unknown) as BancoHoras[];
     },
 
     async createBancoHoras(data: BancoHorasFormData) {
