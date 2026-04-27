@@ -24,14 +24,6 @@ const formatCPF = (cpf: string) => {
     return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 };
 
-const formatTelefone = (telefone: string) => {
-    if (!telefone) return '-';
-    const digits = telefone.replace(/\D/g, '');
-    if (digits.length !== 11 && digits.length !== 10) return telefone;
-    if (digits.length === 11) return digits.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-    return digits.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
-};
-
 const FuncionariosEventos: React.FC = () => {
     const { openFormModal, openViewModal, openConfirmModal, closeModal, showFeedback } = useModal();
 
