@@ -87,8 +87,24 @@ export const escalasService = {
         const year = parseInt(competencia.split('-')[0], 10);
         const month = parseInt(competencia.split('-')[1], 10);
 
+        // Deduplicar alocações pelo funcionario_id, priorizando he = false (Fixo)
+        const uniqueAllocatedMap = new Map<string, any>();
+        for (const alloc of allocated) {
+            const fId = alloc.funcionario_id;
+            if (!uniqueAllocatedMap.has(fId)) {
+                uniqueAllocatedMap.set(fId, alloc);
+            } else {
+                const existing = uniqueAllocatedMap.get(fId);
+                // Se a alocação existente for HE (Extra) e a nova for fixa (he = false), substituímos pela fixa
+                if (existing.he && !alloc.he) {
+                    uniqueAllocatedMap.set(fId, alloc);
+                }
+            }
+        }
+        const deduplicatedAllocated = Array.from(uniqueAllocatedMap.values());
+
         // Build base scale payloads
-        const payloads: Partial<Escala>[] = allocated.map((alloc: any) => {
+        const payloads: Partial<Escala>[] = deduplicatedAllocated.map((alloc: any) => {
             const preCalculatedDays = generateDaysForEscala(alloc.escala, undefined, month, year);
             return {
                 competencia,
@@ -112,9 +128,25 @@ export const escalasService = {
      * We use upsert relying on the UNIQUE constraint (competencia, funcionario_id, posto_id)
      */
     saveEscalaEmMassa: async (escalasData: Partial<Escala>[]) => {
+        // Deduplicar para evitar "ON CONFLICT DO UPDATE command cannot affect row a second time"
+        const uniqueEscalas = new Map<string, Partial<Escala>>();
+        for (const esc of escalasData) {
+            const key = `${esc.competencia}_${esc.funcionario_id}_${esc.posto_id}`;
+            if (!uniqueEscalas.has(key)) {
+                uniqueEscalas.set(key, esc);
+            } else {
+                const existing = uniqueEscalas.get(key)!;
+                // Priorizar Fixo em relação a Extra
+                if (existing.tipo === 'Extra' && esc.tipo === 'Fixo') {
+                    uniqueEscalas.set(key, esc);
+                }
+            }
+        }
+        const cleanData = Array.from(uniqueEscalas.values());
+
         const { data, error } = await supabase
             .from('supervisao_escalas')
-            .upsert(escalasData as any, {
+            .upsert(cleanData as any, {
                 onConflict: 'competencia, funcionario_id, posto_id', // Make sure it overwrites instead of creating dupes
                 ignoreDuplicates: false
             })

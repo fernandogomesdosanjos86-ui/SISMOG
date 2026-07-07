@@ -8,7 +8,7 @@ import { useModal } from '../../context/ModalContext';
 import { useFuncionariosEventos } from './hooks/useFuncionariosEventos';
 import FuncionariosEventosForm from './pages/FuncionariosEventosForm';
 import FuncionariosEventosDetails from './pages/FuncionariosEventosDetails';
-import type { FuncionarioEvento } from './types';
+import type { FuncionarioEvento, CargoEvento } from './types';
 import { useDebounce } from '../../hooks/useDebounce';
 import { normalizeSearchString } from '../../utils/normalization';
 
@@ -31,6 +31,7 @@ const FuncionariosEventos: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const [statusFilter, setStatusFilter] = useState<'Todos' | 'Apto' | 'Inapto'>('Todos');
+    const [cargoFilter, setCargoFilter] = useState<'Todos' | CargoEvento>('Todos');
     const [reciclagemFilter, setReciclagemFilter] = useState<'Todos' | 'Em dia' | 'Vencida'>('Todos');
 
     // Fetch Data
@@ -44,6 +45,7 @@ const FuncionariosEventos: React.FC = () => {
             const isEmDia = isReciclagemEmDia(a.validade_reciclagem);
             
             const matchesStatus = statusFilter === 'Todos' || a.status === statusFilter;
+            const matchesCargo = cargoFilter === 'Todos' || a.cargo === cargoFilter;
             const matchesReciclagem = reciclagemFilter === 'Todos' || 
                 (reciclagemFilter === 'Em dia' && isEmDia) || 
                 (reciclagemFilter === 'Vencida' && !isEmDia);
@@ -54,11 +56,16 @@ const FuncionariosEventos: React.FC = () => {
             
             const matchesSearch = nameMatch || cpfMatch || cargoMatch;
 
-            return matchesStatus && matchesReciclagem && matchesSearch;
+            return matchesStatus && matchesCargo && matchesReciclagem && matchesSearch;
         });
 
+        // Ordena em ordem alfabética pelo nome do funcionário
+        filtered.sort((a, b) => 
+            (a.funcionario_nome || '').localeCompare(b.funcionario_nome || '', 'pt-BR', { sensitivity: 'base' })
+        );
+
         return filtered;
-    }, [funcionariosEventos, debouncedSearchTerm, statusFilter, reciclagemFilter]);
+    }, [funcionariosEventos, debouncedSearchTerm, statusFilter, cargoFilter, reciclagemFilter]);
 
     // KPIs
     const totalAptos = filteredData.filter(g => g.status === 'Apto').length;
@@ -216,11 +223,23 @@ const FuncionariosEventos: React.FC = () => {
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                     <select
+                        value={cargoFilter}
+                        onChange={(e) => setCargoFilter(e.target.value as any)}
+                        className="border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white text-gray-700 font-medium"
+                    >
+                        <option value="Todos">Todos os Cargos</option>
+                        <option value="Vigilante">Vigilante</option>
+                        <option value="Supervisor">Supervisor</option>
+                        <option value="Apoio">Apoio</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+
+                    <select
                         value={reciclagemFilter}
                         onChange={(e) => setReciclagemFilter(e.target.value as any)}
-                        className="border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white text-gray-700 font-medium"
                     >
-                        <option value="Todos">Todos</option>
+                        <option value="Todos">Todos os Status</option>
                         <option value="Em dia">Em dia</option>
                         <option value="Vencida">Vencida</option>
                     </select>

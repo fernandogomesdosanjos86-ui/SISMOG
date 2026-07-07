@@ -6,7 +6,7 @@ export const funcionariosEventosService = {
         const { data, error } = await supabase
             .from('supervisao_funcionarios_eventos' as any)
             .select('*')
-            .order('data', { ascending: false });
+            .order('funcionario_nome', { ascending: true });
 
         if (error) throw error;
         return (data as unknown) as FuncionarioEvento[];

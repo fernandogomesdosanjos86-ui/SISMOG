@@ -1,24 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash } from 'lucide-react';
 import ResponsiveTable from '../../../../components/ResponsiveTable';
 import { useModal } from '../../../../context/ModalContext';
 import { estoqueGestaoService } from '../../../../services/estoqueGestaoService';
-import type { Movimentacao, ResumoFuncionario } from '../types';
+import type { Movimentacao, ResumoFuncionario, MovimentacaoFormData } from '../types';
+import { MovimentacaoDetails } from './TabCompraDescarte';
+import MovimentacaoForm from './MovimentacaoForm';
 
 interface TabIndividualProps {
     onRefresh: () => void;
     deleteMov: (id: string) => Promise<any>;
+    updateMov: (args: { id: string; data: Partial<MovimentacaoFormData> }) => Promise<any>;
     searchTerm: string;
 }
 
-const ITEMS_PER_PAGE = 50;
-
-const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, searchTerm }) => {
-    const { openViewModal, showFeedback } = useModal();
+const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, updateMov, searchTerm }) => {
+    const { openViewModal } = useModal();
     const [resumo, setResumo] = useState<ResumoFuncionario[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 50;
 
-    React.useEffect(() => {
+    useEffect(() => {
         loadResumo();
     }, []);
 
@@ -35,7 +38,7 @@ const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, sea
     };
 
     // Re-load when parent refreshes
-    React.useEffect(() => {
+    useEffect(() => {
         loadResumo();
     }, [onRefresh]);
 
@@ -45,25 +48,30 @@ const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, sea
         normalizeSearch(r.nome).includes(normalizeSearch(searchTerm))
     );
 
-    const handleView = async (item: ResumoFuncionario) => {
-        try {
-            const movs = await estoqueGestaoService.getMovimentacoesPorFuncionario(item.id);
-            openViewModal(
-                'Detalhes da Distribuição',
-                <HistoricoModal
-                    nome={item.nome}
-                    empresa={item.empresa}
-                    qtdTotal={item.qtd}
-                    movimentacoes={movs}
-                    onDelete={async (id) => {
-                        await deleteMov(id);
-                        onRefresh();
-                    }}
-                />
-            );
-        } catch (e) {
-            showFeedback('error', 'Erro ao carregar histórico.');
-        }
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginated = filtered.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    const handleView = (item: ResumoFuncionario) => {
+        openViewModal(
+            'Detalhes da Distribuição',
+            <HistoricoModal
+                funcionarioId={item.id}
+                nome={item.nome}
+                empresa={item.empresa}
+                qtdTotal={item.qtd}
+                onParentRefresh={loadResumo}
+                deleteMov={deleteMov}
+                updateMov={updateMov}
+            />
+        );
     };
 
     const columns = [
@@ -80,7 +88,7 @@ const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, sea
     ];
 
     const renderCard = (r: ResumoFuncionario) => (
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center" onClick={() => handleView(r)}>
             <div>
                 <p className="font-bold text-gray-900 text-sm">{r.nome}</p>
                 <span className="text-xs text-gray-500">{r.empresa}</span>
@@ -92,7 +100,7 @@ const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, sea
     return (
         <div className="space-y-4">
             <ResponsiveTable
-                data={filtered.slice(0, ITEMS_PER_PAGE)}
+                data={paginated}
                 columns={columns}
                 keyExtractor={r => r.id}
                 onRowClick={handleView}
@@ -100,25 +108,107 @@ const TabIndividual: React.FC<TabIndividualProps> = ({ onRefresh, deleteMov, sea
                 skeletonRows={5}
                 renderCard={renderCard}
             />
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 py-4">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Anterior
+                    </button>
+                    <span className="text-sm text-gray-600">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Próxima
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
 
 // Inner modal component
 const HistoricoModal: React.FC<{
+    funcionarioId: string;
     nome: string;
     empresa: string;
     qtdTotal: number;
-    movimentacoes: Movimentacao[];
-    onDelete: (id: string) => Promise<void>;
-}> = ({ nome, empresa, qtdTotal, movimentacoes, onDelete }) => {
-    const { openConfirmModal } = useModal();
+    onParentRefresh: () => void;
+    deleteMov: (id: string) => Promise<any>;
+    updateMov: (args: { id: string; data: Partial<MovimentacaoFormData> }) => Promise<any>;
+}> = ({ funcionarioId, nome, empresa, qtdTotal, onParentRefresh, deleteMov, updateMov }) => {
+    const { openViewModal, openFormModal, openConfirmModal, closeModal } = useModal();
+    const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const loadMovs = async () => {
+        setLoading(true);
+        try {
+            const data = await estoqueGestaoService.getMovimentacoesPorFuncionario(funcionarioId);
+            setMovimentacoes(data || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadMovs();
+    }, [funcionarioId]);
 
     const handleDelete = (id: string) => {
         openConfirmModal(
             'Excluir Movimentação',
-            'Tem certeza que deseja excluir esta movimentação?',
-            () => onDelete(id)
+            'Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita.',
+            async () => {
+                await deleteMov(id);
+                loadMovs();
+                onParentRefresh();
+            }
+        );
+    };
+
+    const handleRowClick = (m: Movimentacao) => {
+        openViewModal(
+            'Detalhes da Movimentação',
+            <MovimentacaoDetails movimentacao={m} />,
+            {
+                canEdit: true,
+                editText: 'Editar',
+                onEdit: () => openFormModal('Editar Movimentação', (
+                    <MovimentacaoForm
+                        initialData={m}
+                        onSuccess={() => { loadMovs(); onParentRefresh(); }}
+                        create={async () => {}}
+                        update={updateMov}
+                    />
+                )),
+                canDelete: true,
+                deleteText: 'Excluir',
+                onDelete: () => openConfirmModal(
+                    'Excluir Movimentação',
+                    'Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita.',
+                    async () => {
+                        try {
+                            await deleteMov(m.id);
+                            loadMovs();
+                            onParentRefresh();
+                            closeModal();
+                        } catch (error) {
+                            // Handled by hook
+                        }
+                    }
+                )
+            }
         );
     };
 
@@ -141,85 +231,92 @@ const HistoricoModal: React.FC<{
                 </div>
             </div>
 
-            <div className="hidden sm:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Qtd</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Observação</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
+            {loading ? (
+                <div className="py-8 text-center text-gray-400">Carregando histórico...</div>
+            ) : (
+                <>
+                    <div className="hidden sm:block overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Qtd</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Observação</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {movimentacoes.map(m => {
+                                    const dateStr = m.data.split('T')[0];
+                                    const [year, month, day] = dateStr.split('-');
+                                    const formattedDate = `${day}/${month}/${year}`;
+
+                                    return (
+                                        <tr key={m.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(m)}>
+                                            <td className="px-4 py-3 text-sm font-medium">{m.produto?.codigo}</td>
+                                            <td className="px-4 py-3 text-sm">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                                    }`}>{m.tipo}</span>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-center font-bold">{m.quantidade}</td>
+                                            <td className="px-4 py-3 text-sm">{formattedDate}</td>
+                                            <td className="px-4 py-3 text-sm text-gray-500">{m.observacao || '-'}</td>
+                                            <td className="px-4 py-3 text-sm text-right" onClick={(e) => e.stopPropagation()}>
+                                                <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-900 p-1" title="Excluir">
+                                                    <Trash size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {movimentacoes.length === 0 && (
+                                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Nenhuma movimentação</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Cards View */}
+                    <div className="sm:hidden space-y-3">
                         {movimentacoes.map(m => {
-                            // Extract just the date part (YYYY-MM-DD) avoiding timezone shifts
                             const dateStr = m.data.split('T')[0];
                             const [year, month, day] = dateStr.split('-');
                             const formattedDate = `${day}/${month}/${year}`;
 
                             return (
-                                <tr key={m.id} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 text-sm font-medium">{m.produto?.codigo}</td>
-                                    <td className="px-4 py-3 text-sm">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                <div key={m.id} className="bg-white border text-sm border-gray-200 p-3 rounded-xl shadow-sm relative cursor-pointer" onClick={() => handleRowClick(m)}>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <p className="font-bold text-gray-900">{m.produto?.codigo}</p>
+                                            <p className="text-xs text-gray-400">{formattedDate}</p>
+                                        </div>
+                                        <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full font-medium ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                                             }`}>{m.tipo}</span>
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-center font-bold">{m.quantidade}</td>
-                                    <td className="px-4 py-3 text-sm">{formattedDate}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-500">{m.observacao || '-'}</td>
-                                    <td className="px-4 py-3 text-sm text-right">
-                                        <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-900 p-1" title="Excluir">
-                                            <Trash size={16} />
-                                        </button>
-                                    </td>
-                                </tr>
+                                    </div>
+
+                                    <div className="flex justify-between items-center mt-3">
+                                        <p className="text-gray-600"><span className="font-semibold">{m.quantidade}</span> itens</p>
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <button onClick={() => handleDelete(m.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg" title="Excluir">
+                                                <Trash size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {m.observacao && (
+                                        <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-2">{m.observacao}</p>
+                                    )}
+                                </div>
                             );
                         })}
                         {movimentacoes.length === 0 && (
-                            <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Nenhuma movimentação</td></tr>
+                            <div className="py-8 text-center text-gray-400 border border-dashed rounded-xl">Nenhuma movimentação</div>
                         )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Mobile Cards View */}
-            <div className="sm:hidden space-y-3">
-                {movimentacoes.map(m => {
-                    const dateStr = m.data.split('T')[0];
-                    const [year, month, day] = dateStr.split('-');
-                    const formattedDate = `${day}/${month}/${year}`;
-
-                    return (
-                        <div key={m.id} className="bg-white border text-sm border-gray-200 p-3 rounded-xl shadow-sm relative">
-                            <div className="flex justify-between items-start mb-2">
-                                <div>
-                                    <p className="font-bold text-gray-900">{m.produto?.codigo}</p>
-                                    <p className="text-xs text-gray-400">{formattedDate}</p>
-                                </div>
-                                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] rounded-full font-medium ${m.tipo === 'Entrega' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                                    }`}>{m.tipo}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center mt-3">
-                                <p className="text-gray-600"><span className="font-semibold">{m.quantidade}</span> itens</p>
-                                <button onClick={() => handleDelete(m.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg" title="Excluir">
-                                    <Trash size={16} />
-                                </button>
-                            </div>
-
-                            {m.observacao && (
-                                <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-2 mt-2">{m.observacao}</p>
-                            )}
-                        </div>
-                    );
-                })}
-                {movimentacoes.length === 0 && (
-                    <div className="py-8 text-center text-gray-400 border border-dashed rounded-xl">Nenhuma movimentação</div>
-                )}
-            </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

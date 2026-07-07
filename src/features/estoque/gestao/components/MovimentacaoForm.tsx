@@ -4,29 +4,31 @@ import { useProdutos } from '../hooks/useProdutos';
 import { useFuncionarios } from '../../../rh/hooks/useFuncionarios';
 import { usePostos } from '../../../supervisao/hooks/usePostos';
 import { estoqueGestaoService } from '../../../../services/estoqueGestaoService';
-import type { TipoMovimentacao, MovimentacaoFormData, TipoProduto } from '../types';
+import type { TipoMovimentacao, MovimentacaoFormData, TipoProduto, Movimentacao } from '../types';
 import PrimaryButton from '../../../../components/PrimaryButton';
 
 interface MovimentacaoFormProps {
+    initialData?: Movimentacao;
     onSuccess: () => void;
     create: (data: MovimentacaoFormData) => Promise<any>;
+    update?: (args: { id: string; data: Partial<MovimentacaoFormData> }) => Promise<any>;
     defaultTipo?: TipoMovimentacao;
 }
 
-const MovimentacaoForm: React.FC<MovimentacaoFormProps> = ({ onSuccess, create, defaultTipo }) => {
+const MovimentacaoForm: React.FC<MovimentacaoFormProps> = ({ initialData, onSuccess, create, update, defaultTipo }) => {
     const { closeModal, showFeedback } = useModal();
     const { produtos } = useProdutos();
     const { funcionarios } = useFuncionarios();
     const { postos } = usePostos();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [tipoMov, setTipoMov] = useState<TipoMovimentacao>(defaultTipo || 'Compra');
-    const [produtoId, setProdutoId] = useState('');
-    const [quantidade, setQuantidade] = useState('1');
-    const [data, setData] = useState(new Date().toISOString().split('T')[0]);
-    const [funcionarioId, setFuncionarioId] = useState('');
-    const [postoId, setPostoId] = useState('');
-    const [observacao, setObservacao] = useState('');
+    const [tipoMov, setTipoMov] = useState<TipoMovimentacao>(initialData?.tipo || defaultTipo || 'Compra');
+    const [produtoId, setProdutoId] = useState(initialData?.produto_id || '');
+    const [quantidade, setQuantidade] = useState(initialData ? String(initialData.quantidade) : '1');
+    const [data, setData] = useState(initialData?.data ? initialData.data.split('T')[0] : new Date().toISOString().split('T')[0]);
+    const [funcionarioId, setFuncionarioId] = useState(initialData?.funcionario_id || '');
+    const [postoId, setPostoId] = useState(initialData?.posto_id || '');
+    const [observacao, setObservacao] = useState(initialData?.observacao || '');
 
     // Derived state
     const selectedProduto = produtos.find(p => p.id === produtoId);
@@ -64,8 +66,14 @@ const MovimentacaoForm: React.FC<MovimentacaoFormProps> = ({ onSuccess, create, 
         fetchSaldo();
     }, [produtoId, tipoMov, funcionarioId, postoId]);
 
+    const [isFirstRender, setIsFirstRender] = useState(true);
+
     // Reset dependent fields when type changes
     useEffect(() => {
+        if (isFirstRender) {
+            setIsFirstRender(false);
+            return;
+        }
         setProdutoId('');
         setFuncionarioId('');
         setPostoId('');
@@ -96,7 +104,11 @@ const MovimentacaoForm: React.FC<MovimentacaoFormProps> = ({ onSuccess, create, 
                 posto_id: showPosto ? postoId : null,
                 observacao: observacao || null,
             };
-            await create(payload);
+            if (initialData && update) {
+                await update({ id: initialData.id, data: payload });
+            } else {
+                await create(payload);
+            }
             onSuccess();
             closeModal();
         } catch (error: any) {
@@ -214,7 +226,7 @@ const MovimentacaoForm: React.FC<MovimentacaoFormProps> = ({ onSuccess, create, 
                     Cancelar
                 </button>
                 <PrimaryButton type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Salvando...' : 'Registrar'}
+                    {isSubmitting ? 'Salvando...' : initialData ? 'Salvar' : 'Registrar'}
                 </PrimaryButton>
             </div>
         </form>

@@ -19,11 +19,11 @@ const GestaoEstoque: React.FC = () => {
     const { openFormModal } = useModal();
     const {
         produtos, isLoading: loadingProdutos, refetch: refetchProdutos,
-        create: createProduto, update: updateProduto,
+        create: createProduto, update: updateProduto, delete: deleteProduto,
     } = useProdutos();
     const {
         movimentacoes, isLoading: loadingMov, refetch: refetchMov,
-        create: createMov, delete: deleteMov,
+        create: createMov, update: updateMov, delete: deleteMov,
     } = useMovimentacoes();
 
     const [activeTab, setActiveTab] = useState<Tab>('estoque');
@@ -164,12 +164,22 @@ const GestaoEstoque: React.FC = () => {
 
                 <div className="p-4">
                     {activeTab === 'estoque' && (
-                        <TabEstoque produtos={produtos} isLoading={loadingProdutos} searchTerm={searchTerm} tipoFilter={tipoProdutoFilter} />
+                        <TabEstoque
+                            produtos={produtos}
+                            isLoading={loadingProdutos}
+                            searchTerm={searchTerm}
+                            tipoFilter={tipoProdutoFilter}
+                            onRefresh={handleRefresh}
+                            create={createProduto}
+                            update={updateProduto}
+                            deleteProduto={deleteProduto}
+                        />
                     )}
                     {activeTab === 'individual' && (
                         <TabIndividual
                             onRefresh={handleRefresh}
                             deleteMov={deleteMov}
+                            updateMov={updateMov}
                             searchTerm={searchTerm}
                         />
                     )}
@@ -177,6 +187,7 @@ const GestaoEstoque: React.FC = () => {
                         <TabColetivo
                             onRefresh={handleRefresh}
                             deleteMov={deleteMov}
+                            updateMov={updateMov}
                             searchTerm={searchTerm}
                         />
                     )}
@@ -185,6 +196,7 @@ const GestaoEstoque: React.FC = () => {
                             movimentacoes={movimentacoes}
                             isLoading={loadingMov}
                             deleteMov={deleteMov}
+                            updateMov={updateMov}
                             onRefresh={handleRefresh}
                             searchTerm={searchTerm}
                             tipoFilter={tipoMovFilter}

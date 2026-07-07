@@ -1,22 +1,32 @@
-import React from 'react';
-import { Trash } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trash, Info, Tag, Activity } from 'lucide-react';
 import ResponsiveTable from '../../../../components/ResponsiveTable';
 import { useModal } from '../../../../context/ModalContext';
-import type { Movimentacao } from '../types';
+import type { Movimentacao, MovimentacaoFormData } from '../types';
+import MovimentacaoForm from './MovimentacaoForm';
 
 interface TabCompraDescarteProps {
     movimentacoes: Movimentacao[];
     isLoading: boolean;
     deleteMov: (id: string) => Promise<any>;
+    updateMov: (args: { id: string; data: Partial<MovimentacaoFormData> }) => Promise<any>;
     onRefresh: () => void;
     searchTerm: string;
     tipoFilter: 'TODOS' | 'Compra' | 'Descarte';
 }
 
-const ITEMS_PER_PAGE = 50;
-
-const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, isLoading, deleteMov, onRefresh, searchTerm, tipoFilter }) => {
-    const { openConfirmModal } = useModal();
+const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({
+    movimentacoes,
+    isLoading,
+    deleteMov,
+    updateMov,
+    onRefresh,
+    searchTerm,
+    tipoFilter,
+}) => {
+    const { openViewModal, openFormModal, openConfirmModal, closeModal } = useModal();
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 50;
 
     const compraDescarte = movimentacoes.filter(m => m.tipo === 'Compra' || m.tipo === 'Descarte');
 
@@ -26,13 +36,58 @@ const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, is
         return matchesTipo && matchesSearch;
     });
 
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginated = filtered.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // Reset page when filters change
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, tipoFilter]);
+
     const handleDelete = (id: string) => {
         openConfirmModal(
             'Excluir Movimentação',
-            'Tem certeza que deseja excluir esta movimentação?',
+            'Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita.',
             async () => {
                 await deleteMov(id);
                 onRefresh();
+            }
+        );
+    };
+
+    const handleRowClick = (m: Movimentacao) => {
+        openViewModal(
+            'Detalhes da Movimentação',
+            <MovimentacaoDetails movimentacao={m} />,
+            {
+                canEdit: true,
+                editText: 'Editar',
+                onEdit: () => openFormModal('Editar Movimentação', (
+                    <MovimentacaoForm
+                        initialData={m}
+                        onSuccess={onRefresh}
+                        create={async () => {}}
+                        update={updateMov}
+                    />
+                )),
+                canDelete: true,
+                deleteText: 'Excluir',
+                onDelete: () => openConfirmModal(
+                    'Excluir Movimentação',
+                    'Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita.',
+                    async () => {
+                        try {
+                            await deleteMov(m.id);
+                            onRefresh();
+                            closeModal();
+                        } catch (error) {
+                            // Handled by hook
+                        }
+                    }
+                )
             }
         );
     };
@@ -74,7 +129,7 @@ const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, is
     ];
 
     const renderCard = (m: Movimentacao) => (
-        <div>
+        <div onClick={() => handleRowClick(m)}>
             <div className="flex justify-between items-start mb-2">
                 <div>
                     <p className="font-bold text-gray-900 text-sm">{m.produto?.codigo}</p>
@@ -93,19 +148,101 @@ const TabCompraDescarte: React.FC<TabCompraDescarteProps> = ({ movimentacoes, is
     return (
         <div className="space-y-4">
             <ResponsiveTable
-                data={filtered.slice(0, ITEMS_PER_PAGE)}
+                data={paginated}
                 columns={columns}
                 keyExtractor={m => m.id}
+                onRowClick={handleRowClick}
                 loading={isLoading}
                 skeletonRows={5}
                 renderCard={renderCard}
             />
 
-            {filtered.length > ITEMS_PER_PAGE && (
-                <p className="text-center text-sm text-gray-500">
-                    Mostrando {ITEMS_PER_PAGE} de {filtered.length} registros
-                </p>
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 py-4">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Anterior
+                    </button>
+                    <span className="text-sm text-gray-600">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Próxima
+                    </button>
+                </div>
             )}
+        </div>
+    );
+};
+
+export const MovimentacaoDetails: React.FC<{ movimentacao: Movimentacao }> = ({ movimentacao }) => {
+    const formattedDate = new Date(movimentacao.data).toLocaleDateString('pt-BR');
+    return (
+        <div className="space-y-6">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
+                <div>
+                    <h3 className="text-xl font-bold text-gray-900">{movimentacao.produto?.codigo || 'Produto'}</h3>
+                    <p className="text-sm text-gray-500 mt-1">{movimentacao.tipo}</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Tag size={16} className="mr-2" /> Tipo Movimentação
+                    </div>
+                    <div className="text-gray-900 font-semibold text-lg">{movimentacao.tipo}</div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Info size={16} className="mr-2" /> Quantidade
+                    </div>
+                    <div className="text-gray-900 font-semibold text-lg">{movimentacao.quantidade} un</div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Activity size={16} className="mr-2" /> Data
+                    </div>
+                    <div className="text-gray-900 font-semibold text-lg">{formattedDate}</div>
+                </div>
+
+                {movimentacao.funcionario && (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2 sm:col-span-2">
+                        <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                            <Activity size={16} className="mr-2" /> Funcionário
+                        </div>
+                        <div className="text-gray-900 font-semibold text-lg">{movimentacao.funcionario.nome} ({movimentacao.funcionario.empresa})</div>
+                    </div>
+                )}
+
+                {movimentacao.posto && (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2 sm:col-span-2">
+                        <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                            <Activity size={16} className="mr-2" /> Posto
+                        </div>
+                        <div className="text-gray-900 font-semibold text-lg">{movimentacao.posto.nome} ({movimentacao.posto.empresa})</div>
+                    </div>
+                )}
+
+                {movimentacao.observacao && (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2 sm:col-span-2">
+                        <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                            <Info size={16} className="mr-2" /> Observação
+                        </div>
+                        <div className="text-gray-900 font-semibold text-sm">{movimentacao.observacao}</div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
