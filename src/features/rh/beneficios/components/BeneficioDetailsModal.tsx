@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import CompanyBadge from '../../../../components/CompanyBadge';
-import { Edit2, Save, X, Trash2, Calendar, DollarSign, User, Building2 } from 'lucide-react';
+import { Edit2, Save, Trash2, Calendar, DollarSign, User, Building2 } from 'lucide-react';
 import type { BeneficioCalculado } from '../types';
 
 interface BeneficioDetailsModalProps {
