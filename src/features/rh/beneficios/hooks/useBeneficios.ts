@@ -44,12 +44,28 @@ export function useBeneficios(competencia?: string, companyFilter?: 'TODOS' | 'F
         },
     });
 
+    const updateBeneficio = useMutation({
+        mutationFn: async (payload: Partial<BeneficioCalculado> & { id: string }) => {
+            const { id, total_dias, funcionarios, postos_trabalho, cargos_salarios, created_at, ...dataToUpdate } = payload as any;
+            const { error } = await supabase
+                .from('rh_beneficios_calculados')
+                .update(dataToUpdate)
+                .eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['beneficios'] });
+        },
+    });
+
     return {
         beneficios,
         isLoading,
         error,
         refetch,
         deleteBeneficio: deleteBeneficio.mutateAsync,
-        isDeleting: deleteBeneficio.isPending
+        updateBeneficio: updateBeneficio.mutateAsync,
+        isDeleting: deleteBeneficio.isPending,
+        isUpdating: updateBeneficio.isPending
     };
 }

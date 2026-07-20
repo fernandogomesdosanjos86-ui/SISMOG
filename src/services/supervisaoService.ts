@@ -88,19 +88,13 @@ export const supervisaoService = {
     },
 
     async createAlocacao(data: AlocacaoFormData) {
-        // Check uniqueness constraint logic is handled by DB Index (unique_main_allocation_per_employee)
         const { data: newAlloc, error } = await supabase
             .from('alocacoes_funcionarios')
             .insert(data)
             .select()
             .single();
 
-        if (error) {
-            if (error.code === '23505') { // Unique violation
-                throw new Error('Este funcionário já possui uma alocação principal (sem HE) em outro posto.');
-            }
-            throw error;
-        }
+        if (error) throw error;
         return newAlloc;
     },
 

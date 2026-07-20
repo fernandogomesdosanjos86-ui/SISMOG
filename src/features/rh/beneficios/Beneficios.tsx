@@ -23,7 +23,7 @@ const Beneficios: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const { openFormModal, openConfirmModal, closeModal, showFeedback } = useModal();
-    const { beneficios, isLoading, refetch, deleteBeneficio } = useBeneficios(competenciaFilter, companyFilter);
+    const { beneficios, isLoading, refetch, deleteBeneficio, updateBeneficio } = useBeneficios(competenciaFilter, companyFilter);
 
     // Filtragem local textual (Posto, Funcionário, Cargo)
     const filteredDados = useMemo(() => {
@@ -77,6 +77,16 @@ const Beneficios: React.FC = () => {
                 }
             }
         );
+    };
+
+    const handleUpdate = async (updated: Partial<BeneficioCalculado> & { id: string }) => {
+        try {
+            await updateBeneficio(updated);
+            showFeedback('success', 'Benefício atualizado e recalculado com sucesso!');
+        } catch (error: any) {
+            console.error('Erro ao atualizar benefício:', error);
+            showFeedback('error', error?.message || 'Falha ao atualizar o benefício.');
+        }
     };
 
     return (
@@ -145,6 +155,7 @@ const Beneficios: React.FC = () => {
                 data={filteredDados}
                 isLoading={isLoading}
                 onDelete={handleDelete}
+                onUpdate={handleUpdate}
                 page={currentPage}
                 itemsPerPage={50}
                 onPageChange={setCurrentPage}

@@ -6,23 +6,28 @@ interface GenerateParams {
     empresa: 'FEMOG' | 'SEMOG';
 }
 
-interface AlocacaoResult {
+interface FuncionarioRow {
+    id: string;
+    empresa: string;
+    status: string;
+    valor_transporte_dia: number;
+    valor_combustivel_dia: number;
+    cargo_id: string;
+}
+
+interface AlocacaoRow {
     funcionario_id: string;
     posto_id: string;
-    funcionarios: {
-        id: string;
-        empresa: string;
-        status: string;
-        valor_transporte_dia: number;
-        valor_combustivel_dia: number;
-        cargo_id: string;
-    } | null;
+    he: boolean;
+    funcionarios: FuncionarioRow | null;
 }
 
 interface EscalaResult {
     funcionario_id: string;
+    posto_id: string;
     qnt_dias: number;
-    dias?: unknown; // Complex JSON structure, using unknown for safety
+    tipo: string | null;
+    dias?: unknown;
 }
 
 interface ApontamentoResult {
@@ -41,38 +46,97 @@ interface GratificacaoResult {
 }
 
 export async function gerarBeneficios({ competencia, empresa }: GenerateParams) {
-    // 1. Buscar Funcionarios Ativos Alocados na empresa e sem HE (he = false)
+    // 1. Buscar Alocações dos Funcionários Ativos da Empresa
     const { data: alocacoes, error: alocError } = await supabase
         .from('alocacoes_funcionarios')
         .select(`
             funcionario_id,
             posto_id,
+            he,
             funcionarios!inner(id, empresa, status, valor_transporte_dia, valor_combustivel_dia, cargo_id)
         `)
-        .eq('he', false)
         .eq('funcionarios.status', 'ativo')
         .eq('funcionarios.empresa', empresa);
 
     if (alocError) throw new Error(`Erro buscando alocações: ${alocError.message}`);
     if (!alocacoes || alocacoes.length === 0) return 0; // Nenhum para gerar
 
-    // O input string virá agora como YYYY-MM
+    // Deduplicar funcionários ativos para processar cada um exatamente UMA vez
+    const funcMap = new Map<string, { funcionario_id: string; posto_id: string; funcionarioInfo: FuncionarioRow }>();
+
+    (alocacoes as unknown as AlocacaoRow[]).forEach(a => {
+        if (!a.funcionarios) return;
+        const fId = a.funcionario_id;
+
+        if (!funcMap.has(fId)) {
+            funcMap.set(fId, {
+                funcionario_id: fId,
+                posto_id: a.posto_id,
+                funcionarioInfo: a.funcionarios
+            });
+        } else {
+            // Dar preferência para alocação oficial (he === false) para determinar posto_id principal
+            const current = funcMap.get(fId)!;
+            if (a.he === false) {
+                current.posto_id = a.posto_id;
+            }
+        }
+    });
+
+    const uniqueFuncs = Array.from(funcMap.values());
+    const funcIds = uniqueFuncs.map(f => f.funcionario_id);
+    const cargoIds = Array.from(new Set(uniqueFuncs.map(f => f.funcionarioInfo.cargo_id).filter(Boolean)));
+
+    // O input string vem como YYYY-MM
     const [anoStr, mesStr] = competencia.split('-');
 
-    // 2. Coletar IDs para buscas em massa
-    const typedAlocacoes = alocacoes as unknown as AlocacaoResult[];
-    const funcIds = typedAlocacoes.map(a => a.funcionario_id);
-    const cargoIds = Array.from(new Set(typedAlocacoes.map(a => a.funcionarios?.cargo_id).filter(Boolean))) as string[];
-
-    // 3. Buscar Dias Trabalhar em supervisao_escalas (competência já é YYYY-MM)
+    // 2. Buscar Escalas em supervisao_escalas para a competência e empresa
     const { data: escalas, error: escError } = await supabase
         .from('supervisao_escalas')
-        .select('funcionario_id, qnt_dias')
+        .select('funcionario_id, posto_id, qnt_dias, tipo, dias')
         .eq('competencia', competencia)
         .eq('empresa', empresa)
         .in('funcionario_id', funcIds);
 
     if (escError) throw new Error(`Erro nas escalas: ${escError.message}`);
+
+    // Mapear dias trabalhados únicos por funcionário em TODOS OS POSTOS (EXCETO HE)
+    const mapEscalasSet = new Map<string, Set<number>>();
+    const mapEscalasCountFallback = new Map<string, number>();
+
+    const typedEscalas = (escalas || []) as unknown as EscalaResult[];
+    typedEscalas.forEach(e => {
+        if (!e.funcionario_id) return;
+        // EXCLUIR ESCALAS DE HORA EXTRA (HE)
+        if (e.tipo === 'Extra' || e.tipo === 'HE') return;
+
+        if (Array.isArray(e.dias) && e.dias.length > 0) {
+            if (!mapEscalasSet.has(e.funcionario_id)) {
+                mapEscalasSet.set(e.funcionario_id, new Set<number>());
+            }
+            const daySet = mapEscalasSet.get(e.funcionario_id)!;
+            e.dias.forEach((d: any) => {
+                if (typeof d === 'number') {
+                    daySet.add(d);
+                } else if (typeof d === 'object' && d !== null && 'dia' in d && typeof d.dia === 'number') {
+                    daySet.add(d.dia);
+                }
+            });
+        } else if (e.qnt_dias) {
+            mapEscalasCountFallback.set(
+                e.funcionario_id,
+                (mapEscalasCountFallback.get(e.funcionario_id) || 0) + e.qnt_dias
+            );
+        }
+    });
+
+    const getDiasTrabalhar = (funcId: string): number => {
+        const setDays = mapEscalasSet.get(funcId);
+        if (setDays && setDays.size > 0) {
+            return setDays.size;
+        }
+        return mapEscalasCountFallback.get(funcId) || 0;
+    };
 
     // Determinar competência ANTERIOR para buscar faltas
     let mesAnt = parseInt(mesStr, 10) - 1;
@@ -82,12 +146,10 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         anoAnt -= 1;
     }
 
-    // Obter datas do mês ANTERIOR para buscar apontamentos
-    // O Date usa mês-1 no construtor
     const inicioMesAnterior = new Date(anoAnt, mesAnt - 1, 1).toISOString().split('T')[0];
     const fimMesAnterior = new Date(anoAnt, mesAnt, 0).toISOString().split('T')[0];
 
-    // 4. Buscar Dias Ausentes na competência anterior
+    // 3. Buscar Dias Ausentes na competência anterior
     const { data: apontamentos, error: aptError } = await supabase
         .from('supervisao_apontamentos')
         .select('funcionario_id, beneficios_pts')
@@ -98,7 +160,7 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
 
     if (aptError) throw new Error(`Erro nos apontamentos: ${aptError.message}`);
 
-    // 5. Buscar Cargos/Salarios
+    // 4. Buscar Cargos/Salarios
     const { data: cargos, error: carError } = await supabase
         .from('cargos_salarios')
         .select('id, valor_aux_alim')
@@ -110,7 +172,7 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         typedCargos.map(c => [c.id, { valor_aux_alim: c.valor_aux_alim || 0 }])
     );
 
-    // 6. Buscar Incentivos Ativos (ignorando a data, priorizando o status)
+    // 5. Buscar Incentivos Ativos
     const { data: gratificacoes, error: gratError } = await supabase
         .from('rh_gratificacoes')
         .select('funcionario_id, incentivo_valor')
@@ -120,29 +182,6 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         .in('funcionario_id', funcIds);
 
     if (gratError) throw new Error(`Erro nas gratificações: ${gratError.message}`);
-
-    // Helper maps
-    const mapEscalas = new Map<string, number>();
-    const typedEscalas = escalas as unknown as EscalaResult[];
-    typedEscalas.forEach(e => {
-        // Se a escala em si deve descontar he, a spec pede count na tabela onde "he = false".
-        // O json de 'dias' pode ter objetos ou arrays com objetos {he:...}.
-        // Assumindo q 'qnt_dias' já seja o total_trabalhado base e tirando he se aplicável. 
-        // A regra diz: Count na tabela supervisao_escalas (na competencia atual onde he=false)
-        // Como não há coluna `he` em `supervisao_escalas` (tem em alocacoes), a query da spec
-        // provavelmente se refere a contar os dias normais na coluna JSON "dias"
-
-        // Forma simples: qnt_dias ou contar array "dias"
-        let diasNormais = 0;
-        if (Array.isArray(e.dias)) {
-            // Se as escalas tem estrutura de array, conta os elementos:
-            diasNormais = (e.dias as unknown[]).length || e.qnt_dias || 0;
-        } else {
-            diasNormais = e.qnt_dias || 0;
-        }
-
-        mapEscalas.set(e.funcionario_id, (mapEscalas.get(e.funcionario_id) || 0) + diasNormais);
-    });
 
     const mapFaltas = new Map<string, number>();
     const typedApontamentos = apontamentos as unknown as ApontamentoResult[];
@@ -156,7 +195,7 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         mapIncentivos.set(g.funcionario_id, (mapIncentivos.get(g.funcionario_id) || 0) + (g.incentivo_valor || 0));
     });
 
-    // 7. Preparar Payload Batch
+    // 6. Preparar Payload Batch
     type BeneficioInsert = Omit<BeneficioCalculado, 'id' | 'created_at' | 'total_dias' | 'funcionarios' | 'postos_trabalho' | 'cargos_salarios'>;
     const payloadToInsert: BeneficioInsert[] = [];
 
@@ -170,24 +209,22 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
     if (existError) throw new Error(`Erro buscando existentes: ${existError.message}`);
     const existSet = new Set(existentes.map(e => e.funcionario_id));
 
-    typedAlocacoes.forEach(aloc => {
-        const funcId = aloc.funcionario_id;
+    uniqueFuncs.forEach(func => {
+        const funcId = func.funcionario_id;
 
         // Pular se já tem cálculo pra essa pessoa e não queremos duplicar
         if (existSet.has(funcId)) return;
 
-        const funcionarioInfo = aloc.funcionarios;
+        const funcionarioInfo = func.funcionarioInfo;
         const cargoId = funcionarioInfo?.cargo_id;
 
         const baseAlimentacao = cargoId ? cargosMap.get(cargoId)?.valor_aux_alim || 0 : 0;
         const baseTransporte = funcionarioInfo?.valor_transporte_dia || 0;
         const baseCombustivel = funcionarioInfo?.valor_combustivel_dia || 0;
 
-        const diasTrabalhar = mapEscalas.get(funcId) || 0;
+        const diasTrabalhar = getDiasTrabalhar(funcId);
         const diasAusente = mapFaltas.get(funcId) || 0;
 
-        // Regra de negocio: Total dias 
-        // Como o apontamento pode vir negativo do BD, usamos Math.abs para garantir a subtração pura.
         const absAusente = Math.abs(diasAusente);
         const totalDias = Math.max(0, diasTrabalhar - absAusente);
 
@@ -198,12 +235,12 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         const tComb = totalDias * baseCombustivel;
         const tGeral = tAlim + tTransp + tComb + incentivoMensal;
 
-        // Se total for > 0 ou dias > 0 geramos (para não popular banco com tabela inteira vazia)
+        // Se total for > 0 ou dias > 0 geramos
         if (diasTrabalhar > 0 || incentivoMensal > 0) {
             payloadToInsert.push({
                 competencia,
                 empresa,
-                posto_id: aloc.posto_id,
+                posto_id: func.posto_id,
                 funcionario_id: funcId,
                 cargo_id: cargoId,
                 dias_trabalhar: diasTrabalhar,
@@ -216,14 +253,16 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
                 total_transporte: tTransp,
                 total_combustivel: tComb,
                 total_geral: tGeral
-                // O total_dias é CALCULATED STORED no BD
             });
+
+            // Evitar duplicação dentro da mesma iteração
+            existSet.add(funcId);
         }
     });
 
     if (payloadToInsert.length === 0) return 0;
 
-    // 8. Inserir todos
+    // 7. Inserir todos
     const { error: insertError } = await supabase
         .from('rh_beneficios_calculados')
         .insert(payloadToInsert);

@@ -3,11 +3,13 @@ import ResponsiveTable from '../../../../components/ResponsiveTable';
 import CompanyBadge from '../../../../components/CompanyBadge';
 import { useModal } from '../../../../context/ModalContext';
 import type { BeneficioCalculado } from '../types';
+import { BeneficioDetailsModal } from './BeneficioDetailsModal';
 
 interface BeneficiosTableProps {
     data: BeneficioCalculado[];
     isLoading: boolean;
     onDelete: (id: string) => void;
+    onUpdate: (updated: Partial<BeneficioCalculado> & { id: string }) => Promise<void>;
     page: number;
     itemsPerPage: number;
     onPageChange: (page: number) => void;
@@ -17,11 +19,12 @@ const BeneficiosTable: React.FC<BeneficiosTableProps> = ({
     data,
     isLoading,
     onDelete,
+    onUpdate,
     page,
     itemsPerPage,
     onPageChange
 }) => {
-    const { openViewModal } = useModal();
+    const { openFormModal, closeModal } = useModal();
     const totalPages = Math.ceil(data.length / itemsPerPage);
     const paginatedData = data.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
@@ -32,84 +35,15 @@ const BeneficiosTable: React.FC<BeneficiosTableProps> = ({
         }).format(valor);
     };
 
-    const renderDetails = (i: BeneficioCalculado) => (
-        <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <span className="text-gray-500 text-xs block">Nome</span>
-                    <span className="font-medium text-gray-900">{i.funcionarios?.nome}</span>
-                </div>
-                <div>
-                    <span className="text-gray-500 text-xs block">CPF</span>
-                    <span className="text-gray-900">{i.funcionarios?.cpf || '-'}</span>
-                </div>
-                <div>
-                    <span className="text-gray-500 text-xs block">Cargo</span>
-                    <span className="text-gray-900">{i.cargos_salarios?.cargo || '-'}</span>
-                </div>
-                <div>
-                    <span className="text-gray-500 text-xs block">Posto</span>
-                    <span className="text-gray-900">{i.postos_trabalho?.nome || '-'}</span>
-                </div>
-                <div>
-                    <span className="text-gray-500 text-xs block">Dias (Trab / Ausente)</span>
-                    <span className="text-gray-900">{i.total_dias} ({i.dias_trabalhar} / {i.dias_ausente})</span>
-                </div>
-                <div>
-                    <span className="text-gray-500 text-xs block">Empresa</span>
-                    <CompanyBadge company={i.empresa} />
-                </div>
-            </div>
-
-            <div className="border-t pt-4">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Composição do Benefício</h4>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                    <div className="flex justify-between text-sm items-center border-b border-gray-100 pb-2">
-                        <div className="flex flex-col">
-                            <span className="text-gray-600 font-medium">Auxílio Alimentação</span>
-                            <span className="text-xs text-gray-400">{formatarMoeda(i.valor_alimentacao_dia)} / dia</span>
-                        </div>
-                        <span className="font-medium text-gray-900">{formatarMoeda(i.total_alimentacao)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm items-center border-b border-gray-100 pb-2">
-                        <div className="flex flex-col">
-                            <span className="text-gray-600 font-medium">Auxílio Transporte</span>
-                            <span className="text-xs text-gray-400">{formatarMoeda(i.valor_transporte_dia)} / dia</span>
-                        </div>
-                        <span className="font-medium text-gray-900">{formatarMoeda(i.total_transporte)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm items-center border-b border-gray-100 pb-2">
-                        <div className="flex flex-col">
-                            <span className="text-gray-600 font-medium">Auxílio Combustível</span>
-                            <span className="text-xs text-gray-400">{formatarMoeda(i.valor_combustivel_dia)} / dia</span>
-                        </div>
-                        <span className="font-medium text-gray-900">{formatarMoeda(i.total_combustivel)}</span>
-                    </div>
-                    {i.valor_incentivo_mensal > 0 && (
-                        <div className="flex justify-between text-sm items-center border-b border-gray-100 pb-2">
-                            <span className="text-gray-600 font-medium">Incentivo Mensal (Fixo)</span>
-                            <span className="font-medium text-gray-900">{formatarMoeda(i.valor_incentivo_mensal)}</span>
-                        </div>
-                    )}
-                    <div className="pt-2 flex justify-between font-bold text-gray-900 text-base">
-                        <span>Total Geral</span>
-                        <span className="text-blue-600">{formatarMoeda(i.total_geral)}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
     const handleRowClick = (i: BeneficioCalculado) => {
-        openViewModal(
+        openFormModal(
             'Detalhes dos Benefícios',
-            renderDetails(i),
-            {
-                canEdit: false,
-                canDelete: true,
-                onDelete: () => onDelete(i.id),
-                deleteText: 'Excluir Cálculo'
-            }
+            <BeneficioDetailsModal
+                beneficio={i}
+                onSave={onUpdate}
+                onDelete={onDelete}
+                onClose={() => closeModal()}
+            />
         );
     };
 

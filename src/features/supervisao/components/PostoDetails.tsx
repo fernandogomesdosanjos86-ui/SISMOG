@@ -6,6 +6,7 @@ import { useModal } from '../../../context/ModalContext';
 import { useFuncionarios } from '../../rh/hooks/useFuncionarios';
 import CompanyBadge from '../../../components/CompanyBadge';
 import StatusBadge from '../../../components/StatusBadge';
+import { supervisaoService } from '../../../services/supervisaoService';
 
 interface PostoDetailsProps {
     posto: PostoTrabalho;
@@ -35,19 +36,48 @@ const PostoDetails: React.FC<PostoDetailsProps> = ({ posto }) => {
             return;
         }
 
-        try {
-            await create({
-                posto_id: posto.id,
-                funcionario_id: selectedFuncionarioId,
-                escala: newAllocation.escala as any,
-                turno: newAllocation.turno as any,
-                he: newAllocation.he || false
-            });
-            setSelectedFuncionarioId('');
-            setNewAllocation({ escala: '12x36', turno: 'Diurno', he: false });
-        } catch (error) {
-            // Error handled in hook
+        const executeCreate = async () => {
+            try {
+                await create({
+                    posto_id: posto.id,
+                    funcionario_id: selectedFuncionarioId,
+                    escala: newAllocation.escala as any,
+                    turno: newAllocation.turno as any,
+                    he: newAllocation.he || false
+                });
+                setSelectedFuncionarioId('');
+                setNewAllocation({ escala: '12x36', turno: 'Diurno', he: false });
+            } catch (error) {
+                // Error handled in hook
+            }
+        };
+
+        // Se não for HE, verificar se o funcionário já possui alocação fixa (sem HE) em outro posto
+        if (!newAllocation.he) {
+            try {
+                const existing = await supervisaoService.getAlocacoesByFuncionario(selectedFuncionarioId);
+                const fixedOtherPost = existing.find(a => a.posto_id !== posto.id);
+
+                if (fixedOtherPost) {
+                    const funcObj = funcionarios.find(f => f.id === selectedFuncionarioId);
+                    const funcNome = funcObj?.nome || 'Este funcionário';
+                    const postoNome = fixedOtherPost.posto?.nome || 'outro posto';
+
+                    openConfirmModal(
+                        'Aviso de Alocação',
+                        `${funcNome} já está fixo no posto "${postoNome}". Deseja continuar a alocação neste posto?`,
+                        async () => {
+                            await executeCreate();
+                        }
+                    );
+                    return;
+                }
+            } catch (err) {
+                console.error('Erro ao checar alocações existentes:', err);
+            }
         }
+
+        await executeCreate();
     };
 
     const handleDelete = (id: string, nome: string) => {
