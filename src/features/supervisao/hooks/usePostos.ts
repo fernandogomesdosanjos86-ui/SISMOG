@@ -44,9 +44,10 @@ export function usePostos() {
             queryClient.invalidateQueries({ queryKey: queryKeys.postos.all });
             showFeedback('success', 'Posto excluído com sucesso!');
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Erro ao excluir posto:', error);
-            showFeedback('error', 'Erro ao excluir posto.');
+            const msg = error?.message || 'Erro ao excluir posto.';
+            showFeedback('error', msg.startsWith('Erro') ? msg : `Erro ao excluir posto: ${msg}`);
         }
     });
 

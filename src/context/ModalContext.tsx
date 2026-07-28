@@ -54,7 +54,7 @@ interface ModalContextType {
     // Form Modal  
     openFormModal: (title: string, content: ReactNode) => void;
     // Confirm Modal
-    openConfirmModal: (title: string, message: string, onConfirm: () => void | Promise<void>) => void;
+    openConfirmModal: (title: string, message: string | ReactNode, onConfirm: () => void | Promise<void>) => void;
     // Close
     closeModal: () => void;
     // Feedback
@@ -126,7 +126,7 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const openConfirmModal = useCallback((
         title: string,
-        message: string,
+        message: string | ReactNode,
         onConfirm: () => void | Promise<void>
     ) => {
         setModal({

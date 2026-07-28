@@ -252,22 +252,22 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                             <button
                                 onClick={async (e) => { e.stopPropagation(); await saveEscala(); }}
                                 disabled={!hasUnsavedChanges || isSaving}
-                                className={`hidden sm:flex items-center justify-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors shadow-sm h-7
+                                className={`flex items-center justify-center gap-1.5 px-3 py-1 rounded text-xs font-bold transition-colors shadow-sm h-7
                                             ${hasUnsavedChanges
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700 ring-1 ring-blue-500 ring-offset-1'
+                                        ? 'bg-blue-600 text-white hover:bg-blue-700 ring-1 ring-blue-500 ring-offset-1 animate-pulse'
                                         : 'bg-white text-gray-400 cursor-not-allowed'
                                     }`}
-                                title="Salvar"
+                                title="Salvar Escala"
                             >
                                 <Save size={14} />
-                                {isSaving ? 'Salvando...' : 'Salvar'}
+                                <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
                             </button>
 
-                            <div className="hidden sm:block w-[1px] h-4 bg-gray-200 mx-1"></div>
+                            <div className="w-[1px] h-4 bg-gray-200 mx-1"></div>
 
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleDownloadPDF(); }}
-                                className="flex items-center justify-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors hover:bg-gray-100 text-gray-700 h-7"
+                                className="flex items-center justify-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors hover:bg-gray-100 text-gray-700 h-7"
                                 title="Baixar PDF"
                             >
                                 <Download size={14} />
@@ -286,7 +286,7 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                                     );
                                 }}
                                 disabled={isDeleting || isSaving}
-                                className="flex items-center justify-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors hover:bg-red-50 hover:text-red-700 text-gray-500 h-7"
+                                className="flex items-center justify-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors hover:bg-red-50 hover:text-red-700 text-gray-500 h-7"
                                 title="Excluir Escala"
                             >
                                 <Trash2 size={14} className={isDeleting ? 'animate-pulse' : ''} />
@@ -297,7 +297,7 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
 
                     <button
                         onClick={onToggle}
-                        className={`p-1.5 rounded-full transition-colors ml-2 hidden sm:block ${isExpanded ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'text-gray-400 hover:bg-gray-200'}`}
+                        className={`p-1.5 rounded-full transition-colors ml-2 ${isExpanded ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'text-gray-400 hover:bg-gray-200'}`}
                         title={isExpanded ? "Fechar Posto" : "Abrir Posto"}
                     >
                         {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
@@ -323,22 +323,22 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                             <table className="w-full text-left border-collapse min-w-max">
                                 <thead>
                                     <tr className="bg-gray-100/50 text-gray-600 uppercase text-[10px]">
-                                        <th className="font-semibold p-2 border-r border-b border-gray-200 sticky left-0 z-20 bg-gray-100/90 backdrop-blur-sm min-w-[200px]">
+                                        <th className="font-semibold p-2 border-r border-b border-gray-300 sticky left-0 z-20 bg-[#f1f5f9] min-w-[240px] sm:min-w-[260px] md:min-w-[280px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)]">
                                             Funcionário
                                         </th>
-                                        <th className="font-semibold p-2 border-r border-b border-gray-200 bg-gray-100/50 w-20 hidden md:table-cell">
+                                        <th className="font-semibold p-2 border-r border-b border-gray-200 bg-gray-100/50 text-center min-w-[65px]">
                                             Início
                                         </th>
 
-                                        <th className="font-semibold p-2 border-r border-b border-gray-200 bg-gray-100/50 text-center w-12">
+                                        <th className="font-semibold p-2 border-r border-b border-gray-200 bg-gray-100/50 text-center min-w-[45px]">
                                             Qnt
                                         </th>
                                         {daysArray.map(day => {
                                             const weekStr = getWeekDayName(day);
-                                            const isWeekend = weekStr === 'D' || weekStr === 'S' && getWeekday(year, month, day) === 6;
+                                            const isWeekend = weekStr === 'D' || (weekStr === 'S' && getWeekday(year, month, day) === 6);
 
                                             return (
-                                                <th key={day} className={`font-semibold p-1 border-r border-b border-gray-200 text-center min-w-[32px] hidden md:table-cell ${isWeekend ? 'bg-orange-50/50' : ''}`}>
+                                                <th key={day} className={`font-semibold p-1 border-r border-b border-gray-200 text-center min-w-[34px] ${isWeekend ? 'bg-orange-50/50' : ''}`}>
                                                     <div className="flex flex-col items-center">
                                                         <span className={`text-[8px] ${weekStr === 'D' ? 'text-red-500 font-black' : 'text-gray-400'}`}>{weekStr}</span>
                                                         <span className="text-gray-700">{day}</span>
@@ -356,6 +356,7 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                                             daysArray={daysArray}
                                             year={year}
                                             month={month}
+                                            postoNome={posto.nome}
                                             toggleDay={toggleDay}
                                             handleUpdateFuncionario={handleUpdateFuncionario}
                                         />

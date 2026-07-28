@@ -46,10 +46,10 @@ export const ConfirmModal: React.FC = () => {
             }
         >
             <div className="flex items-start gap-4">
-                <div className="p-3 bg-red-100 rounded-full">
+                <div className="p-3 bg-red-100 rounded-full shrink-0">
                     <AlertTriangle className="text-red-600" size={24} />
                 </div>
-                <p className="text-gray-600 pt-2">{modal.content}</p>
+                <div className="text-gray-600 pt-1 flex-1">{modal.content}</div>
             </div>
         </BaseModal>
     );

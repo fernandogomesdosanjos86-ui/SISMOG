@@ -14,7 +14,7 @@ import CompanyBadge from '../../components/CompanyBadge';
 
 const GestaoPostos: React.FC = () => {
     const { postos, isLoading, refetch, delete: deletePosto } = usePostos();
-    const { openViewModal, openConfirmModal, openFormModal, showFeedback } = useModal();
+    const { openViewModal, openConfirmModal, openFormModal } = useModal();
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
@@ -59,16 +59,28 @@ const GestaoPostos: React.FC = () => {
         );
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = (posto: PostoTrabalho) => {
         openConfirmModal(
-            'Excluir Posto',
-            'Tem certeza que deseja excluir este posto? Todas as alocações vinculadas serão removidas.',
+            'Excluir Posto de Trabalho',
+            <div className="space-y-3 text-sm text-gray-600">
+                <p>
+                    <strong className="text-red-700 font-semibold">Atenção!</strong> A exclusão permanente do posto <strong>"{posto.nome}"</strong> apagarátodos os registros vinculados:
+                </p>
+                <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                    <li>Alocações e escalas de funcionários</li>
+                    <li>Histórico de Serviços Extras (H.E.)</li>
+                    <li>Apontamentos de supervisão e frequência</li>
+                </ul>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-800 text-xs mt-2">
+                    💡 <strong>Sugestão:</strong> Para preservar os relatórios financeiros e históricos operacionais, prefira editar o posto e alterar seu status para <strong>"Inativo"</strong>.
+                </div>
+                <p className="font-medium text-gray-800 pt-1">Deseja realmente prosseguir com a exclusão permanente?</p>
+            </div>,
             async () => {
                 try {
-                    await deletePosto(id);
-                    showFeedback('success', 'Posto excluído com sucesso!');
-                } catch (error) {
-                    showFeedback('error', 'Erro ao excluir posto.');
+                    await deletePosto(posto.id);
+                } catch {
+                    // Handled in usePostos deleteMutation.onError
                 }
             }
         );
@@ -82,7 +94,7 @@ const GestaoPostos: React.FC = () => {
                 canEdit: true,
                 canDelete: true,
                 onEdit: () => handleEdit(posto),
-                onDelete: () => handleDelete(posto.id)
+                onDelete: () => handleDelete(posto)
             }
         );
     };
