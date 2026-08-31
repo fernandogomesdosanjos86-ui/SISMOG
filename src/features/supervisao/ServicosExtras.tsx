@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FilterTabs from '../../components/ui/FilterTabs';
 import { Plus, Search } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import ResponsiveTable from '../../components/ResponsiveTable';
@@ -62,16 +63,22 @@ const ServicosExtras: React.FC = () => {
     }, [servicos]);
 
     // Apply Local Filters (Search / Company tab)
-    const filteredGroups = groupedData.filter(group => {
-        const matchesCompany = companyFilter === 'TODOS' || group.empresa === companyFilter;
-        const matchesSearch = group.funcionario_nome.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesCompany && matchesSearch;
-    });
+    const filteredGroups = React.useMemo(() => {
+        return groupedData.filter(group => {
+            const matchesCompany = companyFilter === 'TODOS' || group.empresa === companyFilter;
+            const matchesSearch = group.funcionario_nome.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesCompany && matchesSearch;
+        });
+    }, [groupedData, companyFilter, searchTerm]);
 
     // KPI Calcs
-    const totalValor = servicos.reduce((sum, s) => sum + Number(s.valor), 0);
-    const totalFemog = servicos.filter(s => s.empresa === 'FEMOG').reduce((sum, s) => sum + Number(s.valor), 0);
-    const totalSemog = servicos.filter(s => s.empresa === 'SEMOG').reduce((sum, s) => sum + Number(s.valor), 0);
+    const { totalValor, totalFemog, totalSemog } = React.useMemo(() => {
+        return {
+            totalValor: servicos.reduce((sum, s) => sum + Number(s.valor), 0),
+            totalFemog: servicos.filter(s => s.empresa === 'FEMOG').reduce((sum, s) => sum + Number(s.valor), 0),
+            totalSemog: servicos.filter(s => s.empresa === 'SEMOG').reduce((sum, s) => sum + Number(s.valor), 0),
+        };
+    }, [servicos]);
 
     // Handlers
     const handleCreate = () => {
@@ -185,21 +192,16 @@ const ServicosExtras: React.FC = () => {
                 </div>
             </div>
 
-            {/* Company Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {['TODOS', 'FEMOG', 'SEMOG'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab as any)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable
                 data={filteredGroups}

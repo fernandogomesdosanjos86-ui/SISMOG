@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Search, Car, Wrench, Fuel, Zap } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -21,16 +21,18 @@ const Veiculos: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<'TODOS' | 'Ativo' | 'Em Manutenção' | 'Inativo'>('Ativo'); // Default Active
 
     // Filter Logic
-    const filteredVeiculos = veiculos.filter(v => {
-        const matchesStatus = statusFilter === 'TODOS' || v.status === statusFilter;
+    const filteredVeiculos = useMemo(() => {
+        return veiculos.filter(v => {
+            const matchesStatus = statusFilter === 'TODOS' || v.status === statusFilter;
 
-        const searchLower = debouncedSearch.toLowerCase();
-        const matchesSearch =
-            v.marca_modelo.toLowerCase().includes(searchLower) ||
-            v.placa.toLowerCase().includes(searchLower);
+            const searchLower = debouncedSearch.toLowerCase();
+            const matchesSearch =
+                v.marca_modelo.toLowerCase().includes(searchLower) ||
+                v.placa.toLowerCase().includes(searchLower);
 
-        return matchesStatus && matchesSearch;
-    });
+            return matchesStatus && matchesSearch;
+        });
+    }, [veiculos, statusFilter, debouncedSearch]);
 
     const handleCreate = () => {
         openFormModal('Novo Veículo', <VeiculoForm onSuccess={closeModal} />);
@@ -69,9 +71,13 @@ const Veiculos: React.FC = () => {
     };
 
     // KPIs
-    const totalVeiculos = veiculos.length;
-    const totalAtivos = veiculos.filter(v => v.status === 'Ativo').length;
-    const totalManutencao = veiculos.filter(v => v.status === 'Em Manutenção').length;
+    const { totalVeiculos, totalAtivos, totalManutencao } = useMemo(() => {
+        return {
+            totalVeiculos: veiculos.length,
+            totalAtivos: veiculos.filter(v => v.status === 'Ativo').length,
+            totalManutencao: veiculos.filter(v => v.status === 'Em Manutenção').length,
+        };
+    }, [veiculos]);
 
     const renderCard = (i: Veiculo) => (
         <div className={`border-l-4 pl-3 py-1 ${i.status === 'Ativo' ? 'border-l-green-500' : i.status === 'Em Manutenção' ? 'border-l-orange-500' : 'border-l-gray-400'}`}>

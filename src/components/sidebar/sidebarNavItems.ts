@@ -41,7 +41,8 @@ export const navItems: NavItem[] = [
             { icon: Users, label: 'Funcionários', path: APP_ROUTES.RH.FUNCIONARIOS },
             { icon: DollarSign, label: 'Benefícios', path: APP_ROUTES.RH.BENEFICIOS },
             { icon: AlertTriangle, label: 'Penalidades', path: APP_ROUTES.RH.PENALIDADES },
-            { icon: Award, label: 'Gratificações', path: APP_ROUTES.RH.GRATIFICACOES }
+            { icon: Award, label: 'Gratificações', path: APP_ROUTES.RH.GRATIFICACOES },
+            { icon: Settings, label: 'Parâmetros Folha', path: APP_ROUTES.RH.PARAMETROS_FOLHA }
         ]
     },
     {

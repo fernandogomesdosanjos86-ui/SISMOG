@@ -29,6 +29,7 @@ const Escalas = lazy(() => import('./features/supervisao/Escalas'));
 const TrocaPlantao = lazy(() => import('./features/supervisao/pages/TrocaPlantao'));
 const Penalidades = lazy(() => import('./features/rh/Penalidades'));
 const Gratificacoes = lazy(() => import('./features/rh/Gratificacoes'));
+const ParametrosFolha = lazy(() => import('./features/rh/ParametrosFolha'));
 const Veiculos = lazy(() => import('./features/frota/Veiculos'));
 const Abastecimentos = lazy(() => import('./features/frota/Abastecimentos'));
 const Checklists = lazy(() => import('./features/frota/Checklists'));
@@ -70,6 +71,7 @@ function App() {
             <Route path={APP_ROUTES.RH.BENEFICIOS} element={<Beneficios />} />
             <Route path={APP_ROUTES.RH.PENALIDADES} element={<Penalidades />} />
             <Route path={APP_ROUTES.RH.GRATIFICACOES} element={<Gratificacoes />} />
+            <Route path={APP_ROUTES.RH.PARAMETROS_FOLHA} element={<ParametrosFolha />} />
 
             {/* Supervisão */}
             <Route path={APP_ROUTES.SUPERVISAO.POSTOS} element={<GestaoPostos />} />

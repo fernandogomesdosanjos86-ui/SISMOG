@@ -119,6 +119,11 @@ export const queryKeys = {
         list: () => [...queryKeys.gratificacoes.all, 'list'] as const,
         detail: (id: string) => [...queryKeys.gratificacoes.all, 'detail', id] as const,
     },
+    parametrosFolha: {
+        all: ['parametrosFolha'] as const,
+        list: () => [...queryKeys.parametrosFolha.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.parametrosFolha.all, 'detail', id] as const,
+    },
     // Geral
     curriculos: {
         all: ['curriculos'] as const,

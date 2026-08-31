@@ -31,6 +31,8 @@ export interface Funcionario {
     valor_transporte_dia?: number;
     valor_combustivel_dia?: number;
     status: 'ativo' | 'inativo' | 'ferias' | 'afastado';
+    data_admissao?: string | null;
+    data_desligamento?: string | null;
     // Joined fields
     cargo?: {
         cargo: string;
@@ -81,3 +83,33 @@ export interface Gratificacao {
 }
 
 export type GratificacaoFormData = Omit<Gratificacao, 'id' | 'created_at' | 'funcionario'>;
+
+export interface ParametrosFolha {
+    id: string;
+    ano: number;
+    valor_salario_minimo: number;
+    teto_salario_familia: number;
+    valor_salario_familia: number;
+    
+    teto_inss_1: number;
+    aliquota_inss_1: number;
+    desconto_inss_1: number;
+    
+    teto_inss_2: number;
+    aliquota_inss_2: number;
+    desconto_inss_2: number;
+    
+    teto_inss_3: number;
+    aliquota_inss_3: number;
+    desconto_inss_3: number;
+    
+    teto_inss_4: number;
+    aliquota_inss_4: number;
+    desconto_inss_4: number;
+    
+    created_at?: string;
+    updated_at?: string;
+}
+
+export type ParametrosFolhaFormData = Omit<ParametrosFolha, 'id' | 'created_at' | 'updated_at'>;
+

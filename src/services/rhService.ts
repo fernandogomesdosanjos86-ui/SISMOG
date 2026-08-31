@@ -54,7 +54,7 @@ export const rhService = {
     async getFuncionarios() {
         const { data, error } = await supabase
             .from('funcionarios')
-            .select('*, cargos_salarios(cargo, uf)')
+            .select('id, empresa, nome, cpf, cargo_id, tipo_contrato, banco, agencia, conta, pix, uniforme, valor_transporte_dia, valor_combustivel_dia, status, data_admissao, data_desligamento, created_at, updated_at, cargos_salarios(cargo, uf)')
             .order('nome', { ascending: true });
 
         if (error) throw error;
@@ -66,9 +66,16 @@ export const rhService = {
     },
 
     async createFuncionario(funcionario: FuncionarioFormData) {
+        const payload = {
+            ...funcionario,
+            data_admissao: funcionario.data_admissao || null,
+            data_desligamento: funcionario.data_desligamento || null,
+            nome: formatarNome(funcionario.nome)
+        };
+
         const { data, error } = await supabase
             .from('funcionarios')
-            .insert({ ...funcionario, nome: formatarNome(funcionario.nome) })
+            .insert(payload)
             .select()
             .single();
 
@@ -80,6 +87,12 @@ export const rhService = {
         const payload = { ...funcionario };
         if (payload.nome) {
             payload.nome = formatarNome(payload.nome);
+        }
+        if (payload.data_admissao === '') {
+            payload.data_admissao = null;
+        }
+        if (payload.data_desligamento === '') {
+            payload.data_desligamento = null;
         }
 
         const { data, error } = await supabase

@@ -26,7 +26,7 @@ const Login = () => {
             } else {
                 navigate('/');
             }
-        } catch (err) {
+        } catch {
             setError('Ocorreu um erro ao tentar fazer login.');
         } finally {
             setLoading(false);
@@ -49,7 +49,7 @@ const Login = () => {
             } else {
                 setSuccess('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
             }
-        } catch (err) {
+        } catch {
             setError('Erro ao processar solicitação.');
         } finally {
             setLoading(false);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -14,6 +14,8 @@ import { Plus, Search, FileText, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useContratos } from './hooks/useContratos';
+
+import FilterTabs from '../../components/ui/FilterTabs';
 
 const Contratos: React.FC = () => {
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
@@ -69,45 +71,40 @@ const Contratos: React.FC = () => {
         const end = new Date(start);
         end.setMonth(start.getMonth() + duracao);
         const now = new Date();
-        // Calculate difference in months
-        // Logic: (Year2 - Year1) * 12 + (Month2 - Month1)
-        // Check if day is passed? Simplified month diff:
         let months = (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth());
-        // Adjust for days? If today is 20th and exp is 15th, technically standard diff might be same month index but neg days.
-        // Let's use simplified approximation for UI or strict logic.
-        // User requested "Prazo com a contagem de meses restantes".
-        // Using strict time diff in days / 30 for "months"?
-        // Or just calendar months?
-        // Let's stick to calendar month difference, ensuring < 0 is expired.
         if (now > end) return -1;
         return months < 0 ? 0 : months;
     };
 
     // Filter Logic for List
-    const filteredContratos = contratos.filter(c => {
-        const matchesCompany = companyFilter === 'TODOS' || c.empresa === companyFilter;
-        const matchesStatus = statusFilter === 'TODOS' || c.status === statusFilter;
-        const searchLower = debouncedSearch.toLowerCase();
-        const matchesSearch = c.contratante.toLowerCase().includes(searchLower) ||
-            c.nome_posto.toLowerCase().includes(searchLower);
-        return matchesCompany && matchesStatus && matchesSearch;
-    });
+    const filteredContratos = useMemo(() => {
+        return contratos.filter(c => {
+            const matchesCompany = companyFilter === 'TODOS' || c.empresa === companyFilter;
+            const matchesStatus = statusFilter === 'TODOS' || c.status === statusFilter;
+            const searchLower = debouncedSearch.toLowerCase();
+            const matchesSearch = c.contratante.toLowerCase().includes(searchLower) ||
+                c.nome_posto.toLowerCase().includes(searchLower);
+            return matchesCompany && matchesStatus && matchesSearch;
+        });
+    }, [contratos, companyFilter, statusFilter, debouncedSearch]);
 
-    // KPI Calculations (Based on Company Filter, ignoring text search for broader context or strictly following "info follows tabs"?)
-    // User said "info follows tabs", so we filter by company only.
-    const kpiData = contratos.filter(c => companyFilter === 'TODOS' || c.empresa === companyFilter);
-
-    const activeContracts = kpiData.filter(c => c.status === 'ativo').length;
-    const warningContracts = kpiData.filter(c => {
-        if (c.status !== 'ativo') return false;
-        const remaining = calculateTerm(c.data_inicio, c.duracao_meses);
-        return remaining > 1 && remaining <= 3;
-    }).length;
-    const criticalContracts = kpiData.filter(c => {
-        if (c.status !== 'ativo') return false;
-        const remaining = calculateTerm(c.data_inicio, c.duracao_meses);
-        return remaining <= 1;
-    }).length;
+    // KPI Calculations
+    const { activeContracts, warningContracts, criticalContracts } = useMemo(() => {
+        const kpiData = contratos.filter(c => companyFilter === 'TODOS' || c.empresa === companyFilter);
+        return {
+            activeContracts: kpiData.filter(c => c.status === 'ativo').length,
+            warningContracts: kpiData.filter(c => {
+                if (c.status !== 'ativo') return false;
+                const remaining = calculateTerm(c.data_inicio, c.duracao_meses);
+                return remaining > 1 && remaining <= 3;
+            }).length,
+            criticalContracts: kpiData.filter(c => {
+                if (c.status !== 'ativo') return false;
+                const remaining = calculateTerm(c.data_inicio, c.duracao_meses);
+                return remaining <= 1;
+            }).length,
+        };
+    }, [contratos, companyFilter]);
 
     const columns = [
         {
@@ -204,27 +201,23 @@ const Contratos: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {['TODOS', 'SEMOG', 'FEMOG'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab as any)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable
                 data={filteredContratos}
                 columns={columns}
                 keyExtractor={(item) => item.id}
                 onRowClick={handleView}
+                loading={isLoading}
                 getRowBorderColor={(item) => item.empresa === 'FEMOG' ? 'border-blue-500' : 'border-orange-500'}
                 renderCard={(item) => (
                     <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${item.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
@@ -249,12 +242,6 @@ const Contratos: React.FC = () => {
                     </div>
                 )}
             />
-
-            {isLoading && (
-                <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-            )}
         </div>
     );
 };

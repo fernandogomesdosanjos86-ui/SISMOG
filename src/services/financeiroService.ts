@@ -49,7 +49,7 @@ export const financeiroService = {
     async getFaturamentos(month?: string) {
         let query = supabase
             .from('faturamentos')
-            .select('*, contratos(id, empresa, contratante, nome_posto)')
+            .select('id, contrato_id, competencia, valor_base_contrato, acrescimo, desconto, valor_bruto, retencao_pis, valor_retencao_pis, retencao_cofins, valor_retencao_cofins, retencao_irpj, valor_retencao_irpj, retencao_csll, valor_retencao_csll, retencao_inss, valor_retencao_inss, retencao_iss, perc_iss, valor_retencao_iss, valor_liquido, data_emissao, data_vencimento, numero_nf, status, observacoes, created_at, updated_at, contratos(id, empresa, contratante, nome_posto)')
             .order('competencia', { ascending: false })
             .order('data_emissao', { ascending: true });
 
@@ -65,7 +65,7 @@ export const financeiroService = {
     async getFaturamentosByContrato(contratoId: string) {
         const { data, error } = await supabase
             .from('faturamentos')
-            .select('*')
+            .select('id, contrato_id, competencia, valor_base_contrato, acrescimo, desconto, valor_bruto, retencao_pis, valor_retencao_pis, retencao_cofins, valor_retencao_cofins, retencao_irpj, valor_retencao_irpj, retencao_csll, valor_retencao_csll, retencao_inss, valor_retencao_inss, retencao_iss, perc_iss, valor_retencao_iss, valor_liquido, data_emissao, data_vencimento, numero_nf, status, observacoes, created_at, updated_at, contratos(id, empresa, contratante, nome_posto)')
             .eq('contrato_id', contratoId)
             .order('competencia', { ascending: false });
 
@@ -170,7 +170,8 @@ export const financeiroService = {
 
     async updateFaturamento(id: string, faturamento: Partial<Faturamento>) {
         // Sanitize: remove joined relations or read-only fields that shouldn't be sent back
-        const { contratos, ...updateData } = faturamento;
+        const updateData = { ...faturamento };
+        delete updateData.contratos;
 
         const { data, error } = await supabase
             .from('faturamentos')
@@ -187,7 +188,7 @@ export const financeiroService = {
         // 1. Get faturamento
         const { data: fat, error: fetchError } = await supabase
             .from('faturamentos')
-            .select('*, contratos(tem_retencao_caucao, perc_retencao_caucao, empresa)')
+            .select('id, valor_liquido, valor_bruto, data_vencimento, contratos(tem_retencao_caucao, perc_retencao_caucao, empresa)')
             .eq('id', faturamentoId)
             .single();
 
@@ -296,7 +297,7 @@ export const financeiroService = {
     async getRecebimentos() {
         const { data, error } = await supabase
             .from('recebimentos')
-            .select('*, faturamentos(contrato_id, contratos(contratante))') // Deep join for display
+            .select('id, faturamento_id, empresa, tipo, competencia, valor_faturamento_liquido, tem_retencao_caucao, perc_retencao_caucao, valor_retencao_caucao, valor_base, acrescimo, desconto, valor_recebimento_liquido, data_recebimento, status, descricao, observacoes, created_at, updated_at, faturamentos(contrato_id, contratos(contratante))') // Deep join for display
             .order('created_at', { ascending: false });
 
         if (error) throw error;

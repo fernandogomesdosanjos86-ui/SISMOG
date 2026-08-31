@@ -1,7 +1,7 @@
 import React from 'react';
 import type { CargoSalario } from '../types';
 import { DollarSign, Percent, Clock, Coffee, Building2 } from 'lucide-react';
-import { formatCurrency } from '../../../utils/format';
+import { formatCurrency, formatCurrencyPrecise } from '../../../utils/format';
 import { format } from 'date-fns';
 import CompanyBadge from '../../../components/CompanyBadge';
 
@@ -57,8 +57,8 @@ const CargoSalarioDetails: React.FC<CargoSalarioDetailsProps> = ({ cargo }) => {
 
             <SectionHeader title="Horas Extras" icon={Clock} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <DetailCard label="Diurno" value={formatCurrency(cargo.valor_he_diurno)} />
-                <DetailCard label="Noturno" value={formatCurrency(cargo.valor_he_noturno)} />
+                <DetailCard label="Diurno" value={formatCurrencyPrecise(cargo.valor_he_diurno, 4)} />
+                <DetailCard label="Noturno" value={formatCurrencyPrecise(cargo.valor_he_noturno, 4)} />
             </div>
 
             {(cargo as any).created_at && (

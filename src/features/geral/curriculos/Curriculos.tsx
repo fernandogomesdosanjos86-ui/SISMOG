@@ -51,10 +51,12 @@ const Curriculos = () => {
     }, [curriculos, debouncedSearch, cargoFilter, statusTab]);
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-    const paginatedData = filteredData.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    const paginatedData = useMemo(() => {
+        return filteredData.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+    }, [filteredData, currentPage, itemsPerPage]);
 
     // Reset page when filters change
     React.useEffect(() => {

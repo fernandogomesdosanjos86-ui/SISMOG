@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, formatCurrencyPrecise } from '../utils/format';
 
 interface CurrencyInputProps {
     value: number;
@@ -10,6 +10,7 @@ interface CurrencyInputProps {
     disabled?: boolean;
     className?: string;
     error?: string;
+    decimalPlaces?: number; // 2 (default) or 4
 }
 
 const CurrencyInput: React.FC<CurrencyInputProps> = ({
@@ -17,15 +18,19 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
     onChange,
     label,
     name,
-    placeholder = 'R$ 0,00',
+    placeholder,
     disabled = false,
     className = '',
-    error
+    error,
+    decimalPlaces = 2
 }) => {
+    const divisor = Math.pow(10, decimalPlaces); // 100 for 2 decimals, 10000 for 4
+    const defaultPlaceholder = placeholder || `R$ 0,${'0'.repeat(decimalPlaces)}`;
+
     // Determine initial display value
     const getDisplayValue = (val: number) => {
-        if (val === undefined || val === null) return 'R$ 0,00';
-        return formatCurrency(val);
+        if (val === undefined || val === null) return defaultPlaceholder;
+        return decimalPlaces === 2 ? formatCurrency(val) : formatCurrencyPrecise(val, decimalPlaces);
     };
 
     const [displayValue, setDisplayValue] = useState(getDisplayValue(value));
@@ -33,7 +38,7 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
     // Sync external value changes to display
     useEffect(() => {
         setDisplayValue(getDisplayValue(value));
-    }, [value]);
+    }, [value, decimalPlaces]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = e.target.value;
@@ -47,8 +52,9 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
         }
 
         // Convert the string of "cents" to a float number
-        // e.g., "1500" -> 15.00
-        const numericValue = parseInt(onlyDigits, 10) / 100;
+        // e.g., for 2 decimals: "1500" -> 15.00
+        // e.g., for 4 decimals: "166666" -> 16.6666
+        const numericValue = parseInt(onlyDigits, 10) / divisor;
 
         onChange(numericValue);
     };
@@ -67,7 +73,7 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
                 value={displayValue}
                 onChange={handleChange}
                 disabled={disabled}
-                placeholder={placeholder}
+                placeholder={defaultPlaceholder}
                 className={`w-full rounded-md border text-right shadow-sm p-2 focus:ring-2 focus:outline-none ${error
                     ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'
                     : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
@@ -79,3 +85,4 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
 };
 
 export default CurrencyInput;
+

@@ -197,11 +197,13 @@ const CargosSalariosForm: React.FC<CargosSalariosFormProps> = ({ initialData, on
                         label="Valor HE Diurno"
                         value={formData.valor_he_diurno || 0}
                         onChange={(val) => handleNumberChange('valor_he_diurno', val)}
+                        decimalPlaces={4}
                     />
                     <CurrencyInput
                         label="Valor HE Noturno"
                         value={formData.valor_he_noturno || 0}
                         onChange={(val) => handleNumberChange('valor_he_noturno', val)}
+                        decimalPlaces={4}
                     />
                 </div>
             </div>

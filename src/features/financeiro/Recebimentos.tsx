@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -14,6 +14,8 @@ import { Plus, Search, FileText } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useRecebimentos } from './hooks/useRecebimentos';
 
+import FilterTabs from '../../components/ui/FilterTabs';
+
 const Recebimentos: React.FC = () => {
     const [competenciaFilter, setCompetenciaFilter] = useState(new Date().toISOString().substring(0, 7)); // YYYY-MM
     const [companyFilter, setCompanyFilter] = useState<'TODOS' | 'SEMOG' | 'FEMOG'>('TODOS');
@@ -24,30 +26,36 @@ const Recebimentos: React.FC = () => {
     const { recebimentos, isLoading, refetch, register, delete: deleteRecebimento, undo } = useRecebimentos();
 
     // Filter Logic
-    const filteredRecebimentos = recebimentos.filter(r => {
-        // Date Check (Competence)
-        const dateDate = r.data_recebimento || r.faturamentos?.data_vencimento;
-        const matchesCompetence = dateDate ? dateDate.startsWith(competenciaFilter) : true;
+    const filteredRecebimentos = useMemo(() => {
+        return recebimentos.filter(r => {
+            // Date Check (Competence)
+            const dateDate = r.data_recebimento || r.faturamentos?.data_vencimento;
+            const matchesCompetence = dateDate ? dateDate.startsWith(competenciaFilter) : true;
 
-        // Other Filters
-        const matchesCompany = companyFilter === 'TODOS' || r.empresa === companyFilter;
-        const matchesStatus = statusFilter === 'TODOS' || r.status === statusFilter;
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = (r.descricao || '').toLowerCase().includes(searchLower) ||
-            (r.empresa || '').toLowerCase().includes(searchLower) ||
-            (r.faturamentos?.contratos?.contratante || '').toLowerCase().includes(searchLower);
+            // Other Filters
+            const matchesCompany = companyFilter === 'TODOS' || r.empresa === companyFilter;
+            const matchesStatus = statusFilter === 'TODOS' || r.status === statusFilter;
+            const searchLower = searchTerm.toLowerCase();
+            const matchesSearch = (r.descricao || '').toLowerCase().includes(searchLower) ||
+                (r.empresa || '').toLowerCase().includes(searchLower) ||
+                (r.faturamentos?.contratos?.contratante || '').toLowerCase().includes(searchLower);
 
-        return matchesCompetence && matchesCompany && matchesStatus && matchesSearch;
-    }).sort((a, b) => {
-        const dateA = a.data_recebimento || a.faturamentos?.data_vencimento || '';
-        const dateB = b.data_recebimento || b.faturamentos?.data_vencimento || '';
-        return new Date(dateA).getTime() - new Date(dateB).getTime();
-    });
+            return matchesCompetence && matchesCompany && matchesStatus && matchesSearch;
+        }).sort((a, b) => {
+            const dateA = a.data_recebimento || a.faturamentos?.data_vencimento || '';
+            const dateB = b.data_recebimento || b.faturamentos?.data_vencimento || '';
+            return new Date(dateA).getTime() - new Date(dateB).getTime();
+        });
+    }, [recebimentos, competenciaFilter, companyFilter, statusFilter, searchTerm]);
 
     // KPI Calculations
-    const totalLiquido = filteredRecebimentos.reduce((acc, curr) => acc + Number(curr.valor_recebimento_liquido), 0);
-    const totalPendente = filteredRecebimentos.filter(r => r.status === 'pendente').reduce((acc, curr) => acc + Number(curr.valor_recebimento_liquido), 0);
-    const totalRecebido = filteredRecebimentos.filter(r => r.status === 'recebido').reduce((acc, curr) => acc + Number(curr.valor_recebimento_liquido), 0);
+    const { totalLiquido, totalPendente, totalRecebido } = useMemo(() => {
+        return {
+            totalLiquido: filteredRecebimentos.reduce((acc, curr) => acc + Number(curr.valor_recebimento_liquido), 0),
+            totalPendente: filteredRecebimentos.filter(r => r.status === 'pendente').reduce((acc, curr) => acc + Number(curr.valor_recebimento_liquido), 0),
+            totalRecebido: filteredRecebimentos.filter(r => r.status === 'recebido').reduce((acc, curr) => acc + Number(curr.valor_recebimento_liquido), 0),
+        };
+    }, [filteredRecebimentos]);
 
     const handleCreateAvulso = () => {
         openFormModal(
@@ -241,26 +249,22 @@ const Recebimentos: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {['TODOS', 'SEMOG', 'FEMOG'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab as any)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable
                 data={filteredRecebimentos}
                 columns={columns}
                 keyExtractor={(item) => item.id}
+                loading={isLoading}
                 getRowBorderColor={(item) => {
                     const empresa = item.empresa || item.faturamentos?.contratos?.empresa;
                     return empresa === 'FEMOG' ? 'border-blue-500' : 'border-orange-500';
@@ -282,15 +286,7 @@ const Recebimentos: React.FC = () => {
                     </div>
                 )}
             />
-
-            {
-                isLoading && (
-                    <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
-                )
-            }
-        </div >
+        </div>
     );
 };
 

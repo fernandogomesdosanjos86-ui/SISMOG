@@ -91,9 +91,13 @@ const Abastecimentos: React.FC = () => {
     };
 
     // Calculate KPIs purely from Server Aggregation
-    const gastoMesAtual = Number(kpis?.gasto_mes_atual || 0);
-    const gastoMesAnterior = Number(kpis?.gasto_mes_anterior || 0);
-    const gastoUltimos3Meses = Number(kpis?.gasto_ultimos_3_meses || 0);
+    const { gastoMesAtual, gastoMesAnterior, gastoUltimos3Meses } = useMemo(() => {
+        return {
+            gastoMesAtual: Number(kpis?.gasto_mes_atual || 0),
+            gastoMesAnterior: Number(kpis?.gasto_mes_anterior || 0),
+            gastoUltimos3Meses: Number(kpis?.gasto_ultimos_3_meses || 0),
+        };
+    }, [kpis]);
 
     // Static Month Options based on the last 12 months
     const monthOptions = useMemo(() => {

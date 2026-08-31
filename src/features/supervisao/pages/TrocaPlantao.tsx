@@ -11,25 +11,13 @@ import { useModal } from '../../../context/ModalContext';
 import { useAuth } from '../../../context/AuthContext';
 import TrocaPlantaoForm from './TrocaPlantaoForm';
 import TrocaPlantaoDetails from './TrocaPlantaoDetails';
+import { useDebounce } from '../../../hooks/useDebounce';
+
+import FilterTabs from '../../../components/ui/FilterTabs';
+import { formatDate } from '../../../utils/format';
 
 type TabStatus = 'Todas' | StatusTrocaPlantao;
 const TABS: TabStatus[] = ['Todas', 'Pendente', 'Em Análise', 'Cancelado', 'Autorizado', 'Negado'];
-
-const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    try {
-        // Handle YYYY-MM-DD format
-        if (dateString.length === 10) {
-            return new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
-        }
-        // Handle full ISO strings
-        const parsed = new Date(dateString);
-        if (isNaN(parsed.getTime())) return '-';
-        return parsed.toLocaleDateString('pt-BR');
-    } catch {
-        return '-';
-    }
-};
 
 const TrocaPlantao: React.FC = () => {
     const { openFormModal, openViewModal, openConfirmModal } = useModal();
@@ -43,6 +31,7 @@ const TrocaPlantao: React.FC = () => {
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().substring(0, 7));
     const [empresa, setEmpresa] = useState<'FEMOG' | 'SEMOG' | ''>('');
     const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearch = useDebounce(searchTerm, 300);
     const [activeTab, setActiveTab] = useState<TabStatus>('Todas');
 
     const {
@@ -52,7 +41,7 @@ const TrocaPlantao: React.FC = () => {
     } = useTrocasPlantao({
         monthYear: selectedMonth,
         empresa: empresa || undefined,
-        searchTerm
+        searchTerm: debouncedSearch
     });
 
     const filteredTrocas = useMemo(() => {
@@ -76,7 +65,7 @@ const TrocaPlantao: React.FC = () => {
         const canDelete = isManagement;
 
         openViewModal(
-            'Detalhes da Troca',
+            'Detalhes da Troca de Plantão',
             <TrocaPlantaoDetails trocaId={troca.id} />,
             {
                 canEdit,
@@ -205,21 +194,12 @@ const TrocaStatusB = ({ status }: { status: string }) => {
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm max-w-full overflow-x-auto">
-                {TABS.map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`whitespace-nowrap px-6 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={TABS.map(t => ({ id: t, label: t }))}
+                activeTab={activeTab}
+                onChange={(tabId) => setActiveTab(tabId as TabStatus)}
+                className="w-fit mb-4"
+            />
 
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

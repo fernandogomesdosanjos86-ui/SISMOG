@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { usePostos } from '../hooks/usePostos';
 import { useFuncionarios } from '../../rh/hooks/useFuncionarios';
-import { supabase } from '../../../services/supabase';
+import { servicosExtrasService } from '../../../services/servicosExtrasService';
 import type { ServicoExtraFormData } from '../types';
 import PrimaryButton from '../../../components/PrimaryButton';
 import { InputField } from '../../../components/forms/InputField';
 import { SelectField } from '../../../components/forms/SelectField';
+import { formatToDatetimeLocal } from '../../../utils/format';
 
 interface ServicoExtraFormProps {
     onSuccess: () => void;
-    initialData?: any; // Using any for simplicity in mapping back to form data, strict type ideally
-    create: (data: ServicoExtraFormData) => Promise<any>;
-    update: (id: string, data: ServicoExtraFormData) => Promise<any>;
+    initialData?: Partial<ServicoExtraFormData> & { id?: string };
+    create: (data: ServicoExtraFormData) => Promise<unknown>;
+    update: (id: string, data: ServicoExtraFormData) => Promise<unknown>;
 }
 
 const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialData, create, update }) => {
@@ -25,9 +26,25 @@ const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialD
         funcionario_id: initialData?.funcionario_id || '',
         cargo_id: initialData?.cargo_id || '',
         turno: initialData?.turno || 'Diurno', // Default
-        entrada: initialData?.entrada || '',
-        saida: initialData?.saida || ''
+        entrada: formatToDatetimeLocal(initialData?.entrada),
+        saida: formatToDatetimeLocal(initialData?.saida)
     });
+
+    // Synchronize form when editing different item
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                empresa: initialData.empresa || 'FEMOG',
+                posto_id: initialData.posto_id || '',
+                funcionario_id: initialData.funcionario_id || '',
+                cargo_id: initialData.cargo_id || '',
+                turno: initialData.turno || 'Diurno',
+                entrada: formatToDatetimeLocal(initialData.entrada),
+                saida: formatToDatetimeLocal(initialData.saida)
+            });
+        }
+    }, [initialData]);
+
 
     // Fetched Data for Calcs
     const [cargos, setCargos] = useState<any[]>([]);
@@ -37,16 +54,16 @@ const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialD
         total: 0
     });
 
-    // Fetch Cargos
+    // Fetch Cargos via Service
     useEffect(() => {
         const fetchCargos = async () => {
             if (!formData.empresa) return;
-            const { data } = await supabase
-                .from('cargos_salarios')
-                .select('*')
-                .eq('empresa', formData.empresa)
-                .order('cargo');
-            setCargos(data || []);
+            try {
+                const data = await servicosExtrasService.getCargosByEmpresa(formData.empresa);
+                setCargos(data);
+            } catch (err) {
+                console.error(err);
+            }
         };
         fetchCargos();
     }, [formData.empresa]);
@@ -72,10 +89,8 @@ const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialD
                     const cargo = cargos.find(c => c.id === formData.cargo_id);
                     const rate = formData.turno === 'Diurno' ? (cargo?.valor_he_diurno || 0) : (cargo?.valor_he_noturno || 0);
 
-                    // Value (with robust floating point rounding)
-                    const roundedValue = Math.round(duration * rate * 100) / 100;
-                    const cents = Math.round((roundedValue % 1) * 100) / 100;
-                    const total = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
+                    // Value — simple round to 2 decimal places (matches service logic)
+                    const total = Math.round(duration * rate * 100) / 100;
 
                     setCalculatedValues({
                         duracao: Number(duration.toFixed(2)),
@@ -199,7 +214,7 @@ const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialD
                     </div>
                     <div>
                         <span className="block text-xs text-gray-500">Valor/Hora</span>
-                        <span className="font-bold text-gray-900">R$ {calculatedValues.valorHora.toFixed(2)}</span>
+                        <span className="font-bold text-gray-900">R$ {calculatedValues.valorHora.toFixed(4)}</span>
                     </div>
                     <div>
                         <span className="block text-xs text-gray-500">Total</span>

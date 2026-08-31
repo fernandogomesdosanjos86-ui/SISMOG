@@ -33,6 +33,8 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
         valor_transporte_dia: initialData?.valor_transporte_dia || 0,
         valor_combustivel_dia: initialData?.valor_combustivel_dia || 0,
         status: initialData?.status || 'ativo',
+        data_admissao: initialData?.data_admissao || '',
+        data_desligamento: initialData?.data_desligamento || '',
     });
 
     const filteredCargos = cargos.filter(c => c.empresa === formData.empresa);
@@ -45,6 +47,12 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
             setFormData(prev => ({ ...prev, [name]: rawValue }));
         } else if (name === 'nome') {
             setFormData(prev => ({ ...prev, [name]: value.toUpperCase() }));
+        } else if (name === 'data_desligamento') {
+            setFormData(prev => {
+                // Auto-inactivate if dismissal date is set (including future dates > today)
+                const newStatus = value ? 'inativo' : prev.status;
+                return { ...prev, [name]: value, status: newStatus };
+            });
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -157,6 +165,22 @@ const FuncionarioForm: React.FC<FuncionarioFormProps> = ({ initialData, onSucces
                         { value: 'ativo', label: 'Ativo' },
                         { value: 'inativo', label: 'Inativo' },
                     ]}
+                />
+
+                <InputField
+                    label="Data de Admissão"
+                    type="date"
+                    name="data_admissao"
+                    value={formData.data_admissao || ''}
+                    onChange={handleChange}
+                />
+
+                <InputField
+                    label="Data de Desligamento"
+                    type="date"
+                    name="data_desligamento"
+                    value={formData.data_desligamento || ''}
+                    onChange={handleChange}
                 />
 
                 <InputField

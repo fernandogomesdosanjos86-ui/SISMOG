@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import FilterTabs from '../../components/ui/FilterTabs';
 import { Plus, Search, Award } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -24,29 +25,33 @@ const Gratificacoes: React.FC = () => {
     const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'Folha de Pagamento' | 'Incentivo'>('TODOS');
 
     // Filtros Locais
-    const filteredData = gratificacoes.filter(g => {
-        const matchesCompany = companyFilter === 'TODOS' || g.empresa === companyFilter;
-        const matchesTipo = tipoFilter === 'TODOS' || g.tipo === tipoFilter;
-        const matchesSearch = normalizeSearchString(g.funcionario?.nome).includes(normalizeSearchString(debouncedSearch));
-        return matchesCompany && matchesTipo && matchesSearch;
-    });
+    const filteredData = useMemo(() => {
+        return gratificacoes.filter(g => {
+            const matchesCompany = companyFilter === 'TODOS' || g.empresa === companyFilter;
+            const matchesTipo = tipoFilter === 'TODOS' || g.tipo === tipoFilter;
+            const matchesSearch = normalizeSearchString(g.funcionario?.nome).includes(normalizeSearchString(debouncedSearch));
+            return matchesCompany && matchesTipo && matchesSearch;
+        });
+    }, [gratificacoes, companyFilter, tipoFilter, debouncedSearch]);
 
     // Grouping logic por funcionário id
-    const groups = filteredData.reduce((acc, gratificacao) => {
-        const key = gratificacao.funcionario_id;
-        if (!acc[key]) {
-            acc[key] = {
-                funcionario_id: key,
-                funcionario_nome: gratificacao.funcionario?.nome || 'Desconhecido',
-                empresa: gratificacao.empresa,
-                registros: []
-            };
-        }
-        acc[key].registros.push(gratificacao);
-        return acc;
-    }, {} as Record<string, { funcionario_id: string, funcionario_nome: string, empresa: 'FEMOG' | 'SEMOG', registros: Gratificacao[] }>);
+    const groupedArray = useMemo(() => {
+        const groups = filteredData.reduce((acc, gratificacao) => {
+            const key = gratificacao.funcionario_id;
+            if (!acc[key]) {
+                acc[key] = {
+                    funcionario_id: key,
+                    funcionario_nome: gratificacao.funcionario?.nome || 'Desconhecido',
+                    empresa: gratificacao.empresa,
+                    registros: []
+                };
+            }
+            acc[key].registros.push(gratificacao);
+            return acc;
+        }, {} as Record<string, { funcionario_id: string, funcionario_nome: string, empresa: 'FEMOG' | 'SEMOG', registros: Gratificacao[] }>);
 
-    const groupedArray = Object.values(groups).sort((a, b) => a.funcionario_nome.localeCompare(b.funcionario_nome));
+        return Object.values(groups).sort((a, b) => a.funcionario_nome.localeCompare(b.funcionario_nome));
+    }, [filteredData]);
 
     const handleCreate = () => {
         openFormModal('Novo Registro', <GratificacaoForm />);
@@ -80,9 +85,13 @@ const Gratificacoes: React.FC = () => {
     };
 
     // KPIs
-    const totalGratificacoes = gratificacoes.length;
-    const totalFemog = gratificacoes.filter(g => g.empresa === 'FEMOG').length;
-    const totalSemog = gratificacoes.filter(g => g.empresa === 'SEMOG').length;
+    const { totalGratificacoes, totalFemog, totalSemog } = useMemo(() => {
+        return {
+            totalGratificacoes: gratificacoes.length,
+            totalFemog: gratificacoes.filter(g => g.empresa === 'FEMOG').length,
+            totalSemog: gratificacoes.filter(g => g.empresa === 'SEMOG').length,
+        };
+    }, [gratificacoes]);
 
     // Componente customizado para a linha expandida no mobile (ou details view)
     const renderCard = (grupo: any) => (
@@ -185,21 +194,16 @@ const Gratificacoes: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
-                {(['TODOS', 'FEMOG', 'SEMOG'] as const).map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable
                 data={groupedArray}

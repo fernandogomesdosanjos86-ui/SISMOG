@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import FilterTabs from '../../../components/ui/FilterTabs';
 import { Plus, RefreshCw, Search } from 'lucide-react';
 import PageHeader from '../../../components/PageHeader';
 import PrimaryButton from '../../../components/PrimaryButton';
@@ -59,9 +60,13 @@ const GestaoEstoque: React.FC = () => {
     };
 
     // KPI calculations
-    const totalProdutos = produtos.length;
-    const totalEstoque = produtos.reduce((acc, p) => acc + p.em_estoque, 0);
-    const produtosZerados = produtos.filter(p => p.em_estoque <= 0).length;
+    const { totalProdutos, totalEstoque, produtosZerados } = useMemo(() => {
+        return {
+            totalProdutos: produtos.length,
+            totalEstoque: produtos.reduce((acc, p) => acc + p.em_estoque, 0),
+            produtosZerados: produtos.filter(p => p.em_estoque <= 0).length,
+        };
+    }, [produtos]);
 
     const tabs: { key: Tab; label: string }[] = [
         { key: 'estoque', label: 'Estoque' },
@@ -142,23 +147,15 @@ const GestaoEstoque: React.FC = () => {
                 )}
             </div>
 
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm overflow-x-auto mb-4">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.key}
-                        onClick={() => {
-                            setActiveTab(tab.key);
-                            setSearchTerm(''); // Clear search when switching tabs
-                        }}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.key
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={tabs.map(t => ({ id: t.key, label: t.label }))}
+                activeTab={activeTab}
+                onChange={(tabId) => {
+                    setActiveTab(tabId as Tab);
+                    setSearchTerm('');
+                }}
+                className="w-fit mb-4"
+            />
 
             <div className="bg-white rounded-xl shadow-sm">
 

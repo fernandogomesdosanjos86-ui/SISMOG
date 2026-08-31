@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Search } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import ResponsiveTable from '../../components/ResponsiveTable';
@@ -7,7 +7,7 @@ import { rhService } from '../../services/rhService';
 import type { CargoSalario } from './types';
 import CargosSalariosForm from './components/CargosSalariosForm';
 import CargoSalarioDetails from './components/CargoSalarioDetails';
-import { formatCurrency } from '../../utils/format';
+import { formatCurrency, formatCurrencyPrecise } from '../../utils/format';
 import PrimaryButton from '../../components/PrimaryButton';
 import CompanyBadge from '../../components/CompanyBadge';
 
@@ -79,13 +79,15 @@ const CargosSalarios: React.FC = () => {
         );
     };
 
-    const filteredCargos = cargos.filter(cargo => {
-        const matchesCompany = activeTab === 'TODOS' || cargo.empresa === activeTab;
-        const searchNormalized = normalizeSearchString(searchTerm);
-        const matchesSearch = normalizeSearchString(cargo.cargo).includes(searchNormalized) ||
-            normalizeSearchString(cargo.uf).includes(searchNormalized);
-        return matchesCompany && matchesSearch;
-    });
+    const filteredCargos = useMemo(() => {
+        return cargos.filter(cargo => {
+            const matchesCompany = activeTab === 'TODOS' || cargo.empresa === activeTab;
+            const searchNormalized = normalizeSearchString(searchTerm);
+            const matchesSearch = normalizeSearchString(cargo.cargo).includes(searchNormalized) ||
+                normalizeSearchString(cargo.uf).includes(searchNormalized);
+            return matchesCompany && matchesSearch;
+        });
+    }, [cargos, activeTab, searchTerm]);
 
     const columns = [
         {
@@ -117,8 +119,8 @@ const CargosSalarios: React.FC = () => {
             key: 'valor_he_diurno',
             render: (cargo: CargoSalario) => (
                 <div className="text-sm">
-                    <div className="text-gray-900"><span className="text-xs text-gray-500">D:</span> {formatCurrency(cargo.valor_he_diurno)}</div>
-                    <div className="text-gray-900"><span className="text-xs text-gray-500">N:</span> {formatCurrency(cargo.valor_he_noturno)}</div>
+                    <div className="text-gray-900"><span className="text-xs text-gray-500">D:</span> {formatCurrencyPrecise(cargo.valor_he_diurno, 4)}</div>
+                    <div className="text-gray-900"><span className="text-xs text-gray-500">N:</span> {formatCurrencyPrecise(cargo.valor_he_noturno, 4)}</div>
                 </div>
             )
         }
@@ -140,11 +142,11 @@ const CargosSalarios: React.FC = () => {
             <div className="flex justify-between items-center text-sm border-t pt-2 mt-2">
                 <div className="flex flex-col">
                     <span className="text-xs text-gray-500">HE Diurna</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(cargo.valor_he_diurno)}</span>
+                    <span className="font-medium text-gray-900">{formatCurrencyPrecise(cargo.valor_he_diurno, 4)}</span>
                 </div>
                 <div className="flex flex-col items-end">
                     <span className="text-xs text-gray-500">HE Noturna</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(cargo.valor_he_noturno)}</span>
+                    <span className="font-medium text-gray-900">{formatCurrencyPrecise(cargo.valor_he_noturno, 4)}</span>
                 </div>
             </div>
         </div>

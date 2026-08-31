@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, Calculator } from 'lucide-react';
 import PageHeader from '../../../components/PageHeader';
 import PrimaryButton from '../../../components/PrimaryButton';
+import FilterTabs from '../../../components/ui/FilterTabs';
 import { useModal } from '../../../context/ModalContext';
 import { useBeneficios } from './hooks/useBeneficios';
 import { gerarBeneficios } from './services/beneficiosService';
@@ -132,24 +133,19 @@ const Beneficios: React.FC = () => {
                 </div>
             </div>
 
-            {/* Company Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {(['TODOS', 'FEMOG', 'SEMOG'] as const).map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => {
-                            setCompanyFilter(tab);
-                            setCurrentPage(1);
-                        }}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => {
+                    setCompanyFilter(tabId as any);
+                    setCurrentPage(1);
+                }}
+                className="w-fit mb-4"
+            />
 
             <BeneficiosTable
                 data={filteredDados}

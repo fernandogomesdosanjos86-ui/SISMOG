@@ -5,6 +5,7 @@ import { useTrocasPlantao } from '../hooks/useTrocasPlantao';
 import TrocaPlantaoDetails from './TrocaPlantaoDetails';
 import TrocaPlantaoForm from './TrocaPlantaoForm';
 import { Calendar, Building2, User, Clock } from 'lucide-react';
+import { formatDate } from '../../../utils/format';
 
 const TrocaStatusB = ({ status }: { status: string }) => {
     const colors: Record<string, string> = {
@@ -15,18 +16,6 @@ const TrocaStatusB = ({ status }: { status: string }) => {
         'Cancelado': 'bg-gray-100 text-gray-800'
     };
     return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${colors[status] || colors['Pendente']}`}>{status}</span>;
-};
-
-const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    try {
-        const safeDateString = dateString.length === 10 ? dateString + 'T12:00:00' : dateString;
-        const parsed = new Date(safeDateString);
-        if (isNaN(parsed.getTime())) return '-';
-        return parsed.toLocaleDateString('pt-BR');
-    } catch {
-        return '-';
-    }
 };
 
 const PortalTrocasList: React.FC = () => {
@@ -51,7 +40,7 @@ const PortalTrocasList: React.FC = () => {
         const canDelete = isManagement;
 
         openViewModal(
-            'Detalhes da Troca',
+            'Detalhes da Troca de Plantão',
             <TrocaPlantaoDetails trocaId={troca.id} />,
             {
                 canEdit,

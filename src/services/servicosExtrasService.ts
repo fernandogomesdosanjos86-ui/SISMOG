@@ -10,7 +10,19 @@ export const servicosExtrasService = {
         const { data, error } = await supabase
             .from('servicos_extras')
             .select(`
-                *,
+                id,
+                empresa,
+                posto_id,
+                funcionario_id,
+                cargo_id,
+                turno,
+                entrada,
+                saida,
+                duracao,
+                valor_hora,
+                valor,
+                created_at,
+                updated_at,
                 posto:postos_trabalho(nome),
                 funcionario:funcionarios(nome),
                 cargo:cargos_salarios(cargo)
@@ -23,19 +35,27 @@ export const servicosExtrasService = {
         return data as ServicoExtra[];
     },
 
-    async getCargoValorHora(cargoId: string, turno: 'Diurno' | 'Noturno', _empresa: 'FEMOG' | 'SEMOG') {
+    async getCargosByEmpresa(empresa: 'FEMOG' | 'SEMOG') {
         const { data, error } = await supabase
             .from('cargos_salarios')
-            .select('*')
+            .select('id, cargo, uf, valor_he_diurno, valor_he_noturno')
+            .eq('empresa', empresa)
+            .order('cargo');
+
+        if (error) throw error;
+        return data || [];
+    },
+
+    async getCargoValorHora(cargoId: string, turno: 'Diurno' | 'Noturno') {
+        const { data, error } = await supabase
+            .from('cargos_salarios')
+            .select('id, cargo, uf, valor_he_diurno, valor_he_noturno')
             .eq('id', cargoId)
             .single();
 
         if (error) throw error;
 
         // Determine value based on shift (using HE values from cargo table)
-        // Assuming fields: valor_he_diurno, valor_he_noturno based on previous context
-        // If these fields don't exist in type definition yet, we might need to cast or update types
-        // Let's assume standard names based on context
         const valorHora = turno === 'Diurno' ? data.valor_he_diurno : data.valor_he_noturno;
 
         return Number(valorHora || 0);
@@ -43,7 +63,7 @@ export const servicosExtrasService = {
 
     async createServico(data: ServicoExtraFormData) {
         // 1. Fetch hourly rate
-        const valorHora = await this.getCargoValorHora(data.cargo_id, data.turno, data.empresa);
+        const valorHora = await this.getCargoValorHora(data.cargo_id, data.turno);
 
         // 2. Calculate duration
         const entrada = new Date(data.entrada);
@@ -51,12 +71,9 @@ export const servicosExtrasService = {
         const durationMs = saida.getTime() - entrada.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
 
-        // 3. Calculate value (Math.round to avoid floating point issues like 20.83*12=249.9599...)
-        const roundedValue = Math.round(durationHours * valorHora * 100) / 100;
-
-        // 4. Apply rounding rule: cents >= 0.96 round up to next integer
-        const cents = Math.round((roundedValue % 1) * 100) / 100;
-        const finalValue = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
+        // 3. Calculate value with precision (4 decimal hour rate × hours)
+        // Simple round to 2 decimal places — sufficient with 4-decimal precision at source
+        const finalValue = Math.round(durationHours * valorHora * 100) / 100;
 
         // Convert input dates to ISO Strings preserving the local time
         // The datetime-local string looks like "2026-02-23T05:00". If passed directly, Postgres assumes UTC, and fetching back substracts 3h.
@@ -115,14 +132,13 @@ export const servicosExtrasService = {
     // Better Update Method:
     async updateServicoWithCalculation(id: string, data: ServicoExtraFormData) {
         // Same logic as create
-        const valorHora = await this.getCargoValorHora(data.cargo_id, data.turno, data.empresa);
+        const valorHora = await this.getCargoValorHora(data.cargo_id, data.turno);
         const entrada = new Date(data.entrada);
         const saida = new Date(data.saida);
         const durationHours = (saida.getTime() - entrada.getTime()) / (1000 * 60 * 60);
 
-        const roundedValue = Math.round(durationHours * valorHora * 100) / 100;
-        const cents = Math.round((roundedValue % 1) * 100) / 100;
-        const finalValue = cents >= 0.96 ? Math.ceil(roundedValue) : roundedValue;
+        // Simple round to 2 decimal places — sufficient with 4-decimal precision at source
+        const finalValue = Math.round(durationHours * valorHora * 100) / 100;
 
         const entradaISO = new Date(data.entrada).toISOString();
         const saidaISO = new Date(data.saida).toISOString();

@@ -1,7 +1,8 @@
 import React from 'react';
 import type { Funcionario } from '../types';
-import { Briefcase, FileText, Activity, Building, Hash, Smartphone } from 'lucide-react';
+import { Briefcase, FileText, Activity, Building, Hash, Smartphone, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatDate } from '../../../utils/format';
 import CompanyBadge from '../../../components/CompanyBadge';
 import StatusBadge from '../../../components/StatusBadge';
 
@@ -62,6 +63,14 @@ const FuncionarioDetails: React.FC<FuncionarioDetailsProps> = ({ funcionario }) 
                             inactiveLabel="Inativo"
                         />
                     </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center text-gray-500 text-sm font-medium mb-1">
+                        <Calendar size={16} className="mr-2" /> Período
+                    </div>
+                    <div className="text-xs text-gray-900">Admissão: <span className="font-semibold">{formatDate(funcionario.data_admissao)}</span></div>
+                    <div className="text-xs text-gray-900">Desligamento: <span className="font-semibold">{formatDate(funcionario.data_desligamento)}</span></div>
                 </div>
             </div>
 

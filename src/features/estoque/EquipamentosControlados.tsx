@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -155,33 +155,41 @@ const EquipamentosControlados: React.FC = () => {
     };
 
     // Filter Logic
-    const filteredEquipamentos = equipamentos.filter(e => {
-        const matchSearch = e.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (e.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-        const matchCat = categoriaFilter === 'Todas' || e.categoria === categoriaFilter;
-        return matchSearch && matchCat;
-    });
+    const filteredEquipamentos = useMemo(() => {
+        return equipamentos.filter(e => {
+            const matchSearch = e.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (e.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+            const matchCat = categoriaFilter === 'Todas' || e.categoria === categoriaFilter;
+            return matchSearch && matchCat;
+        });
+    }, [equipamentos, searchTerm, categoriaFilter]);
 
-    const filteredDestinacoes = destinacoes.filter(d => {
-        const matchSearch = (d.equipamentos?.descricao.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-            (d.equipamentos?.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-            (d.contratos?.nome_posto.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-        const matchCat = categoriaFilter === 'Todas' || d.equipamentos?.categoria === categoriaFilter;
-        const matchPosto = postoFilter === 'Todos' || d.contrato_id === postoFilter;
-        return matchSearch && matchCat && matchPosto;
-    });
+    const filteredDestinacoes = useMemo(() => {
+        return destinacoes.filter(d => {
+            const matchSearch = (d.equipamentos?.descricao.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                (d.equipamentos?.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                (d.contratos?.nome_posto.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+            const matchCat = categoriaFilter === 'Todas' || d.equipamentos?.categoria === categoriaFilter;
+            const matchPosto = postoFilter === 'Todos' || d.contrato_id === postoFilter;
+            return matchSearch && matchCat && matchPosto;
+        });
+    }, [destinacoes, searchTerm, categoriaFilter, postoFilter]);
 
     // KPI Cards Calculation (Ignore Inactive)
-    const getKpi = (cat: EquipamentoCategoria) => {
-        const items = equipamentos.filter(e => e.categoria === cat && e.status === 'Ativo');
-        const total = items.reduce((acc, curr) => acc + curr.quantidade, 0);
-        const disponivel = items.reduce((acc, curr) => acc + (curr.disponivel || 0), 0);
-        return { total, disponivel, emUso: total - disponivel };
-    };
+    const { armasKpi, coletesKpi, municaoKpi } = useMemo(() => {
+        const getKpi = (cat: EquipamentoCategoria) => {
+            const items = equipamentos.filter(e => e.categoria === cat && e.status === 'Ativo');
+            const total = items.reduce((acc, curr) => acc + curr.quantidade, 0);
+            const disponivel = items.reduce((acc, curr) => acc + (curr.disponivel || 0), 0);
+            return { total, disponivel, emUso: total - disponivel };
+        };
 
-    const armasKpi = getKpi('Armamentos');
-    const coletesKpi = getKpi('Coletes Balísticos');
-    const municaoKpi = getKpi('Munições');
+        return {
+            armasKpi: getKpi('Armamentos'),
+            coletesKpi: getKpi('Coletes Balísticos'),
+            municaoKpi: getKpi('Munições'),
+        };
+    }, [equipamentos]);
 
     // Columns
     const columnsEstoque = [

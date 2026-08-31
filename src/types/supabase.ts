@@ -650,6 +650,8 @@ export type Database = {
           updated_at: string | null
           valor_combustivel_dia: number | null
           valor_transporte_dia: number | null
+          data_admissao: string | null
+          data_desligamento: string | null
         }
         Insert: {
           agencia?: string | null
@@ -668,6 +670,8 @@ export type Database = {
           updated_at?: string | null
           valor_combustivel_dia?: number | null
           valor_transporte_dia?: number | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
         }
         Update: {
           agencia?: string | null
@@ -686,6 +690,8 @@ export type Database = {
           updated_at?: string | null
           valor_combustivel_dia?: number | null
           valor_transporte_dia?: number | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
         }
         Relationships: [
           {
@@ -1396,6 +1402,72 @@ export type Database = {
           permissao?: Database["public"]["Enums"]["user_permission"]
           setor?: Database["public"]["Enums"]["user_sector"] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      parametros_folha: {
+        Row: {
+          id: string
+          ano: number
+          valor_salario_minimo: number
+          teto_salario_familia: number
+          valor_salario_familia: number
+          teto_inss_1: number
+          aliquota_inss_1: number
+          desconto_inss_1: number
+          teto_inss_2: number
+          aliquota_inss_2: number
+          desconto_inss_2: number
+          teto_inss_3: number
+          aliquota_inss_3: number
+          desconto_inss_3: number
+          teto_inss_4: number
+          aliquota_inss_4: number
+          desconto_inss_4: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          ano: number
+          valor_salario_minimo: number
+          teto_salario_familia: number
+          valor_salario_familia: number
+          teto_inss_1: number
+          aliquota_inss_1: number
+          desconto_inss_1: number
+          teto_inss_2: number
+          aliquota_inss_2: number
+          desconto_inss_2: number
+          teto_inss_3: number
+          aliquota_inss_3: number
+          desconto_inss_3: number
+          teto_inss_4: number
+          aliquota_inss_4: number
+          desconto_inss_4: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          ano?: number
+          valor_salario_minimo?: number
+          teto_salario_familia?: number
+          valor_salario_familia?: number
+          teto_inss_1?: number
+          aliquota_inss_1?: number
+          desconto_inss_1?: number
+          teto_inss_2?: number
+          aliquota_inss_2?: number
+          desconto_inss_2?: number
+          teto_inss_3?: number
+          aliquota_inss_3?: number
+          desconto_inss_3?: number
+          teto_inss_4?: number
+          aliquota_inss_4?: number
+          desconto_inss_4?: number
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

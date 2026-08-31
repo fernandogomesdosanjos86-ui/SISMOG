@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Search } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -11,6 +11,9 @@ import PostoDetails from './components/PostoDetails';
 import StatCard from '../../components/StatCard';
 import StatusBadge from '../../components/StatusBadge';
 import CompanyBadge from '../../components/CompanyBadge';
+import { useDebounce } from '../../hooks/useDebounce';
+
+import FilterTabs from '../../components/ui/FilterTabs';
 
 const GestaoPostos: React.FC = () => {
     const { postos, isLoading, refetch, delete: deletePosto } = usePostos();
@@ -18,34 +21,43 @@ const GestaoPostos: React.FC = () => {
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearch = useDebounce(searchTerm, 300);
     const [companyFilter, setCompanyFilter] = useState<'TODOS' | 'FEMOG' | 'SEMOG'>('TODOS');
     const [statusFilter, setStatusFilter] = useState<'TODOS' | 'ativo' | 'inativo'>('ativo');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 50;
 
     // Filter Logic
-    const filteredPostos = postos.filter(posto => {
-        const matchesCompany = companyFilter === 'TODOS' || posto.empresa === companyFilter;
-        const matchesStatus = statusFilter === 'TODOS' || posto.status === statusFilter;
-        const matchesSearch = posto.nome.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesCompany && matchesStatus && matchesSearch;
-    });
+    const filteredPostos = useMemo(() => {
+        return postos.filter(posto => {
+            const matchesCompany = companyFilter === 'TODOS' || posto.empresa === companyFilter;
+            const matchesStatus = statusFilter === 'TODOS' || posto.status === statusFilter;
+            const matchesSearch = posto.nome.toLowerCase().includes(debouncedSearch.toLowerCase());
+            return matchesCompany && matchesStatus && matchesSearch;
+        });
+    }, [postos, companyFilter, statusFilter, debouncedSearch]);
 
     const totalPages = Math.ceil(filteredPostos.length / itemsPerPage);
-    const paginatedPostos = filteredPostos.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    const paginatedPostos = useMemo(() => {
+        return filteredPostos.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+    }, [filteredPostos, currentPage, itemsPerPage]);
 
     // Reset page when filters change
     React.useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, companyFilter, statusFilter]);
+    }, [debouncedSearch, companyFilter, statusFilter]);
 
     // KPIs
-    const totalAtivos = postos.filter(p => p.status === 'ativo').length;
-    const totalFemog = postos.filter(p => p.status === 'ativo' && p.empresa === 'FEMOG').length;
-    const totalSemog = postos.filter(p => p.status === 'ativo' && p.empresa === 'SEMOG').length;
+    const { totalAtivos, totalFemog, totalSemog } = useMemo(() => {
+        return {
+            totalAtivos: postos.filter(p => p.status === 'ativo').length,
+            totalFemog: postos.filter(p => p.status === 'ativo' && p.empresa === 'FEMOG').length,
+            totalSemog: postos.filter(p => p.status === 'ativo' && p.empresa === 'SEMOG').length,
+        };
+    }, [postos]);
 
 
     const handleCreate = () => {
@@ -196,21 +208,16 @@ const GestaoPostos: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {(['TODOS', 'FEMOG', 'SEMOG'] as const).map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable<PostoTrabalho>
                 data={paginatedPostos}

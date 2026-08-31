@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useState, useMemo, type FC } from 'react';
 
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -6,6 +6,8 @@ import ResponsiveTable from '../../components/ResponsiveTable';
 import StatusBadge from '../../components/StatusBadge';
 import StatCard from '../../components/StatCard';
 import CompanyBadge from '../../components/CompanyBadge';
+import FilterTabs from '../../components/ui/FilterTabs';
+import { InputField } from '../../components/forms/InputField';
 import type { Faturamento } from '../../features/financeiro/types';
 import { useModal } from '../../context/ModalContext';
 import FaturamentoForm from '../../features/financeiro/components/FaturamentoForm';
@@ -14,7 +16,6 @@ import { FileText, Play, Search } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useFaturamentos } from './hooks/useFaturamentos';
-
 
 const Faturamentos: FC = () => {
 
@@ -104,19 +105,17 @@ const Faturamentos: FC = () => {
             'Emitir Nota Fiscal',
             (
                 <div className="space-y-4">
-                    <p>Confirma a emissão da nota para <strong>{item.contratos?.contratante}</strong>?</p>
-                    <p className="text-sm text-gray-500">Valor Líquido: {formatCurrency(item.valor_liquido)}</p>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Número da NF</label>
-                        <input
-                            autoFocus
-                            type="text"
-                            className="mt-1 w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                            onChange={(e) => numeroNf = e.target.value}
-                        />
-                    </div>
+                    <p className="text-gray-700">Confirma a emissão da nota para <strong>{item.contratos?.contratante}</strong>?</p>
+                    <p className="text-sm text-gray-500">Valor Líquido: <span className="font-semibold text-green-700">{formatCurrency(item.valor_liquido)}</span></p>
+                    <InputField
+                        autoFocus
+                        label="Número da NF"
+                        required
+                        type="text"
+                        onChange={(e) => numeroNf = e.target.value}
+                    />
                     <div className="flex justify-end pt-4">
-                        <button
+                        <PrimaryButton
                             onClick={async () => {
                                 if (!numeroNf) return showFeedback('error', 'Informe o número da NF');
                                 try {
@@ -128,10 +127,10 @@ const Faturamentos: FC = () => {
                                     showFeedback('error', 'Erro ao emitir nota');
                                 }
                             }}
-                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 focus:ring-green-500"
                         >
                             Confirmar Emissão
-                        </button>
+                        </PrimaryButton>
                     </div>
                 </div>
             )
@@ -174,20 +173,25 @@ const Faturamentos: FC = () => {
     ];
 
     // Filter Logic
-    // Filter Logic
-    const filteredFaturamentos = faturamentos.filter(f => {
-        const matchesCompany = companyFilter === 'TODOS' || f.contratos?.empresa === companyFilter;
-        const matchesStatus = statusFilter === 'TODOS' || f.status === statusFilter;
-        const searchLower = debouncedSearch.toLowerCase();
-        const matchesSearch = (f.contratos?.contratante || '').toLowerCase().includes(searchLower) ||
-            (f.contratos?.nome_posto || '').toLowerCase().includes(searchLower);
-        return matchesCompany && matchesStatus && matchesSearch;
-    });
+    const filteredFaturamentos = useMemo(() => {
+        return faturamentos.filter(f => {
+            const matchesCompany = companyFilter === 'TODOS' || f.contratos?.empresa === companyFilter;
+            const matchesStatus = statusFilter === 'TODOS' || f.status === statusFilter;
+            const searchLower = debouncedSearch.toLowerCase();
+            const matchesSearch = (f.contratos?.contratante || '').toLowerCase().includes(searchLower) ||
+                (f.contratos?.nome_posto || '').toLowerCase().includes(searchLower);
+            return matchesCompany && matchesStatus && matchesSearch;
+        });
+    }, [faturamentos, companyFilter, statusFilter, debouncedSearch]);
 
     // KPI Calculations
-    const totalBruto = filteredFaturamentos.reduce((acc, curr) => acc + Number(curr.valor_bruto), 0);
-    const totalPendenteBruto = filteredFaturamentos.filter(f => f.status === 'pendente').reduce((acc, curr) => acc + Number(curr.valor_bruto), 0);
-    const totalEmitidoBruto = filteredFaturamentos.filter(f => f.status === 'emitido').reduce((acc, curr) => acc + Number(curr.valor_bruto), 0);
+    const { totalBruto, totalPendenteBruto, totalEmitidoBruto } = useMemo(() => {
+        return {
+            totalBruto: filteredFaturamentos.reduce((acc, curr) => acc + Number(curr.valor_bruto), 0),
+            totalPendenteBruto: filteredFaturamentos.filter(f => f.status === 'pendente').reduce((acc, curr) => acc + Number(curr.valor_bruto), 0),
+            totalEmitidoBruto: filteredFaturamentos.filter(f => f.status === 'emitido').reduce((acc, curr) => acc + Number(curr.valor_bruto), 0),
+        };
+    }, [filteredFaturamentos]);
 
     return (
         <div className="space-y-6">
@@ -256,26 +260,22 @@ const Faturamentos: FC = () => {
                 </div>
             </div>
 
-            {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {['TODOS', 'SEMOG', 'FEMOG'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab as any)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable
                 data={filteredFaturamentos}
                 columns={columns}
                 keyExtractor={(item) => item.id}
+                loading={isLoading}
                 getRowBorderColor={(item) => item.contratos?.empresa === 'FEMOG' ? 'border-blue-500' : 'border-orange-500'}
                 onRowClick={handleView}
                 renderCard={(item) => (
@@ -295,14 +295,7 @@ const Faturamentos: FC = () => {
                     </div>
                 )}
             />
-            {
-                isLoading && (
-                    <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-40">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
-                )
-            }
-        </div >
+        </div>
     );
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { DollarSign, Utensils, Bus, Fuel, Award } from 'lucide-react';
 import StatCard from '../../../../components/StatCard';
 import type { BeneficioCalculado } from '../types';
@@ -8,11 +8,15 @@ interface BeneficiosKPIsProps {
 }
 
 const BeneficiosKPIs: React.FC<BeneficiosKPIsProps> = ({ data }) => {
-    const totalBeneficios = data.reduce((acc, curr) => acc + (curr.total_geral || 0), 0);
-    const totalAlimentacao = data.reduce((acc, curr) => acc + (curr.total_alimentacao || 0), 0);
-    const totalTransporte = data.reduce((acc, curr) => acc + (curr.total_transporte || 0), 0);
-    const totalCombustivel = data.reduce((acc, curr) => acc + (curr.total_combustivel || 0), 0);
-    const totalIncentivo = data.reduce((acc, curr) => acc + (curr.valor_incentivo_mensal || 0), 0);
+    const { totalBeneficios, totalAlimentacao, totalTransporte, totalCombustivel, totalIncentivo } = useMemo(() => {
+        return {
+            totalBeneficios: data.reduce((acc, curr) => acc + (curr.total_geral || 0), 0),
+            totalAlimentacao: data.reduce((acc, curr) => acc + (curr.total_alimentacao || 0), 0),
+            totalTransporte: data.reduce((acc, curr) => acc + (curr.total_transporte || 0), 0),
+            totalCombustivel: data.reduce((acc, curr) => acc + (curr.total_combustivel || 0), 0),
+            totalIncentivo: data.reduce((acc, curr) => acc + (curr.valor_incentivo_mensal || 0), 0),
+        };
+    }, [data]);
 
     const formatarMoeda = (valor: number) => {
         return new Intl.NumberFormat('pt-BR', {

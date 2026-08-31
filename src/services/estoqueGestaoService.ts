@@ -276,7 +276,7 @@ export const estoqueGestaoService = {
         });
 
         return Object.entries(map)
-            .filter(([_, v]) => v.qtd > 0)
+            .filter(([, v]) => v.qtd > 0)
             .map(([id, v]) => ({ id, ...v }))
             .sort((a, b) => a.nome.localeCompare(b.nome));
     },
@@ -310,7 +310,7 @@ export const estoqueGestaoService = {
         });
 
         return Object.entries(map)
-            .filter(([_, v]) => v.qtd > 0)
+            .filter(([, v]) => v.qtd > 0)
             .map(([id, v]) => ({ id, ...v }))
             .sort((a, b) => a.nome.localeCompare(b.nome));
     },

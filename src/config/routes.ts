@@ -23,6 +23,7 @@ export const APP_ROUTES = {
         BENEFICIOS: '/rh/beneficios',
         PENALIDADES: '/rh/penalidades',
         GRATIFICACOES: '/rh/gratificacoes',
+        PARAMETROS_FOLHA: '/rh/parametros-folha',
     },
     SUPERVISAO: {
         ROOT: '#supervisao',

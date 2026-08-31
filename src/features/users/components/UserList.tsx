@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useState, useMemo, type FC } from 'react';
 
 import { useUsers, type User } from '../useUsers';
 import { Search, Mail, Shield, Building2 } from 'lucide-react';
@@ -111,12 +111,14 @@ const UserList = () => {
 
     const isAdmin = currentUser?.user_metadata?.['permissao'] === 'Adm';
 
-    const filteredUsers = users?.filter(user => {
-        const searchNormalized = normalizeSearchString(searchTerm);
-        return normalizeSearchString(user.nome).includes(searchNormalized) ||
-            normalizeSearchString(user.email).includes(searchNormalized) ||
-            (user.cpf || '').includes(searchTerm);
-    }) || [];
+    const filteredUsers = useMemo(() => {
+        return users?.filter(user => {
+            const searchNormalized = normalizeSearchString(searchTerm);
+            return normalizeSearchString(user.nome).includes(searchNormalized) ||
+                normalizeSearchString(user.email).includes(searchNormalized) ||
+                (user.cpf || '').includes(searchTerm);
+        }) || [];
+    }, [users, searchTerm]);
 
     const handleRowClick = (user: User) => {
         openViewModal(

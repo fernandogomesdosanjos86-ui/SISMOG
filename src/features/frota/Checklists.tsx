@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import FilterTabs from '../../components/ui/FilterTabs';
 import { Search, ClipboardCheck, AlertTriangle } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -97,30 +98,6 @@ const Checklists: React.FC = () => {
             }
         );
     };
-
-    const renderTabs = () => (
-        <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-            {(['TODAS', 'AVARIAS'] as const).map((tab) => {
-                const isActive = activeTab === tab;
-                const activeClasses = tab === 'AVARIAS'
-                    ? 'bg-orange-50 text-orange-700 shadow-sm ring-1 ring-orange-200'
-                    : 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200';
-
-                return (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${isActive
-                            ? activeClasses
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODAS' ? 'Todas' : 'Avarias e Manutenções'}
-                    </button>
-                );
-            })}
-        </div>
-    );
 
     const renderCard = (i: Checklist) => {
         const itemDate = new Date(i.data);
@@ -239,8 +216,15 @@ const Checklists: React.FC = () => {
                 </div>
             </div>
 
-            {/* Tabs */}
-            {renderTabs()}
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'AVARIAS', label: 'Avarias e Manutenções' },
+                ]}
+                activeTab={activeTab}
+                onChange={(tabId) => setActiveTab(tabId as TabType)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable<Checklist>
                 data={checklists}

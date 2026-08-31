@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Search, Users, UserCheck } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -6,6 +6,7 @@ import ResponsiveTable from '../../components/ResponsiveTable';
 import CompanyBadge from '../../components/CompanyBadge';
 import StatusBadge from '../../components/StatusBadge';
 import StatCard from '../../components/StatCard';
+import FilterTabs from '../../components/ui/FilterTabs';
 import { useModal } from '../../context/ModalContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useFuncionarios } from './hooks/useFuncionarios';
@@ -14,6 +15,7 @@ import FuncionarioDetails from './components/FuncionarioDetails';
 import type { Funcionario } from './types';
 
 import { normalizeSearchString } from '../../utils/normalization';
+import { formatDate } from '../../utils/format';
 
 const Funcionarios: React.FC = () => {
     const { funcionarios, isLoading, refetch, delete: deleteFuncionario } = useFuncionarios();
@@ -28,29 +30,37 @@ const Funcionarios: React.FC = () => {
     const itemsPerPage = 50;
 
     // Filter Logic
-    const filteredFuncionarios = funcionarios.filter(func => {
-        const matchesCompany = companyFilter === 'TODOS' || func.empresa === companyFilter;
-        const matchesStatus = statusFilter === 'TODOS' || func.status === statusFilter;
+    const filteredFuncionarios = useMemo(() => {
+        return funcionarios.filter(func => {
+            const matchesCompany = companyFilter === 'TODOS' || func.empresa === companyFilter;
+            
+            // Employee is inactive if status is 'inativo' or if dismissal date is set (past or future)
+            const isInactive = func.status === 'inativo' || !!func.data_desligamento;
+            const currentStatus = isInactive ? 'inativo' : 'ativo';
+            const matchesStatus = statusFilter === 'TODOS' || currentStatus === statusFilter;
 
-        const searchLower = normalizeSearchString(debouncedSearch);
+            const searchLower = normalizeSearchString(debouncedSearch);
 
-        const nomeNormalized = normalizeSearchString(func.nome);
-        const cpfRaw = (func.cpf || '').replace(/\D/g, '');
-        const cargoNormalized = normalizeSearchString(func.cargos_salarios?.cargo);
+            const nomeNormalized = normalizeSearchString(func.nome);
+            const cpfRaw = (func.cpf || '').replace(/\D/g, '');
+            const cargoNormalized = normalizeSearchString(func.cargos_salarios?.cargo);
 
-        const matchesSearch =
-            nomeNormalized.includes(searchLower) ||
-            cpfRaw.includes(searchLower) ||
-            cargoNormalized.includes(searchLower);
+            const matchesSearch =
+                nomeNormalized.includes(searchLower) ||
+                cpfRaw.includes(searchLower) ||
+                cargoNormalized.includes(searchLower);
 
-        return matchesCompany && matchesStatus && matchesSearch;
-    });
+            return matchesCompany && matchesStatus && matchesSearch;
+        });
+    }, [funcionarios, companyFilter, statusFilter, debouncedSearch]);
 
     const totalPages = Math.ceil(filteredFuncionarios.length / itemsPerPage);
-    const paginatedFuncionarios = filteredFuncionarios.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    const paginatedFuncionarios = useMemo(() => {
+        return filteredFuncionarios.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+    }, [filteredFuncionarios, currentPage, itemsPerPage]);
 
     // Reset page when filters change
     React.useEffect(() => {
@@ -87,9 +97,17 @@ const Funcionarios: React.FC = () => {
     };
 
     // KPIs
-    const totalAtivos = funcionarios.filter(f => f.status === 'ativo').length;
-    const totalFemog = funcionarios.filter(f => f.status === 'ativo' && f.empresa === 'FEMOG').length;
-    const totalSemog = funcionarios.filter(f => f.status === 'ativo' && f.empresa === 'SEMOG').length;
+    const { totalAtivos, totalFemog, totalSemog } = useMemo(() => {
+        const activeEmployees = funcionarios.filter(f => {
+            const isInactive = f.status === 'inativo' || !!f.data_desligamento;
+            return !isInactive;
+        });
+        return {
+            totalAtivos: activeEmployees.length,
+            totalFemog: activeEmployees.filter(f => f.empresa === 'FEMOG').length,
+            totalSemog: activeEmployees.filter(f => f.empresa === 'SEMOG').length,
+        };
+    }, [funcionarios]);
 
     const columns = [
         {
@@ -113,6 +131,20 @@ const Funcionarios: React.FC = () => {
             )
         },
         {
+            key: 'data_admissao',
+            header: 'Admissão',
+            render: (i: Funcionario) => (
+                <span className="text-sm text-gray-900">{formatDate(i.data_admissao)}</span>
+            )
+        },
+        {
+            key: 'data_desligamento',
+            header: 'Desligamento',
+            render: (i: Funcionario) => (
+                <span className="text-sm text-gray-900">{formatDate(i.data_desligamento)}</span>
+            )
+        },
+        {
             key: 'uniforme',
             header: 'Uniforme',
             render: (i: Funcionario) => (
@@ -127,24 +159,34 @@ const Funcionarios: React.FC = () => {
         {
             key: 'status',
             header: 'Status',
-            render: (i: Funcionario) => <StatusBadge active={i.status === 'ativo'} activeLabel="Ativo" inactiveLabel="Inativo" />
+            render: (i: Funcionario) => {
+                const isInactive = i.status === 'inativo' || !!i.data_desligamento;
+                return <StatusBadge active={!isInactive} activeLabel="Ativo" inactiveLabel="Inativo" />;
+            }
         }
     ];
 
-    const renderCard = (i: Funcionario) => (
-        <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${i.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
-            <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="font-semibold text-gray-900">{i.nome}</h3>
-                    <p className="text-xs text-gray-500">{i.cargos_salarios?.cargo} - {i.cargos_salarios?.uf}</p>
+    const renderCard = (i: Funcionario) => {
+        const isInactive = i.status === 'inativo' || !!i.data_desligamento;
+        return (
+            <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${i.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="font-semibold text-gray-900">{i.nome}</h3>
+                        <p className="text-xs text-gray-500">{i.cargos_salarios?.cargo} - {i.cargos_salarios?.uf}</p>
+                    </div>
+                    <StatusBadge active={!isInactive} activeLabel="Ativo" inactiveLabel="Inativo" />
                 </div>
-                <StatusBadge active={i.status === 'ativo'} activeLabel="Ativo" inactiveLabel="Inativo" />
+                <div className="flex justify-between items-center text-sm pt-1">
+                    <CompanyBadge company={i.empresa} />
+                    <div className="flex flex-col text-right text-xs text-gray-500">
+                        <span>Adm: {formatDate(i.data_admissao)}</span>
+                        {i.data_desligamento && <span>Desl: {formatDate(i.data_desligamento)}</span>}
+                    </div>
+                </div>
             </div>
-            <div className="flex justify-between items-center text-sm pt-1">
-                <CompanyBadge company={i.empresa} />
-            </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="space-y-6">
@@ -208,21 +250,16 @@ const Funcionarios: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filters - Bottom Bar (Tabs) */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {(['TODOS', 'FEMOG', 'SEMOG'] as const).map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             <ResponsiveTable<Funcionario>
                 data={paginatedFuncionarios}

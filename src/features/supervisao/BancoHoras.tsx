@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import FilterTabs from '../../components/ui/FilterTabs';
 import { Plus, Search, Clock, Building2 } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import ResponsiveTable from '../../components/ResponsiveTable';
@@ -85,20 +86,24 @@ const BancoHoras: React.FC = () => {
     }, [bancoHoras, debouncedSearchTerm, companyFilter]);
 
     // KPIs
-    const totalMinutos = bancoHoras.reduce((acc, item) => {
-        if (item.tipo === 'Positiva' || item.tipo === 'Compensação') return acc + item.duracao_minutos;
-        return acc - item.duracao_minutos;
-    }, 0);
-    
-    const femogMinutos = bancoHoras.filter(a => a.empresa === 'FEMOG').reduce((acc, item) => {
-        if (item.tipo === 'Positiva' || item.tipo === 'Compensação') return acc + item.duracao_minutos;
-        return acc - item.duracao_minutos;
-    }, 0);
-    
-    const semogMinutos = bancoHoras.filter(a => a.empresa === 'SEMOG').reduce((acc, item) => {
-        if (item.tipo === 'Positiva' || item.tipo === 'Compensação') return acc + item.duracao_minutos;
-        return acc - item.duracao_minutos;
-    }, 0);
+    const { totalMinutos, femogMinutos, semogMinutos } = useMemo(() => {
+        const total = bancoHoras.reduce((acc, item) => {
+            if (item.tipo === 'Positiva' || item.tipo === 'Compensação') return acc + item.duracao_minutos;
+            return acc - item.duracao_minutos;
+        }, 0);
+        
+        const femog = bancoHoras.filter(a => a.empresa === 'FEMOG').reduce((acc, item) => {
+            if (item.tipo === 'Positiva' || item.tipo === 'Compensação') return acc + item.duracao_minutos;
+            return acc - item.duracao_minutos;
+        }, 0);
+        
+        const semog = bancoHoras.filter(a => a.empresa === 'SEMOG').reduce((acc, item) => {
+            if (item.tipo === 'Positiva' || item.tipo === 'Compensação') return acc + item.duracao_minutos;
+            return acc - item.duracao_minutos;
+        }, 0);
+
+        return { totalMinutos: total, femogMinutos: femog, semogMinutos: semog };
+    }, [bancoHoras]);
 
     // Actions
     const handleNew = () => {
@@ -214,21 +219,16 @@ const BancoHoras: React.FC = () => {
                 </div>
             </div>
 
-            {/* Company Tabs */}
-            <div className="flex bg-white p-1 rounded-lg w-fit shadow-sm">
-                {['TODOS', 'FEMOG', 'SEMOG'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setCompanyFilter(tab as any)}
-                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${companyFilter === tab
-                            ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        {tab === 'TODOS' ? 'Todas' : tab}
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                tabs={[
+                    { id: 'TODOS', label: 'Todas' },
+                    { id: 'FEMOG', label: 'FEMOG' },
+                    { id: 'SEMOG', label: 'SEMOG' },
+                ]}
+                activeTab={companyFilter}
+                onChange={(tabId) => setCompanyFilter(tabId as any)}
+                className="w-fit mb-4"
+            />
 
             {/* Data Table */}
             <ResponsiveTable
