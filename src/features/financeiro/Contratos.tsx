@@ -21,7 +21,7 @@ const Contratos: React.FC = () => {
     const { openViewModal, openFormModal, openConfirmModal, showFeedback } = useModal();
     const { contratos, isLoading, refetch, delete: deleteContrato } = useContratos();
     const [companyFilter, setCompanyFilter] = useState<'TODOS' | 'SEMOG' | 'FEMOG'>('TODOS');
-    const [statusFilter, setStatusFilter] = useState<'TODOS' | 'ativo' | 'inativo'>('TODOS');
+    const [statusFilter, setStatusFilter] = useState<'TODOS' | 'ativo' | 'inativo'>('ativo');
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 300);
 

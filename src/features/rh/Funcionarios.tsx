@@ -145,13 +145,6 @@ const Funcionarios: React.FC = () => {
             )
         },
         {
-            key: 'uniforme',
-            header: 'Uniforme',
-            render: (i: Funcionario) => (
-                <span className="text-sm text-gray-900">{i.uniforme || '-'}</span>
-            )
-        },
-        {
             key: 'empresa',
             header: 'Empresa',
             render: (i: Funcionario) => <CompanyBadge company={i.empresa} />

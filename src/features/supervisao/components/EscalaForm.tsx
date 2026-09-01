@@ -13,7 +13,7 @@ const EscalaForm: React.FC<EscalaFormProps> = ({ onSubmit, onCancel }) => {
     const [postoId, setPostoId] = useState('');
 
     const { postos } = usePostos();
-    const filteredPostos = postos.filter(p => p.empresa === empresa);
+    const filteredPostos = postos.filter(p => p.empresa === empresa && p.status === 'ativo');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
