@@ -1520,6 +1520,74 @@ export type Database = {
           },
         ]
       }
+      supervisao_trocas_posto: {
+        Row: {
+          created_at: string | null
+          data: string
+          empresa: Database["public"]["Enums"]["empresa_enum"]
+          funcionario_id: string
+          id: string
+          observacoes: string | null
+          posto_cobertura_id: string
+          posto_original_id: string
+          solicitante_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          empresa: Database["public"]["Enums"]["empresa_enum"]
+          funcionario_id: string
+          id?: string
+          observacoes?: string | null
+          posto_cobertura_id: string
+          posto_original_id: string
+          solicitante_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          empresa?: Database["public"]["Enums"]["empresa_enum"]
+          funcionario_id?: string
+          id?: string
+          observacoes?: string | null
+          posto_cobertura_id?: string
+          posto_original_id?: string
+          solicitante_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supervisao_trocas_posto_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisao_trocas_posto_posto_cobertura_id_fkey"
+            columns: ["posto_cobertura_id"]
+            isOneToOne: false
+            referencedRelation: "postos_trabalho"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisao_trocas_posto_posto_original_id_fkey"
+            columns: ["posto_original_id"]
+            isOneToOne: false
+            referencedRelation: "postos_trabalho"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisao_trocas_posto_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usuarios: {
         Row: {
           ativo: boolean | null

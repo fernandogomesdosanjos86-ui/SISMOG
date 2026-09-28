@@ -6,8 +6,9 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TrendingUp, Calendar, Building2 } from 'lucide-react';
+import { TrendingUp, Calendar, Building2, DollarSign, BarChart2, CheckCircle } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
+import StatCard from '../../components/StatCard';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -15,23 +16,140 @@ const formatCurrency = (value: number) => {
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#eab308'];
 
+interface KpiValueProps {
+    total: number;
+    femog: number;
+    semog: number;
+}
+
+const KpiValue: React.FC<KpiValueProps> = ({ total, femog, semog }) => (
+    <div className="space-y-1.5 mt-1">
+        <div className="text-xl font-bold text-gray-900 tracking-tight">
+            {formatCurrency(total)}
+        </div>
+        <div className="flex flex-col gap-1 pt-1.5 border-t border-gray-100 text-xs">
+            <div className="flex items-center justify-between">
+                <span className="text-gray-500 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    Femog:
+                </span>
+                <span className="font-semibold text-blue-700">{formatCurrency(femog)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+                <span className="text-gray-500 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                    Semog:
+                </span>
+                <span className="font-semibold text-orange-700">{formatCurrency(semog)}</span>
+            </div>
+        </div>
+    </div>
+);
+
 const RelatorioFinanceiro: React.FC = () => {
     // Busca todo o histórico de faturamentos omitindo competencia
     const { faturamentos, isLoading } = useFaturamentos();
 
-    const [postoFilter, setPostoFilter] = useState<{ month: string, year: string }>({ month: 'all', year: 'all' });
+    // 1. Data atual para defaults
+    const now = useMemo(() => new Date(), []);
+    const currentMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+    const currentYearStr = String(now.getFullYear());
 
-    // 1. CHART I: Faturamento por Período (Line Chart)
+    // Seletor de mês e ano do gráfico "Faturamento por Posto" com default no mês e ano atual
+    const [postoFilter, setPostoFilter] = useState<{ month: string, year: string }>({
+        month: currentMonthStr,
+        year: currentYearStr
+    });
+
+    // Anos disponíveis extraídos dos dados de faturamento
+    const availableYears = useMemo(() => {
+        const years = new Set<string>();
+        years.add(currentYearStr);
+        faturamentos.forEach(item => {
+            const dateStr = item.competencia || item.data_emissao;
+            if (dateStr && dateStr.length >= 4) {
+                years.add(dateStr.substring(0, 4));
+            }
+        });
+        return Array.from(years).sort().reverse();
+    }, [faturamentos, currentYearStr]);
+
+    // 2. KPIs: Mensal, Trimestral, Semestral, Anual e Total (Total, Femog, Semog)
+    const kpis = useMemo(() => {
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1 a 12
+        const currentQuarter = Math.ceil(currentMonth / 3); // 1 a 4
+        const currentSemester = Math.ceil(currentMonth / 6); // 1 ou 2
+
+        const initKpi = () => ({ total: 0, femog: 0, semog: 0 });
+
+        const mensal = initKpi();
+        const trimestral = initKpi();
+        const semestral = initKpi();
+        const anual = initKpi();
+        const total = initKpi();
+
+        const addValue = (kpi: { total: number; femog: number; semog: number }, valor: number, empresa?: string) => {
+            kpi.total += valor;
+            if (empresa === 'FEMOG') {
+                kpi.femog += valor;
+            } else if (empresa === 'SEMOG') {
+                kpi.semog += valor;
+            }
+        };
+
+        faturamentos.forEach(item => {
+            const valor = Number(item.valor_bruto || 0);
+            const empresa = item.contratos?.empresa;
+
+            // Faturamento Total (geral acumulado)
+            addValue(total, valor, empresa);
+
+            // Data de referência (competência ou data de emissão)
+            const dateStr = item.competencia || item.data_emissao;
+            if (!dateStr || dateStr.length < 7) return;
+
+            const itemYear = parseInt(dateStr.substring(0, 4), 10);
+            const itemMonth = parseInt(dateStr.substring(5, 7), 10);
+
+            if (isNaN(itemYear) || isNaN(itemMonth)) return;
+
+            // Faturamento Anual (ano atual)
+            if (itemYear === currentYear) {
+                addValue(anual, valor, empresa);
+
+                // Faturamento Semestral (semestre atual)
+                const itemSemester = Math.ceil(itemMonth / 6);
+                if (itemSemester === currentSemester) {
+                    addValue(semestral, valor, empresa);
+                }
+
+                // Faturamento Trimestral (trimestre atual)
+                const itemQuarter = Math.ceil(itemMonth / 3);
+                if (itemQuarter === currentQuarter) {
+                    addValue(trimestral, valor, empresa);
+                }
+
+                // Faturamento Mensal (mês atual)
+                if (itemMonth === currentMonth) {
+                    addValue(mensal, valor, empresa);
+                }
+            }
+        });
+
+        return { mensal, trimestral, semestral, anual, total };
+    }, [faturamentos, now]);
+
+    // 3. CHART I: Faturamento por Período (Line Chart)
     const faturamentoPorPeriodo = useMemo(() => {
         const agrupado: Record<string, { SEMOG: number; FEMOG: number }> = {};
 
         faturamentos.forEach(item => {
-            if (!item.data_emissao) return;
+            const dateStr = item.competencia || item.data_emissao;
+            if (!dateStr) return;
             try {
-                const date = new Date(item.data_emissao);
-                const key = format(date, 'yyyy-MM');
-
-                const empresa = item.contratos?.empresa || 'SEMOG'; // Default fallback
+                const key = dateStr.substring(0, 7); // yyyy-MM
+                const empresa = item.contratos?.empresa || 'SEMOG';
 
                 if (!agrupado[key]) {
                     agrupado[key] = { SEMOG: 0, FEMOG: 0 };
@@ -41,7 +159,7 @@ const RelatorioFinanceiro: React.FC = () => {
                     agrupado[key][empresa] += Number(item.valor_bruto || 0);
                 }
             } catch (e) {
-                console.error("Invalid date", item.data_emissao);
+                console.error("Invalid date", dateStr);
             }
         });
 
@@ -54,17 +172,21 @@ const RelatorioFinanceiro: React.FC = () => {
             });
     }, [faturamentos]);
 
-    // 2. CHART II: Faturamento por Posto (Pie Chart)
+    // 4. CHART II: Faturamento por Posto (Pie Chart)
     const faturamentoPorPosto = useMemo(() => {
         let dadosFiltrados = faturamentos;
 
-        if (postoFilter.month !== 'all' && postoFilter.year !== 'all') {
+        if (postoFilter.month !== 'all' || postoFilter.year !== 'all') {
             dadosFiltrados = dadosFiltrados.filter(item => {
-                if (!item.data_emissao) return false;
-                const date = new Date(item.data_emissao);
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = String(date.getFullYear());
-                return month === postoFilter.month && year === postoFilter.year;
+                const dateStr = item.competencia || item.data_emissao;
+                if (!dateStr || dateStr.length < 7) return false;
+                const month = dateStr.substring(5, 7);
+                const year = dateStr.substring(0, 4);
+
+                const matchMonth = postoFilter.month === 'all' || month === postoFilter.month;
+                const matchYear = postoFilter.year === 'all' || year === postoFilter.year;
+
+                return matchMonth && matchYear;
             });
         }
 
@@ -79,7 +201,6 @@ const RelatorioFinanceiro: React.FC = () => {
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value); // Decrescente para priorizar fatias maiores
     }, [faturamentos, postoFilter]);
-
 
     if (isLoading) {
         return (
@@ -96,6 +217,41 @@ const RelatorioFinanceiro: React.FC = () => {
                 subtitle="Indicadores e visão geral de faturamentos"
             />
 
+            {/* KPIs Globais */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                <StatCard
+                    title="Faturamento Mensal"
+                    value={<KpiValue total={kpis.mensal.total} femog={kpis.mensal.femog} semog={kpis.mensal.semog} />}
+                    type="total"
+                    icon={Calendar}
+                />
+                <StatCard
+                    title="Faturamento Trimestral"
+                    value={<KpiValue total={kpis.trimestral.total} femog={kpis.trimestral.femog} semog={kpis.trimestral.semog} />}
+                    type="info"
+                    icon={TrendingUp}
+                />
+                <StatCard
+                    title="Faturamento Semestral"
+                    value={<KpiValue total={kpis.semestral.total} femog={kpis.semestral.femog} semog={kpis.semestral.semog} />}
+                    type="warning"
+                    icon={BarChart2}
+                />
+                <StatCard
+                    title="Faturamento Anual"
+                    value={<KpiValue total={kpis.anual.total} femog={kpis.anual.femog} semog={kpis.anual.semog} />}
+                    type="success"
+                    icon={CheckCircle}
+                />
+                <StatCard
+                    title="Faturamento Total"
+                    value={<KpiValue total={kpis.total.total} femog={kpis.total.femog} semog={kpis.total.semog} />}
+                    type="total"
+                    icon={DollarSign}
+                />
+            </div>
+
+            {/* Gráficos */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* 1. Faturamento por Período */}
@@ -145,9 +301,15 @@ const RelatorioFinanceiro: React.FC = () => {
                                 onChange={(e) => setPostoFilter(prev => ({ ...prev, month: e.target.value }))}
                             >
                                 <option value="all">Todos os meses</option>
-                                {Array.from({ length: 12 }, (_, i) => (
-                                    <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{format(new Date(2025, i, 1), 'MMMM', { locale: ptBR })}</option>
-                                ))}
+                                {Array.from({ length: 12 }, (_, i) => {
+                                    const mStr = String(i + 1).padStart(2, '0');
+                                    const monthName = format(new Date(2026, i, 1), 'MMMM', { locale: ptBR });
+                                    return (
+                                        <option key={mStr} value={mStr}>
+                                            {monthName.charAt(0).toUpperCase() + monthName.slice(1)}
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <select
                                 className="bg-transparent border-none text-gray-700 text-sm focus:ring-0 cursor-pointer outline-none pl-2 border-l border-gray-300"
@@ -155,8 +317,9 @@ const RelatorioFinanceiro: React.FC = () => {
                                 onChange={(e) => setPostoFilter(prev => ({ ...prev, year: e.target.value }))}
                             >
                                 <option value="all">Todos anos</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
+                                {availableYears.map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -174,7 +337,7 @@ const RelatorioFinanceiro: React.FC = () => {
                                         dataKey="value"
                                     >
                                         {faturamentoPorPosto.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
                                     <Tooltip
@@ -193,6 +356,6 @@ const RelatorioFinanceiro: React.FC = () => {
             </div>
         </div>
     );
-}
+};
 
 export default RelatorioFinanceiro;

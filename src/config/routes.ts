@@ -34,6 +34,7 @@ export const APP_ROUTES = {
         APONTAMENTOS: '/supervisao/apontamentos',
         ESCALAS: '/supervisao/escalas',
         TROCA_PLANTAO: '/supervisao/troca-plantao',
+        TROCA_POSTO: '/supervisao/troca-posto',
     },
     FROTA: {
         ROOT: '#frota',

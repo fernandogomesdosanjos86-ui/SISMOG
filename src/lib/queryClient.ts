@@ -86,6 +86,12 @@ export const queryKeys = {
             [...queryKeys.trocasPlantao.all, 'list', monthYear, empresa, searchTerm] as const,
         meses: () => [...queryKeys.trocasPlantao.all, 'meses'] as const,
     },
+    trocasPosto: {
+        all: ['trocasPosto'] as const,
+        list: (monthYear?: string, searchTerm?: string) => 
+            [...queryKeys.trocasPosto.all, 'list', monthYear, searchTerm] as const,
+        meses: () => [...queryKeys.trocasPosto.all, 'meses'] as const,
+    },
     // Gestão de Estoque
     estoqueProdutos: {
         all: ['estoqueProdutos'] as const,

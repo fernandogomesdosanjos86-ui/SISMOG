@@ -156,23 +156,55 @@ const EquipamentosControlados: React.FC = () => {
 
     // Filter Logic
     const filteredEquipamentos = useMemo(() => {
-        return equipamentos.filter(e => {
-            const matchSearch = e.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (e.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-            const matchCat = categoriaFilter === 'Todas' || e.categoria === categoriaFilter;
-            return matchSearch && matchCat;
-        });
+        return equipamentos
+            .filter(e => {
+                const matchSearch = e.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (e.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+                const matchCat = categoriaFilter === 'Todas' || e.categoria === categoriaFilter;
+                return matchSearch && matchCat;
+            })
+            .sort((a, b) => {
+                const dispA = a.disponivel ?? 0;
+                const dispB = b.disponivel ?? 0;
+                if (dispB !== dispA) {
+                    return dispB - dispA; // Quantidade disponível em ordem decrescente
+                }
+                const catCompare = a.categoria.localeCompare(b.categoria);
+                if (catCompare !== 0) {
+                    return catCompare; // Categoria crescente
+                }
+                return a.descricao.localeCompare(b.descricao); // Descrição crescente
+            });
     }, [equipamentos, searchTerm, categoriaFilter]);
 
     const filteredDestinacoes = useMemo(() => {
-        return destinacoes.filter(d => {
-            const matchSearch = (d.equipamentos?.descricao.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-                (d.equipamentos?.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-                (d.contratos?.nome_posto.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-            const matchCat = categoriaFilter === 'Todas' || d.equipamentos?.categoria === categoriaFilter;
-            const matchPosto = postoFilter === 'Todos' || d.contrato_id === postoFilter;
-            return matchSearch && matchCat && matchPosto;
-        });
+        return destinacoes
+            .filter(d => {
+                const matchSearch = (d.equipamentos?.descricao.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                    (d.equipamentos?.identificacao?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                    (d.contratos?.nome_posto.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+                const matchCat = categoriaFilter === 'Todas' || d.equipamentos?.categoria === categoriaFilter;
+                const matchPosto = postoFilter === 'Todos' || d.contrato_id === postoFilter;
+                return matchSearch && matchCat && matchPosto;
+            })
+            .sort((a, b) => {
+                // 1. Posto (ordem alfabética crescente)
+                const postoA = a.contratos?.nome_posto || '';
+                const postoB = b.contratos?.nome_posto || '';
+                const postoCompare = postoA.localeCompare(postoB);
+                if (postoCompare !== 0) return postoCompare;
+
+                // 2. Categoria (ordem alfabética crescente)
+                const catA = a.equipamentos?.categoria || '';
+                const catB = b.equipamentos?.categoria || '';
+                const catCompare = catA.localeCompare(catB);
+                if (catCompare !== 0) return catCompare;
+
+                // 3. Identificação (ordem crescente com ordenação natural para números)
+                const idA = a.equipamentos?.identificacao || '';
+                const idB = b.equipamentos?.identificacao || '';
+                return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+            });
     }, [destinacoes, searchTerm, categoriaFilter, postoFilter]);
 
     // KPI Cards Calculation (Ignore Inactive)

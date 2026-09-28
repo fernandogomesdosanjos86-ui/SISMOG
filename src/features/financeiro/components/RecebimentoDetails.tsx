@@ -3,6 +3,8 @@ import type { Recebimento } from '../types';
 import { formatCurrency } from '../../../utils/format';
 import { Activity, Type, Calendar, DollarSign } from 'lucide-react';
 import CompanyBadge from '../../../components/CompanyBadge';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface RecebimentoDetailsProps {
     recebimento: Recebimento;
@@ -15,6 +17,11 @@ const RecebimentoDetails: React.FC<RecebimentoDetailsProps> = ({ recebimento }) 
                 <h3 className="text-xl font-bold text-gray-900">
                     {recebimento.tipo === 'faturamento' ? `Fatura: ${recebimento.faturamentos?.contratos?.contratante}` : recebimento.descricao}
                 </h3>
+                {recebimento.competencia && (
+                    <p className="text-sm text-gray-500 mt-1 capitalize">
+                        Competência: {format(parseISO(recebimento.competencia.length === 7 ? `${recebimento.competencia}-01` : recebimento.competencia), "MMMM 'de' yyyy", { locale: ptBR })}
+                    </p>
+                )}
             </div>
             <CompanyBadge company={recebimento.empresa as any} />
         </div>

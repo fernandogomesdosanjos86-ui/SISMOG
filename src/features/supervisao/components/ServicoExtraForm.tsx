@@ -7,6 +7,8 @@ import PrimaryButton from '../../../components/PrimaryButton';
 import { InputField } from '../../../components/forms/InputField';
 import { SelectField } from '../../../components/forms/SelectField';
 import { formatToDatetimeLocal } from '../../../utils/format';
+import { useModal } from '../../../context/ModalContext';
+import { supabase } from '../../../services/supabase';
 
 interface ServicoExtraFormProps {
     onSuccess: () => void;
@@ -16,8 +18,10 @@ interface ServicoExtraFormProps {
 }
 
 const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialData, create, update }) => {
+    const { openConfirmModal } = useModal();
     const { postos } = usePostos();
     const { funcionarios } = useFuncionarios();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState<ServicoExtraFormData>({
@@ -113,17 +117,56 @@ const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialD
         }
     };
 
+    const executeSave = async () => {
+        if (initialData?.id) {
+            await update(initialData.id, formData);
+        } else {
+            await create(formData);
+        }
+        onSuccess();
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setIsSubmitting(true);
+            const dateStr = formData.entrada.split('T')[0];
+            const startOfDay = new Date(`${dateStr}T00:00:00`).toISOString();
+            const endOfDay = new Date(`${dateStr}T23:59:59.999`).toISOString();
+            const entradaISO = new Date(formData.entrada).toISOString();
+            const saidaISO = new Date(formData.saida).toISOString();
+
+            let query = supabase
+                .from('servicos_extras')
+                .select('id')
+                .eq('empresa', formData.empresa)
+                .eq('posto_id', formData.posto_id)
+                .eq('funcionario_id', formData.funcionario_id)
+                .or(`and(entrada.gte.${startOfDay},entrada.lte.${endOfDay}),and(entrada.lt.${saidaISO},saida.gt.${entradaISO})`);
+
             if (initialData?.id) {
-                await update(initialData.id, formData);
-            } else {
-                await create(formData);
+                query = query.neq('id', initialData.id);
             }
-            onSuccess();
+
+            const { data: existing, error } = await query;
+
+            if (!error && existing && existing.length > 0) {
+                setIsSubmitting(false);
+                openConfirmModal(
+                    'Possível Duplicidade',
+                    'Já existe um registro semelhante com as mesmas informações. Deseja continuar o lançamento?',
+                    async () => {
+                        await executeSave();
+                    }
+                );
+                return;
+            }
+
+            await executeSave();
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -231,8 +274,8 @@ const ServicoExtraForm: React.FC<ServicoExtraFormProps> = ({ onSuccess, initialD
                 >
                     Cancelar
                 </button>
-                <PrimaryButton type="submit">
-                    Salvar Lançamento
+                <PrimaryButton type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Verificando...' : 'Salvar Lançamento'}
                 </PrimaryButton>
             </div>
         </form>

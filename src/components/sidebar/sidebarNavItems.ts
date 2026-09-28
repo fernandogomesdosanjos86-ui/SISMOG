@@ -1,6 +1,7 @@
 import {
     Home, Settings, Users, FileText, BarChart2, DollarSign, Box, Briefcase, Package,
-    Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin, PieChart, Handshake
+    Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin, PieChart, Handshake,
+    ArrowLeftRight
 } from 'lucide-react';
 import { APP_ROUTES } from '../../config/routes';
 
@@ -56,7 +57,8 @@ export const navItems: NavItem[] = [
             { icon: Calendar, label: 'Banco de Horas', path: APP_ROUTES.SUPERVISAO.BANCO_HORAS },
             { icon: FileText, label: 'Apontamentos', path: APP_ROUTES.SUPERVISAO.APONTAMENTOS },
             { icon: Calendar, label: 'Escalas', path: APP_ROUTES.SUPERVISAO.ESCALAS },
-            { icon: Handshake, label: 'Troca de Plantão', path: APP_ROUTES.SUPERVISAO.TROCA_PLANTAO }
+            { icon: Handshake, label: 'Troca de Plantão', path: APP_ROUTES.SUPERVISAO.TROCA_PLANTAO },
+            { icon: ArrowLeftRight, label: 'Troca de Posto', path: APP_ROUTES.SUPERVISAO.TROCA_POSTO }
         ]
     },
     {

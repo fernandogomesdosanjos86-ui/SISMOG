@@ -105,7 +105,7 @@ const PortalTrocasList: React.FC = () => {
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-sm font-medium text-gray-900">{formatDate(troca.data_original)}</span>
-                                <span className="text-xs text-blue-600 mt-0.5 line-clamp-1">{troca.funcionario_troca?.nome}</span>
+                                <span className="text-xs text-gray-700 font-medium mt-0.5 line-clamp-1">{troca.funcionario_troca?.nome}</span>
                             </div>
                         </div>
 
@@ -115,7 +115,7 @@ const PortalTrocasList: React.FC = () => {
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-sm font-medium text-gray-900">{formatDate(troca.data_reposicao) || '-'}</span>
-                                <span className="text-xs text-gray-600 mt-0.5 line-clamp-1">{troca.funcionario?.nome}</span>
+                                <span className="text-xs text-blue-600 font-medium mt-0.5 line-clamp-1">por {troca.funcionario?.nome}</span>
                             </div>
                         </div>
                     </div>

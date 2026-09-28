@@ -5,6 +5,8 @@ import type { ApontamentoFormData, TipoApontamento } from '../types';
 import PrimaryButton from '../../../components/PrimaryButton';
 import { InputField } from '../../../components/forms/InputField';
 import { SelectField } from '../../../components/forms/SelectField';
+import { useModal } from '../../../context/ModalContext';
+import { supabase } from '../../../services/supabase';
 
 interface ApontamentoFormProps {
     onSuccess: () => void;
@@ -24,8 +26,10 @@ const TIPOS_APONTAMENTO: TipoApontamento[] = [
 ];
 
 const ApontamentoForm: React.FC<ApontamentoFormProps> = ({ onSuccess, initialData, create, update }) => {
+    const { openConfirmModal } = useModal();
     const { postos } = usePostos();
     const { funcionarios } = useFuncionarios();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [formData, setFormData] = useState<ApontamentoFormData>({
         empresa: initialData?.empresa || 'FEMOG',
@@ -49,17 +53,50 @@ const ApontamentoForm: React.FC<ApontamentoFormProps> = ({ onSuccess, initialDat
         }
     };
 
+    const executeSave = async () => {
+        if (initialData?.id) {
+            await update(initialData.id, formData);
+        } else {
+            await create(formData);
+        }
+        onSuccess();
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setIsSubmitting(true);
+            let query = supabase
+                .from('supervisao_apontamentos')
+                .select('id')
+                .eq('empresa', formData.empresa)
+                .eq('posto_id', formData.posto_id)
+                .eq('funcionario_id', formData.funcionario_id)
+                .eq('data', formData.data);
+
             if (initialData?.id) {
-                await update(initialData.id, formData);
-            } else {
-                await create(formData);
+                query = query.neq('id', initialData.id);
             }
-            onSuccess();
+
+            const { data: existing, error } = await query;
+
+            if (!error && existing && existing.length > 0) {
+                setIsSubmitting(false);
+                openConfirmModal(
+                    'Possível Duplicidade',
+                    'Já existe um registro semelhante com as mesmas informações. Deseja continuar o lançamento?',
+                    async () => {
+                        await executeSave();
+                    }
+                );
+                return;
+            }
+
+            await executeSave();
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -139,8 +176,8 @@ const ApontamentoForm: React.FC<ApontamentoFormProps> = ({ onSuccess, initialDat
                 >
                     Cancelar
                 </button>
-                <PrimaryButton type="submit">
-                    Salvar Lançamento
+                <PrimaryButton type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Verificando...' : 'Salvar Lançamento'}
                 </PrimaryButton>
             </div>
         </form>

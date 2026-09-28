@@ -5,6 +5,7 @@ import { useTrocasPlantao } from '../hooks/useTrocasPlantao';
 import { useFuncionarios } from '../../rh/hooks/useFuncionarios';
 import { useAlocacoes } from '../hooks/useAlocacoes';
 import { supervisaoService } from '../../../services/supervisaoService';
+import { supabase } from '../../../services/supabase';
 import { useQuery } from '@tanstack/react-query';
 import PrimaryButton from '../../../components/PrimaryButton';
 import { SelectField } from '../../../components/forms/SelectField';
@@ -17,8 +18,9 @@ interface TrocaPlantaoFormProps {
 const TrocaPlantaoForm: React.FC<TrocaPlantaoFormProps> = ({ initialData }) => {
     const { user } = useAuth();
     const isOperador = user?.user_metadata?.['permissao'] === 'Operador';
-    const { closeModal, showFeedback } = useModal();
+    const { closeModal, showFeedback, openConfirmModal } = useModal();
     const { create, update, isCreating, isUpdating } = useTrocasPlantao();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     // Global Hooks
     const { funcionarios } = useFuncionarios();
@@ -122,6 +124,38 @@ const TrocaPlantaoForm: React.FC<TrocaPlantaoFormProps> = ({ initialData }) => {
         }
     }, [isOperador, alocacoesDoPosto, funcionarios, empresa, funcionarioId]);
 
+    const executeSave = async () => {
+        if (!empresa) return;
+        if (initialData) {
+            await update({
+                id: initialData.id,
+                data: {
+                    empresa: empresa as 'FEMOG' | 'SEMOG',
+                    posto_id: postoId,
+                    funcionario_id: funcionarioId,
+                    data_original: dataOriginal,
+                    data_reposicao: dataReposicao,
+                    funcionario_troca_id: funcionarioTrocaId,
+                }
+            });
+            showFeedback('success', 'Solicitação atualizada com sucesso!');
+        } else {
+            await create({
+                empresa: empresa as 'FEMOG' | 'SEMOG',
+                posto_id: postoId,
+                funcionario_id: funcionarioId,
+                data_original: dataOriginal,
+                data_reposicao: dataReposicao,
+                funcionario_troca_id: funcionarioTrocaId,
+                solicitante_id: user!.id,
+                status: isOperador ? 'Pendente' : 'Autorizado',
+                de_acordo: isOperador ? null : true
+            } as any);
+            showFeedback('success', `Solicitação de Troca de Plantão ${isOperador ? 'enviada para análise' : 'autorizada com sucesso'}!`);
+        }
+        closeModal();
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -131,37 +165,40 @@ const TrocaPlantaoForm: React.FC<TrocaPlantaoFormProps> = ({ initialData }) => {
         }
 
         try {
-            if (initialData) {
-                await update({
-                    id: initialData.id,
-                    data: {
-                        empresa,
-                        posto_id: postoId,
-                        funcionario_id: funcionarioId,
-                        data_original: dataOriginal,
-                        data_reposicao: dataReposicao,
-                        funcionario_troca_id: funcionarioTrocaId,
-                    }
-                });
-                showFeedback('success', 'Solicitação atualizada com sucesso!');
-            } else {
-                await create({
-                    empresa,
-                    posto_id: postoId,
-                    funcionario_id: funcionarioId,
-                    data_original: dataOriginal,
-                    data_reposicao: dataReposicao,
-                    funcionario_troca_id: funcionarioTrocaId,
-                    solicitante_id: user!.id,
-                    status: isOperador ? 'Pendente' : 'Autorizado',
-                    de_acordo: isOperador ? null : true
-                } as any);
-                showFeedback('success', `Solicitação de Troca de Plantão ${isOperador ? 'enviada para análise' : 'autorizada com sucesso'}!`);
+            setIsSubmitting(true);
+            let query = supabase
+                .from('supervisao_trocas_plantao')
+                .select('id')
+                .eq('empresa', empresa)
+                .eq('posto_id', postoId)
+                .eq('funcionario_id', funcionarioId)
+                .eq('data_original', dataOriginal)
+                .neq('status', 'Cancelado');
+
+            if (initialData?.id) {
+                query = query.neq('id', initialData.id);
             }
-            closeModal();
+
+            const { data: existing, error } = await query;
+
+            if (!error && existing && existing.length > 0) {
+                setIsSubmitting(false);
+                openConfirmModal(
+                    'Possível Duplicidade',
+                    'Já existe um registro semelhante com as mesmas informações. Deseja continuar o lançamento?',
+                    async () => {
+                        await executeSave();
+                    }
+                );
+                return;
+            }
+
+            await executeSave();
         } catch (error: any) {
             console.error(error);
             showFeedback('error', 'Erro ao salvar a requisição.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -299,8 +336,8 @@ const TrocaPlantaoForm: React.FC<TrocaPlantaoFormProps> = ({ initialData }) => {
                 >
                     Cancelar
                 </button>
-                <PrimaryButton type="submit" disabled={isCreating || isUpdating}>
-                    {isCreating || isUpdating ? 'Processando...' : (initialData ? 'Salvar Alterações' : isOperador ? 'Solicitar Troca' : 'Autorizar Troca')}
+                <PrimaryButton type="submit" disabled={isCreating || isUpdating || isSubmitting}>
+                    {isCreating || isUpdating || isSubmitting ? 'Processando...' : (initialData ? 'Salvar Alterações' : isOperador ? 'Solicitar Troca' : 'Autorizar Troca')}
                 </PrimaryButton>
             </div>
         </form>

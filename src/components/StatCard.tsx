@@ -46,12 +46,12 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, type = 'total', icon:
     const DisplayIcon = Icon || style.Icon;
 
     return (
-        <div className={`bg-white p-4 rounded-xl shadow-sm border ${style.border} flex items-center justify-between`}>
-            <div>
+        <div className={`bg-white p-4 rounded-xl shadow-sm border ${style.border} flex items-start justify-between gap-2`}>
+            <div className="flex-1 min-w-0">
                 <p className={`text-sm ${style.text} font-medium`}>{title}</p>
-                <p className="text-2xl font-bold text-gray-800">{value}</p>
+                <div className="text-2xl font-bold text-gray-800">{value}</div>
             </div>
-            <div className={`p-3 ${style.bg} ${style.text} rounded-lg`}>
+            <div className={`p-3 ${style.bg} ${style.text} rounded-lg shrink-0`}>
                 <DisplayIcon size={24} />
             </div>
         </div>

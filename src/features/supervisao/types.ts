@@ -167,3 +167,23 @@ export interface FuncionarioEvento {
 }
 
 export type FuncionarioEventoFormData = Omit<FuncionarioEvento, 'id' | 'created_at' | 'updated_at'>;
+
+export interface TrocaPosto {
+    id: string;
+    empresa: 'FEMOG' | 'SEMOG';
+    funcionario_id: string;
+    posto_original_id: string;
+    posto_cobertura_id: string;
+    data: string; // YYYY-MM-DD
+    observacoes?: string | null;
+    solicitante_id?: string | null;
+    created_at: string;
+    updated_at: string;
+    // Joined fields for display
+    funcionario?: { id: string; nome: string; cpf?: string };
+    posto_original?: { id: string; nome: string; empresa: string };
+    posto_cobertura?: { id: string; nome: string; empresa: string };
+    solicitante?: { id: string; nome: string };
+}
+
+export type TrocaPostoFormData = Omit<TrocaPosto, 'id' | 'created_at' | 'updated_at' | 'funcionario' | 'posto_original' | 'posto_cobertura' | 'solicitante'>;

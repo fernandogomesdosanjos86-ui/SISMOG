@@ -231,7 +231,7 @@ export default function TarefaDetails({ tarefa: initialTarefa }: TarefaDetailsPr
                                     return (
                                         <div key={c.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                                             <span className="text-[10px] text-gray-400 mb-0.5 mx-1">
-                                                {isMe ? 'Você' : getShortName(c.usuario?.nome)} &bull; {format(new Date(c.data_hora), "HH:mm")}
+                                                {isMe ? 'Você' : getShortName(c.usuario?.nome)} &bull; {format(new Date(c.data_hora), "dd/MM/yyyy HH:mm")}
                                             </span>
                                             <div className={`max-w-[85%] rounded-2xl px-4 py-2 ${isMe ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-gray-100 text-gray-900 rounded-tl-sm'}`}>
                                                 <p className="text-sm break-words whitespace-pre-wrap">{c.chat}</p>

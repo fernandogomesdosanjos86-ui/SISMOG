@@ -102,7 +102,7 @@ const TrocaStatusB = ({ status }: { status: string }) => {
             render: (t: any) => (
                 <div className="flex flex-col">
                     <span className="font-semibold text-gray-900">{formatDate(t.data_original)}</span>
-                    <span className="text-xs text-blue-600 font-medium">por {t.funcionario_troca?.nome}</span>
+                    <span className="text-xs text-gray-700 font-medium">{t.funcionario_troca?.nome}</span>
                 </div>
             )
         },
@@ -112,7 +112,7 @@ const TrocaStatusB = ({ status }: { status: string }) => {
             render: (t: any) => (
                 <div className="flex flex-col">
                     <span className="font-medium text-gray-900">{formatDate(t.data_reposicao)}</span>
-                    <span className="text-xs text-gray-500">{t.funcionario?.nome}</span>
+                    <span className="text-xs text-blue-600 font-medium">por {t.funcionario?.nome}</span>
                 </div>
             )
         },
@@ -216,14 +216,14 @@ const TrocaStatusB = ({ status }: { status: string }) => {
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex flex-col">
                                     <h3 className="font-bold text-gray-900 text-sm">Orig: {formatDate(t.data_original)}</h3>
-                                    <span className="text-xs font-medium text-blue-600">Subst: {t.funcionario_troca?.nome}</span>
+                                    <span className="text-xs font-medium text-gray-700">{t.funcionario_troca?.nome}</span>
                                 </div>
                                 <TrocaStatusB status={t.status} />
                             </div>
                             <div className="text-sm text-gray-600 space-y-1 mb-3 bg-gray-50 p-2 rounded-lg">
                                 <div className="flex flex-col">
                                     <p className="font-semibold text-gray-800 text-xs">Reposição:</p>
-                                    <p className="text-sm">{formatDate(t.data_reposicao)} - {t.funcionario?.nome}</p>
+                                    <p className="text-sm">{formatDate(t.data_reposicao)} - <span className="text-blue-600 font-medium">por {t.funcionario?.nome}</span></p>
                                 </div>
                                 <p><span className="font-semibold text-gray-800 text-xs">Posto:</span> {t.posto?.nome}</p>
                                 <p className="text-[11px] mt-1 pt-1 border-t border-gray-200">

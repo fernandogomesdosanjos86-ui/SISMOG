@@ -85,7 +85,7 @@ function ResponsiveTable<T>({
                                 {columns.map((col, index) => (
                                     <td
                                         key={String(col.key)}
-                                        className={`px-6 py-4 whitespace-nowrap ${col.className || ''} ${index === 0 && getRowBorderColor
+                                        className={`px-6 py-4 ${col.className?.includes('whitespace-normal') ? '' : 'whitespace-nowrap'} ${col.className || ''} ${index === 0 && getRowBorderColor
                                             ? `border-l-4 ${getRowBorderColor(item)}`
                                             : ''
                                             }`}
