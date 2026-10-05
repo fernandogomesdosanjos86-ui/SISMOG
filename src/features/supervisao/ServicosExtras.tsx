@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import FilterTabs from '../../components/ui/FilterTabs';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, FileText } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
 import ResponsiveTable from '../../components/ResponsiveTable';
 import StatCard from '../../components/StatCard';
@@ -9,6 +9,7 @@ import { useModal } from '../../context/ModalContext';
 import { useServicosExtras } from './hooks/useServicosExtras';
 import ServicoExtraForm from './components/ServicoExtraForm';
 import ServicoExtraDetails from './components/ServicoExtraDetails';
+import RelatorioServicosExtrasModal from './components/RelatorioServicosExtrasModal';
 import type { ServicoExtra } from './types';
 import CompanyBadge from '../../components/CompanyBadge';
 
@@ -116,6 +117,17 @@ const ServicosExtras: React.FC = () => {
         );
     };
 
+    const handleOpenRelatorio = () => {
+        openFormModal(
+            'Relatório de Serviços Extras',
+            <RelatorioServicosExtrasModal
+                onClose={closeModal}
+                defaultCompetencia={competencia}
+                defaultEmpresa={companyFilter}
+            />
+        );
+    };
+
     const columns = [
         {
             header: 'Funcionário',
@@ -160,6 +172,14 @@ const ServicosExtras: React.FC = () => {
                             value={competencia}
                             onChange={(e) => setCompetencia(e.target.value)}
                         />
+                        <PrimaryButton
+                            variant="secondary"
+                            onClick={handleOpenRelatorio}
+                            className="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-sm"
+                            icon={<FileText size={18} />}
+                        >
+                            Relatório PDF
+                        </PrimaryButton>
                         <PrimaryButton
                             onClick={handleCreate}
                             className="w-full sm:w-auto"

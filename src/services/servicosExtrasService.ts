@@ -35,6 +35,53 @@ export const servicosExtrasService = {
         return data as ServicoExtra[];
     },
 
+    async getServicosRelatorio(params: {
+        dataInicio: string;
+        dataFim: string;
+        empresa?: 'TODAS' | 'FEMOG' | 'SEMOG';
+        funcionarioId?: string;
+    }) {
+        const startIso = new Date(`${params.dataInicio}T00:00:00`).toISOString();
+        const endIso = new Date(`${params.dataFim}T23:59:59.999`).toISOString();
+
+        let query = supabase
+            .from('servicos_extras')
+            .select(`
+                id,
+                empresa,
+                posto_id,
+                funcionario_id,
+                cargo_id,
+                turno,
+                entrada,
+                saida,
+                duracao,
+                valor_hora,
+                valor,
+                created_at,
+                updated_at,
+                posto:postos_trabalho(nome),
+                funcionario:funcionarios(nome),
+                cargo:cargos_salarios(cargo)
+            `)
+            .gte('entrada', startIso)
+            .lte('entrada', endIso)
+            .order('entrada', { ascending: true })
+            .limit(5000);
+
+        if (params.empresa && params.empresa !== 'TODAS') {
+            query = query.eq('empresa', params.empresa);
+        }
+
+        if (params.funcionarioId && params.funcionarioId !== 'TODOS') {
+            query = query.eq('funcionario_id', params.funcionarioId);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data || []) as ServicoExtra[];
+    },
+
     async getCargosByEmpresa(empresa: 'FEMOG' | 'SEMOG') {
         const { data, error } = await supabase
             .from('cargos_salarios')

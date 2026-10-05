@@ -12,7 +12,7 @@ import type { Faturamento } from '../../features/financeiro/types';
 import { useModal } from '../../context/ModalContext';
 import FaturamentoForm from '../../features/financeiro/components/FaturamentoForm';
 import FaturamentoDetails from '../../features/financeiro/components/FaturamentoDetails';
-import { FileText, Play, Search } from 'lucide-react';
+import { DollarSign, FileText, Play, Search } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useFaturamentos } from './hooks/useFaturamentos';
@@ -185,11 +185,12 @@ const Faturamentos: FC = () => {
     }, [faturamentos, companyFilter, statusFilter, debouncedSearch]);
 
     // KPI Calculations
-    const { totalBruto, totalPendenteBruto, totalEmitidoBruto } = useMemo(() => {
+    const { totalBruto, totalLiquido, totalPendenteBruto, totalEmitidoBruto } = useMemo(() => {
         return {
-            totalBruto: filteredFaturamentos.reduce((acc, curr) => acc + Number(curr.valor_bruto), 0),
-            totalPendenteBruto: filteredFaturamentos.filter(f => f.status === 'pendente').reduce((acc, curr) => acc + Number(curr.valor_bruto), 0),
-            totalEmitidoBruto: filteredFaturamentos.filter(f => f.status === 'emitido').reduce((acc, curr) => acc + Number(curr.valor_bruto), 0),
+            totalBruto: filteredFaturamentos.reduce((acc, curr) => acc + Number(curr.valor_bruto || 0), 0),
+            totalLiquido: filteredFaturamentos.reduce((acc, curr) => acc + Number(curr.valor_liquido || 0), 0),
+            totalPendenteBruto: filteredFaturamentos.filter(f => f.status === 'pendente').reduce((acc, curr) => acc + Number(curr.valor_bruto || 0), 0),
+            totalEmitidoBruto: filteredFaturamentos.filter(f => f.status === 'emitido').reduce((acc, curr) => acc + Number(curr.valor_bruto || 0), 0),
         };
     }, [filteredFaturamentos]);
 
@@ -216,12 +217,18 @@ const Faturamentos: FC = () => {
             />
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard
                     title="Total Bruto"
                     value={formatCurrency(totalBruto)}
                     type="total"
                     icon={FileText}
+                />
+                <StatCard
+                    title="Total Líquido"
+                    value={formatCurrency(totalLiquido)}
+                    type="success"
+                    icon={DollarSign}
                 />
                 <StatCard
                     title="Pendente Bruto"
@@ -231,7 +238,7 @@ const Faturamentos: FC = () => {
                 <StatCard
                     title="Emitido Bruto"
                     value={formatCurrency(totalEmitidoBruto)}
-                    type="success"
+                    type="info"
                 />
             </div>
 
