@@ -134,5 +134,46 @@ export const trocaPostoService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    async getTrocasPostoRelatorio(filters: {
+        empresa?: 'TODAS' | 'FEMOG' | 'SEMOG';
+        dataInicio: string; // YYYY-MM-DD
+        dataFim: string; // YYYY-MM-DD
+        funcionarioId?: string;
+    }) {
+        let query = supabase
+            .from('supervisao_trocas_posto')
+            .select(`
+                id,
+                empresa,
+                funcionario_id,
+                posto_original_id,
+                posto_cobertura_id,
+                data,
+                observacoes,
+                solicitante_id,
+                created_at,
+                updated_at,
+                funcionario:funcionarios!funcionario_id(id, nome, cpf),
+                posto_original:postos_trabalho!posto_original_id(id, nome, empresa),
+                posto_cobertura:postos_trabalho!posto_cobertura_id(id, nome, empresa),
+                solicitante:usuarios!solicitante_id(id, nome)
+            `)
+            .gte('data', filters.dataInicio)
+            .lte('data', filters.dataFim)
+            .order('data', { ascending: true });
+
+        if (filters.empresa && filters.empresa !== 'TODAS') {
+            query = query.eq('empresa', filters.empresa);
+        }
+
+        if (filters.funcionarioId && filters.funcionarioId !== 'TODOS') {
+            query = query.eq('funcionario_id', filters.funcionarioId);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data || []) as unknown as TrocaPosto[];
     }
 };

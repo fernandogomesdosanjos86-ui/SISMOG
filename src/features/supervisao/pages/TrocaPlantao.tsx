@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, FileText } from 'lucide-react';
 import { useTrocasPlantao } from '../hooks/useTrocasPlantao';
 import type { StatusTrocaPlantao } from '../types';
 import ResponsiveTable from '../../../components/ResponsiveTable';
@@ -11,6 +11,7 @@ import { useModal } from '../../../context/ModalContext';
 import { useAuth } from '../../../context/AuthContext';
 import TrocaPlantaoForm from './TrocaPlantaoForm';
 import TrocaPlantaoDetails from './TrocaPlantaoDetails';
+import RelatorioTrocaPlantaoModal from '../components/RelatorioTrocaPlantaoModal';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 import FilterTabs from '../../../components/ui/FilterTabs';
@@ -20,7 +21,7 @@ type TabStatus = 'Todas' | StatusTrocaPlantao;
 const TABS: TabStatus[] = ['Todas', 'Pendente', 'Em Análise', 'Cancelado', 'Autorizado', 'Negado'];
 
 const TrocaPlantao: React.FC = () => {
-    const { openFormModal, openViewModal, openConfirmModal } = useModal();
+    const { openFormModal, openViewModal, openConfirmModal, closeModal } = useModal();
     const { user } = useAuth();
     
     // RBAC booleans
@@ -57,6 +58,18 @@ const TrocaPlantao: React.FC = () => {
 
     const handleCreate = () => {
         openFormModal('Nova Troca de Plantão', <TrocaPlantaoForm />);
+    };
+
+    const handleOpenRelatorio = () => {
+        openFormModal(
+            'Relatório de Trocas de Plantão',
+            <RelatorioTrocaPlantaoModal
+                onClose={closeModal}
+                defaultCompetencia={selectedMonth}
+                defaultEmpresa={empresa}
+                defaultStatus={activeTab}
+            />
+        );
     };
 
     const handleViewDetails = (troca: any) => {
@@ -152,6 +165,14 @@ const TrocaStatusB = ({ status }: { status: string }) => {
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
                         />
+                        <PrimaryButton
+                            variant="secondary"
+                            onClick={handleOpenRelatorio}
+                            className="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-sm"
+                            icon={<FileText size={18} />}
+                        >
+                            Relatório PDF
+                        </PrimaryButton>
                         <PrimaryButton onClick={handleCreate} className="w-full sm:w-auto justify-center">
                             <Plus size={20} className="mr-2" /> Nova Solicitação
                         </PrimaryButton>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, FileText } from 'lucide-react';
 import { useTrocasPosto } from '../hooks/useTrocasPosto';
 import type { TrocaPosto as TrocaPostoType } from '../types';
 import ResponsiveTable from '../../../components/ResponsiveTable';
@@ -9,6 +9,7 @@ import PrimaryButton from '../../../components/PrimaryButton';
 import { useModal } from '../../../context/ModalContext';
 import TrocaPostoForm from './TrocaPostoForm';
 import TrocaPostoDetails from './TrocaPostoDetails';
+import RelatorioTrocaPostoModal from '../components/RelatorioTrocaPostoModal';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { formatDate } from '../../../utils/format';
 
@@ -30,6 +31,16 @@ const TrocaPosto: React.FC = () => {
 
     const handleCreate = () => {
         openFormModal('Nova Troca de Posto', <TrocaPostoForm onSuccess={refetch} />);
+    };
+
+    const handleOpenRelatorio = () => {
+        openFormModal(
+            'Relatório de Trocas de Posto',
+            <RelatorioTrocaPostoModal
+                onClose={closeModal}
+                defaultCompetencia={selectedMonth}
+            />
+        );
     };
 
     const handleViewDetails = (troca: TrocaPostoType) => {
@@ -127,6 +138,14 @@ const TrocaPosto: React.FC = () => {
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
                         />
+                        <PrimaryButton
+                            variant="secondary"
+                            onClick={handleOpenRelatorio}
+                            className="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-sm"
+                            icon={<FileText size={18} />}
+                        >
+                            Relatório PDF
+                        </PrimaryButton>
                         <PrimaryButton onClick={handleCreate} className="w-full sm:w-auto justify-center">
                             <Plus size={20} className="mr-2" /> Nova Troca de Posto
                         </PrimaryButton>

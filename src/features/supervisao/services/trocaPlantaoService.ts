@@ -139,5 +139,38 @@ export const trocaPlantaoService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    async getTrocasPlantaoRelatorio(filters: {
+        empresa?: 'TODAS' | 'FEMOG' | 'SEMOG';
+        dataInicio: string; // YYYY-MM-DD
+        dataFim: string; // YYYY-MM-DD
+        status?: string; // 'TODAS' | StatusTrocaPlantao
+    }) {
+        let query = supabase
+            .from('supervisao_trocas_plantao')
+            .select(`
+                *,
+                funcionario:funcionarios!funcionario_id(nome, cpf),
+                posto:postos_trabalho!posto_id(nome),
+                funcionario_troca:funcionarios!funcionario_troca_id(nome, cpf),
+                solicitante:usuarios!solicitante_id(nome),
+                responsavel_analise:usuarios!responsavel_analise_id(nome)
+            `)
+            .gte('data_original', filters.dataInicio)
+            .lte('data_original', filters.dataFim)
+            .order('data_original', { ascending: true });
+
+        if (filters.empresa && filters.empresa !== 'TODAS') {
+            query = query.eq('empresa', filters.empresa);
+        }
+
+        if (filters.status && filters.status !== 'TODAS') {
+            query = query.eq('status', filters.status as StatusTrocaPlantao);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data || []) as unknown as TrocaPlantao[];
     }
 };

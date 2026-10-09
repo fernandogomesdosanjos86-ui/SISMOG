@@ -8,6 +8,7 @@ import { useModal } from '../../context/ModalContext';
 import { useApontamentos } from './hooks/useApontamentos';
 import ApontamentoForm from './components/ApontamentoForm';
 import ApontamentoDetails from './components/ApontamentoDetails';
+import RelatorioApontamentosModal from './components/RelatorioApontamentosModal';
 import type { Apontamento } from './types';
 import { useDebounce } from '../../hooks/useDebounce';
 import CompanyBadge from '../../components/CompanyBadge';
@@ -111,6 +112,17 @@ const Apontamentos: React.FC = () => {
         );
     };
 
+    const handleOpenRelatorio = () => {
+        openFormModal(
+            'Relatório de Apontamentos',
+            <RelatorioApontamentosModal
+                onClose={closeModal}
+                defaultCompetencia={competencia}
+                defaultEmpresa={companyFilter}
+            />
+        );
+    };
+
     const columns = [
         {
             header: 'Funcionário',
@@ -160,6 +172,14 @@ const Apontamentos: React.FC = () => {
                             value={competencia}
                             onChange={(e) => setCompetencia(e.target.value)}
                         />
+                        <PrimaryButton
+                            variant="secondary"
+                            onClick={handleOpenRelatorio}
+                            className="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 shadow-sm"
+                            icon={<FileText size={18} />}
+                        >
+                            Relatório PDF
+                        </PrimaryButton>
                         <PrimaryButton
                             onClick={handleNew}
                             className="w-full sm:w-auto"

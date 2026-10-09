@@ -82,5 +82,40 @@ export const apontamentosService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    async getApontamentosRelatorio(filters: {
+        empresa?: 'TODAS' | 'FEMOG' | 'SEMOG';
+        dataInicio: string; // YYYY-MM-DD
+        dataFim: string; // YYYY-MM-DD
+        funcionarioId?: string;
+        tipoApontamento?: string;
+    }) {
+        let query = supabase
+            .from('supervisao_apontamentos')
+            .select(`
+                *,
+                posto:postos_trabalho(nome),
+                funcionario:funcionarios(nome)
+            `)
+            .gte('data', filters.dataInicio)
+            .lte('data', filters.dataFim)
+            .order('data', { ascending: true });
+
+        if (filters.empresa && filters.empresa !== 'TODAS') {
+            query = query.eq('empresa', filters.empresa);
+        }
+
+        if (filters.funcionarioId && filters.funcionarioId !== 'TODOS') {
+            query = query.eq('funcionario_id', filters.funcionarioId);
+        }
+
+        if (filters.tipoApontamento && filters.tipoApontamento !== 'TODOS') {
+            query = query.eq('apontamento', filters.tipoApontamento);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data || []) as Apontamento[];
     }
 };
