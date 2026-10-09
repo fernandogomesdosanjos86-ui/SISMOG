@@ -4,7 +4,7 @@ import { queryKeys } from '../../../lib/queryClient';
 import { useModal } from '../../../context/ModalContext';
 import { escalasService } from '../../../services/escalasService';
 import type { Escala } from '../types';
-import { generateDaysForEscala } from '../utils/escalaLogics';
+import { generateDaysForEscala, getEscalaRowKey } from '../utils/escalaLogics';
 
 export function useEscalas(postoId: string | null, competencia: string, _empresa: 'FEMOG' | 'SEMOG') {
     const queryClient = useQueryClient();
@@ -40,9 +40,10 @@ export function useEscalas(postoId: string | null, competencia: string, _empresa
 
 
     // Handlers for Component Interaction (No DB saving yet)
-    const handleUpdateFuncionario = (funcionarioId: string, updates: Partial<Escala>) => {
+    const handleUpdateEscala = (rowKey: string, updates: Partial<Escala>) => {
         setLocalEscalas(prev => prev.map(item => {
-            if (item.funcionario_id === funcionarioId) {
+            const currentKey = getEscalaRowKey(item);
+            if (currentKey === rowKey || (item.id && item.id === rowKey) || item.funcionario_id === rowKey) {
                 // Se mudou a escala base ou o inicio 1/2, a gente auto-recalcula os checkboxes de dias.
                 let newDias = item.dias || [];
 
@@ -74,12 +75,10 @@ export function useEscalas(postoId: string | null, competencia: string, _empresa
         mutationFn: async () => {
             if (!postoId) throw new Error("Sem Posto selecionado");
 
-            // Clean up joined nested fields before sending raw partials back to supabase Upsert
+            // Clean up joined nested fields before sending back to supabase
+            // We KEEP `id` so supabase knows to update existing rows instead of inserting duplicates
             const rawPayloadList = localEscalas.map(esc => {
-                const { funcionario, created_at, updated_at, id, ...rest } = esc as any;
-                // Only send things that the DB knows.
-                // Notice we might need ID in payload to hit exact match if Upsert conflict plays weird,
-                // but we defined UNIQUE(competencia, funcionario_id, posto_id) so it should be fine.
+                const { funcionario, created_at, updated_at, ...rest } = esc as any;
                 return rest;
             });
 
@@ -114,15 +113,36 @@ export function useEscalas(postoId: string | null, competencia: string, _empresa
         }
     });
 
+    const syncMutation = useMutation({
+        mutationFn: async () => {
+            if (!postoId) throw new Error("Sem Posto selecionado");
+            return await escalasService.syncEscalaComAlocacoes(postoId, competencia, _empresa);
+        },
+        onSuccess: (res) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.escalas.list(postoId || '', competencia) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.escalas.postosComEscala(competencia) });
+            showFeedback('success', `Alocações sincronizadas com sucesso! ${res.addedCount} adicionado(s), ${res.removedCount} removido(s).`);
+            setHasUnsavedChanges(false);
+            refetch();
+        },
+        onError: (error: any) => {
+            console.error('Sync fail:', error);
+            showFeedback('error', error?.message || 'Erro ao sincronizar alocações da escala.');
+        }
+    });
+
     return {
         localEscalas,
         isLoading,
         hasUnsavedChanges,
-        handleUpdateFuncionario,
+        handleUpdateEscala,
+        handleUpdateFuncionario: handleUpdateEscala,
         saveEscala: saveMutation.mutateAsync,
         deleteEscala: deleteMutation.mutateAsync,
+        syncAlocacoes: syncMutation.mutateAsync,
         isSaving: saveMutation.isPending,
         isDeleting: deleteMutation.isPending,
+        isSyncing: syncMutation.isPending,
         refetch
     };
 }

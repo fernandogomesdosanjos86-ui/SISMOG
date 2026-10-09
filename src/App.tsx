@@ -15,6 +15,8 @@ const Contratos = lazy(() => import('./features/financeiro/Contratos'));
 const Faturamentos = lazy(() => import('./features/financeiro/Faturamentos'));
 const Recebimentos = lazy(() => import('./features/financeiro/Recebimentos'));
 const RelatorioFinanceiro = lazy(() => import('./features/financeiro/RelatorioFinanceiro'));
+const ContasFinanceiras = lazy(() => import('./features/financeiro/ContasFinanceiras'));
+const CategoriasFinanceiras = lazy(() => import('./features/financeiro/CategoriasFinanceiras'));
 const EquipamentosControlados = lazy(() => import('./features/estoque/EquipamentosControlados'));
 const GestaoEstoque = lazy(() => import('./features/estoque/gestao/GestaoEstoque'));
 const CargosSalarios = lazy(() => import('./features/rh/CargosSalarios'));
@@ -61,6 +63,8 @@ function App() {
             <Route path={APP_ROUTES.FINANCEIRO.FATURAMENTOS} element={<Faturamentos />} />
             <Route path={APP_ROUTES.FINANCEIRO.RECEBIMENTOS} element={<Recebimentos />} />
             <Route path={APP_ROUTES.FINANCEIRO.RELATORIOS} element={<RelatorioFinanceiro />} />
+            <Route path={APP_ROUTES.FINANCEIRO.CONTAS} element={<ContasFinanceiras />} />
+            <Route path={APP_ROUTES.FINANCEIRO.CATEGORIAS} element={<CategoriasFinanceiras />} />
 
             {/* Estoque */}
             <Route path={APP_ROUTES.ESTOQUE.EQUIPAMENTOS} element={<EquipamentosControlados />} />

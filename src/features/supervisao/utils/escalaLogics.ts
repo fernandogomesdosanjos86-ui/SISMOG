@@ -62,3 +62,9 @@ export const generateDaysForEscala = (
 
     return selectedDays;
 };
+
+export const getEscalaRowKey = (esc: { id?: string; funcionario_id?: string; tipo?: string; turno?: string; escala?: string }): string => {
+    if (esc.id) return esc.id;
+    return `${esc.funcionario_id || 'func'}_${esc.tipo || 'Fixo'}_${esc.turno || 'turno'}_${esc.escala || 'escala'}`;
+};
+

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useFaturamentos } from './hooks/useFaturamentos';
+import { useRecebimentos } from './hooks/useRecebimentos';
 import {
     LineChart, Line, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -20,9 +21,10 @@ interface KpiValueProps {
     total: number;
     femog: number;
     semog: number;
+    avulso?: number;
 }
 
-const KpiValue: React.FC<KpiValueProps> = ({ total, femog, semog }) => (
+const KpiValue: React.FC<KpiValueProps> = ({ total, femog, semog, avulso }) => (
     <div className="space-y-1.5 mt-1">
         <div className="text-xl font-bold text-gray-900 tracking-tight">
             {formatCurrency(total)}
@@ -42,13 +44,27 @@ const KpiValue: React.FC<KpiValueProps> = ({ total, femog, semog }) => (
                 </span>
                 <span className="font-semibold text-orange-700">{formatCurrency(semog)}</span>
             </div>
+            {avulso !== undefined && avulso > 0 && (
+                <div className="flex items-center justify-between pt-1 border-t border-dashed border-gray-100 text-[11px]">
+                    <span className="text-gray-500">Avulsos:</span>
+                    <span className="font-semibold text-emerald-600">+{formatCurrency(avulso)}</span>
+                </div>
+            )}
         </div>
     </div>
 );
 
 const RelatorioFinanceiro: React.FC = () => {
-    // Busca todo o histórico de faturamentos omitindo competencia
-    const { faturamentos, isLoading } = useFaturamentos();
+    // Busca todo o histórico de faturamentos e recebimentos
+    const { faturamentos, isLoading: isLoadingFaturamentos } = useFaturamentos();
+    const { recebimentos, isLoading: isLoadingRecebimentos } = useRecebimentos();
+
+    const isLoading = isLoadingFaturamentos || isLoadingRecebimentos;
+
+    // Recebimentos avulsos (sem incidência de notas fiscais/impostos) para somar ao faturamento
+    const recebimentosAvulsos = useMemo(() => {
+        return recebimentos.filter(r => r.tipo === 'avulso');
+    }, [recebimentos]);
 
     // 1. Data atual para defaults
     const now = useMemo(() => new Date(), []);
@@ -61,7 +77,7 @@ const RelatorioFinanceiro: React.FC = () => {
         year: currentYearStr
     });
 
-    // Anos disponíveis extraídos dos dados de faturamento
+    // Anos disponíveis extraídos dos dados de faturamento e recebimentos avulsos
     const availableYears = useMemo(() => {
         const years = new Set<string>();
         years.add(currentYearStr);
@@ -71,17 +87,23 @@ const RelatorioFinanceiro: React.FC = () => {
                 years.add(dateStr.substring(0, 4));
             }
         });
+        recebimentosAvulsos.forEach(item => {
+            const dateStr = item.competencia || item.data_recebimento;
+            if (dateStr && dateStr.length >= 4) {
+                years.add(dateStr.substring(0, 4));
+            }
+        });
         return Array.from(years).sort().reverse();
-    }, [faturamentos, currentYearStr]);
+    }, [faturamentos, recebimentosAvulsos, currentYearStr]);
 
-    // 2. KPIs: Mensal, Trimestral, Semestral, Anual e Total (Total, Femog, Semog)
+    // 2. KPIs: Mensal, Trimestral, Semestral, Anual e Total (Total, Femog, Semog, Avulsos)
     const kpis = useMemo(() => {
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth() + 1; // 1 a 12
         const currentQuarter = Math.ceil(currentMonth / 3); // 1 a 4
         const currentSemester = Math.ceil(currentMonth / 6); // 1 ou 2
 
-        const initKpi = () => ({ total: 0, femog: 0, semog: 0 });
+        const initKpi = () => ({ total: 0, femog: 0, semog: 0, avulso: 0 });
 
         const mensal = initKpi();
         const trimestral = initKpi();
@@ -89,21 +111,30 @@ const RelatorioFinanceiro: React.FC = () => {
         const anual = initKpi();
         const total = initKpi();
 
-        const addValue = (kpi: { total: number; femog: number; semog: number }, valor: number, empresa?: string) => {
+        const addValue = (
+            kpi: { total: number; femog: number; semog: number; avulso: number },
+            valor: number,
+            empresa?: string,
+            isAvulso: boolean = false
+        ) => {
             kpi.total += valor;
             if (empresa === 'FEMOG') {
                 kpi.femog += valor;
             } else if (empresa === 'SEMOG') {
                 kpi.semog += valor;
             }
+            if (isAvulso) {
+                kpi.avulso += valor;
+            }
         };
 
+        // Faturamentos regulares (contratos)
         faturamentos.forEach(item => {
             const valor = Number(item.valor_bruto || 0);
             const empresa = item.contratos?.empresa;
 
             // Faturamento Total (geral acumulado)
-            addValue(total, valor, empresa);
+            addValue(total, valor, empresa, false);
 
             // Data de referência (competência ou data de emissão)
             const dateStr = item.competencia || item.data_emissao;
@@ -116,29 +147,64 @@ const RelatorioFinanceiro: React.FC = () => {
 
             // Faturamento Anual (ano atual)
             if (itemYear === currentYear) {
-                addValue(anual, valor, empresa);
+                addValue(anual, valor, empresa, false);
 
                 // Faturamento Semestral (semestre atual)
                 const itemSemester = Math.ceil(itemMonth / 6);
                 if (itemSemester === currentSemester) {
-                    addValue(semestral, valor, empresa);
+                    addValue(semestral, valor, empresa, false);
                 }
 
                 // Faturamento Trimestral (trimestre atual)
                 const itemQuarter = Math.ceil(itemMonth / 3);
                 if (itemQuarter === currentQuarter) {
-                    addValue(trimestral, valor, empresa);
+                    addValue(trimestral, valor, empresa, false);
                 }
 
                 // Faturamento Mensal (mês atual)
                 if (itemMonth === currentMonth) {
-                    addValue(mensal, valor, empresa);
+                    addValue(mensal, valor, empresa, false);
+                }
+            }
+        });
+
+        // Recebimentos avulsos (sem incidência de impostos, somados ao faturamento total)
+        recebimentosAvulsos.forEach(item => {
+            const valor = Number(item.valor_recebimento_liquido ?? item.valor_base ?? 0);
+            const empresa = item.empresa;
+
+            // Total acumulado
+            addValue(total, valor, empresa, true);
+
+            const dateStr = item.competencia || item.data_recebimento;
+            if (!dateStr || dateStr.length < 7) return;
+
+            const itemYear = parseInt(dateStr.substring(0, 4), 10);
+            const itemMonth = parseInt(dateStr.substring(5, 7), 10);
+
+            if (isNaN(itemYear) || isNaN(itemMonth)) return;
+
+            if (itemYear === currentYear) {
+                addValue(anual, valor, empresa, true);
+
+                const itemSemester = Math.ceil(itemMonth / 6);
+                if (itemSemester === currentSemester) {
+                    addValue(semestral, valor, empresa, true);
+                }
+
+                const itemQuarter = Math.ceil(itemMonth / 3);
+                if (itemQuarter === currentQuarter) {
+                    addValue(trimestral, valor, empresa, true);
+                }
+
+                if (itemMonth === currentMonth) {
+                    addValue(mensal, valor, empresa, true);
                 }
             }
         });
 
         return { mensal, trimestral, semestral, anual, total };
-    }, [faturamentos, now]);
+    }, [faturamentos, recebimentosAvulsos, now]);
 
     // 3. CHART I: Faturamento por Período (Line Chart)
     const faturamentoPorPeriodo = useMemo(() => {
@@ -163,6 +229,25 @@ const RelatorioFinanceiro: React.FC = () => {
             }
         });
 
+        recebimentosAvulsos.forEach(item => {
+            const dateStr = item.competencia || item.data_recebimento;
+            if (!dateStr) return;
+            try {
+                const key = dateStr.substring(0, 7); // yyyy-MM
+                const empresa = item.empresa || 'SEMOG';
+
+                if (!agrupado[key]) {
+                    agrupado[key] = { SEMOG: 0, FEMOG: 0 };
+                }
+
+                if (empresa === 'SEMOG' || empresa === 'FEMOG') {
+                    agrupado[key][empresa] += Number(item.valor_recebimento_liquido ?? item.valor_base ?? 0);
+                }
+            } catch (e) {
+                console.error("Invalid date", dateStr);
+            }
+        });
+
         return Object.entries(agrupado)
             .sort((a, b) => a[0].localeCompare(b[0])) // Cronologicamente crescente
             .map(([key, valores]) => {
@@ -170,7 +255,7 @@ const RelatorioFinanceiro: React.FC = () => {
                 const periodo = format(new Date(Number(year), Number(month) - 1, 1), 'MMM/yy', { locale: ptBR });
                 return { periodo, ...valores };
             });
-    }, [faturamentos]);
+    }, [faturamentos, recebimentosAvulsos]);
 
     // 4. CHART II: Faturamento por Posto (Pie Chart)
     const faturamentoPorPosto = useMemo(() => {
@@ -190,6 +275,21 @@ const RelatorioFinanceiro: React.FC = () => {
             });
         }
 
+        let avulsosFiltrados = recebimentosAvulsos;
+        if (postoFilter.month !== 'all' || postoFilter.year !== 'all') {
+            avulsosFiltrados = avulsosFiltrados.filter(item => {
+                const dateStr = item.competencia || item.data_recebimento;
+                if (!dateStr || dateStr.length < 7) return false;
+                const month = dateStr.substring(5, 7);
+                const year = dateStr.substring(0, 4);
+
+                const matchMonth = postoFilter.month === 'all' || month === postoFilter.month;
+                const matchYear = postoFilter.year === 'all' || year === postoFilter.year;
+
+                return matchMonth && matchYear;
+            });
+        }
+
         const agrupado: Record<string, number> = {};
 
         dadosFiltrados.forEach(item => {
@@ -197,10 +297,15 @@ const RelatorioFinanceiro: React.FC = () => {
             agrupado[posto] = (agrupado[posto] || 0) + Number(item.valor_bruto || 0);
         });
 
+        avulsosFiltrados.forEach(item => {
+            const posto = item.descricao ? `Avulso: ${item.descricao}` : 'Recebimento Avulso';
+            agrupado[posto] = (agrupado[posto] || 0) + Number(item.valor_recebimento_liquido ?? item.valor_base ?? 0);
+        });
+
         return Object.entries(agrupado)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value); // Decrescente para priorizar fatias maiores
-    }, [faturamentos, postoFilter]);
+    }, [faturamentos, recebimentosAvulsos, postoFilter]);
 
     if (isLoading) {
         return (
@@ -214,38 +319,38 @@ const RelatorioFinanceiro: React.FC = () => {
         <div className="space-y-6">
             <PageHeader
                 title="Relatório Financeiro"
-                subtitle="Indicadores e visão geral de faturamentos"
+                subtitle="Indicadores e visão geral de faturamento e recebimentos avulsos"
             />
 
             {/* KPIs Globais */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 <StatCard
                     title="Faturamento Mensal"
-                    value={<KpiValue total={kpis.mensal.total} femog={kpis.mensal.femog} semog={kpis.mensal.semog} />}
+                    value={<KpiValue total={kpis.mensal.total} femog={kpis.mensal.femog} semog={kpis.mensal.semog} avulso={kpis.mensal.avulso} />}
                     type="total"
                     icon={Calendar}
                 />
                 <StatCard
                     title="Faturamento Trimestral"
-                    value={<KpiValue total={kpis.trimestral.total} femog={kpis.trimestral.femog} semog={kpis.trimestral.semog} />}
+                    value={<KpiValue total={kpis.trimestral.total} femog={kpis.trimestral.femog} semog={kpis.trimestral.semog} avulso={kpis.trimestral.avulso} />}
                     type="info"
                     icon={TrendingUp}
                 />
                 <StatCard
                     title="Faturamento Semestral"
-                    value={<KpiValue total={kpis.semestral.total} femog={kpis.semestral.femog} semog={kpis.semestral.semog} />}
+                    value={<KpiValue total={kpis.semestral.total} femog={kpis.semestral.femog} semog={kpis.semestral.semog} avulso={kpis.semestral.avulso} />}
                     type="warning"
                     icon={BarChart2}
                 />
                 <StatCard
                     title="Faturamento Anual"
-                    value={<KpiValue total={kpis.anual.total} femog={kpis.anual.femog} semog={kpis.anual.semog} />}
+                    value={<KpiValue total={kpis.anual.total} femog={kpis.anual.femog} semog={kpis.anual.semog} avulso={kpis.anual.avulso} />}
                     type="success"
                     icon={CheckCircle}
                 />
                 <StatCard
                     title="Faturamento Total"
-                    value={<KpiValue total={kpis.total.total} femog={kpis.total.femog} semog={kpis.total.semog} />}
+                    value={<KpiValue total={kpis.total.total} femog={kpis.total.femog} semog={kpis.total.semog} avulso={kpis.total.avulso} />}
                     type="total"
                     icon={DollarSign}
                 />

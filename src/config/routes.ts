@@ -10,6 +10,8 @@ export const APP_ROUTES = {
         FATURAMENTOS: '/financeiro/faturamentos',
         RECEBIMENTOS: '/financeiro/recebimentos',
         RELATORIOS: '/financeiro/relatorios',
+        CONTAS: '/financeiro/contas',
+        CATEGORIAS: '/financeiro/categorias',
     },
     ESTOQUE: {
         ROOT: '#estoque',

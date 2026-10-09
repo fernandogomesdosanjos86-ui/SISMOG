@@ -1,5 +1,16 @@
 import { supabase } from './supabase';
-import type { Contrato, Faturamento, Recebimento } from '../features/financeiro/types';
+import type {
+    Contrato,
+    Faturamento,
+    Recebimento,
+    ContaFinanceira,
+    ContaFinanceiraFormData,
+    ContaFinanceiraAjuste,
+    AjusteSaldoFormData,
+    CategoriaFinanceira,
+    CategoriaFinanceiraFormData,
+    StatusCategoriaFinanceira
+} from '../features/financeiro/types';
 
 export const financeiroService = {
     // --- Contratos ---
@@ -440,5 +451,275 @@ export const financeiroService = {
                 console.error("Erro ao deletar arquivo físico do Storage", err);
             }
         }
+    },
+
+    // --- Contas Financeiras ---
+    async getContasFinanceiras(): Promise<ContaFinanceira[]> {
+        const { data, error } = await supabase
+            .from('contas_financeiras')
+            .select('*')
+            .order('status', { ascending: true }) // 'ativa' antes de 'inativa'
+            .order('nome', { ascending: true });
+
+        if (error) throw error;
+        return (data || []) as unknown as ContaFinanceira[];
+    },
+
+    async createContaFinanceira(dados: ContaFinanceiraFormData): Promise<ContaFinanceira> {
+        const payload = {
+            ...dados,
+            saldo_atual: dados.saldo_inicial ?? 0
+        };
+
+        const { data, error } = await supabase
+            .from('contas_financeiras')
+            .insert(payload as any)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as unknown as ContaFinanceira;
+    },
+
+    async updateContaFinanceira(id: string, dados: Partial<ContaFinanceiraFormData>): Promise<ContaFinanceira> {
+        const { data, error } = await supabase
+            .from('contas_financeiras')
+            .update({
+                ...dados,
+                updated_at: new Date().toISOString()
+            } as any)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as unknown as ContaFinanceira;
+    },
+
+    async toggleStatusContaFinanceira(id: string, novoStatus: 'ativa' | 'inativa'): Promise<ContaFinanceira> {
+        const { data, error } = await supabase
+            .from('contas_financeiras')
+            .update({
+                status: novoStatus,
+                updated_at: new Date().toISOString()
+            } as any)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as unknown as ContaFinanceira;
+    },
+
+    async deleteContaFinanceira(id: string): Promise<void> {
+        const { error } = await supabase
+            .from('contas_financeiras')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    },
+
+    async ajustarSaldoConta(
+        contaId: string,
+        dados: AjusteSaldoFormData,
+        usuario?: { id?: string; nome?: string }
+    ): Promise<ContaFinanceiraAjuste> {
+        // 1. Busca a conta atual para registrar o saldo anterior
+        const { data: conta, error: contaError } = await supabase
+            .from('contas_financeiras')
+            .select('saldo_atual')
+            .eq('id', contaId)
+            .single();
+
+        if (contaError || !conta) {
+            throw new Error('Conta financeira não encontrada para realização do ajuste.');
+        }
+
+        const saldoAnterior = Number(conta.saldo_atual || 0);
+        const saldoNovo = Number(dados.saldo_real || 0);
+        const diferenca = saldoNovo - saldoAnterior;
+        const tipoAjuste = diferenca >= 0 ? 'credito' : 'debito';
+
+        // 2. Registra o ajuste auditável
+        const ajustePayload = {
+            conta_id: contaId,
+            saldo_anterior: saldoAnterior,
+            saldo_novo: saldoNovo,
+            diferenca: diferenca,
+            tipo_ajuste: tipoAjuste,
+            data_ajuste: dados.data_ajuste || new Date().toISOString().substring(0, 10),
+            motivo: dados.motivo?.trim() || 'Ajuste de conciliação bancária',
+            usuario_id: usuario?.id || null,
+            usuario_nome: usuario?.nome || null
+        };
+
+        const { data: ajusteCriado, error: ajusteError } = await supabase
+            .from('contas_financeiras_ajustes')
+            .insert(ajustePayload as any)
+            .select()
+            .single();
+
+        if (ajusteError) throw ajusteError;
+
+        // 3. Atualiza o saldo atual da conta financeira
+        const { error: updateContaError } = await supabase
+            .from('contas_financeiras')
+            .update({
+                saldo_atual: saldoNovo,
+                updated_at: new Date().toISOString()
+            } as any)
+            .eq('id', contaId);
+
+        if (updateContaError) throw updateContaError;
+
+        return ajusteCriado as unknown as ContaFinanceiraAjuste;
+    },
+
+    async getHistoricoAjustes(contaId: string): Promise<ContaFinanceiraAjuste[]> {
+        const { data, error } = await supabase
+            .from('contas_financeiras_ajustes')
+            .select('*')
+            .eq('conta_id', contaId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return (data || []) as unknown as ContaFinanceiraAjuste[];
+    },
+
+    // --- Categorias Financeiras ---
+    async getCategoriasFinanceiras(): Promise<CategoriaFinanceira[]> {
+        const { data, error } = await supabase
+            .from('categorias_financeiras')
+            .select('*')
+            .order('tipo', { ascending: false }) // 'receita' antes de 'despesa'
+            .order('nome', { ascending: true });
+
+        if (error) throw error;
+        return (data || []) as unknown as CategoriaFinanceira[];
+    },
+
+    async createCategoriaFinanceira(dados: CategoriaFinanceiraFormData): Promise<CategoriaFinanceira> {
+        // Validação preventiva de unicidade
+        const { data: existente } = await supabase
+            .from('categorias_financeiras')
+            .select('id')
+            .eq('tipo', dados.tipo)
+            .ilike('nome', dados.nome.trim())
+            .filter('parent_id', dados.parent_id ? 'eq' : 'is', dados.parent_id || null)
+            .maybeSingle();
+
+        if (existente) {
+            throw new Error(
+                dados.parent_id
+                    ? 'Já existe uma subcategoria com este nome nesta categoria principal.'
+                    : 'Já existe uma categoria principal com este nome para este tipo.'
+            );
+        }
+
+        const { data, error } = await supabase
+            .from('categorias_financeiras')
+            .insert({
+                tipo: dados.tipo,
+                nome: dados.nome.trim(),
+                parent_id: dados.parent_id || null,
+                status: dados.status || 'ativa'
+            } as any)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as unknown as CategoriaFinanceira;
+    },
+
+    async updateCategoriaFinanceira(id: string, dados: Partial<CategoriaFinanceiraFormData>): Promise<CategoriaFinanceira> {
+        // Validação preventiva de duplicidade de nome caso esteja alterando o nome
+        if (dados.nome && dados.tipo) {
+            const { data: existente } = await supabase
+                .from('categorias_financeiras')
+                .select('id')
+                .eq('tipo', dados.tipo)
+                .ilike('nome', dados.nome.trim())
+                .filter('parent_id', dados.parent_id ? 'eq' : 'is', dados.parent_id || null)
+                .neq('id', id)
+                .maybeSingle();
+
+            if (existente) {
+                throw new Error(
+                    dados.parent_id
+                        ? 'Já existe uma subcategoria com este nome nesta categoria principal.'
+                        : 'Já existe uma categoria principal com este nome para este tipo.'
+                );
+            }
+        }
+
+        const payload: Record<string, any> = {
+            updated_at: new Date().toISOString()
+        };
+        if (dados.nome !== undefined) payload.nome = dados.nome.trim();
+        if (dados.tipo !== undefined) payload.tipo = dados.tipo;
+        if (dados.parent_id !== undefined) payload.parent_id = dados.parent_id || null;
+        if (dados.status !== undefined) payload.status = dados.status;
+
+        const { data, error } = await supabase
+            .from('categorias_financeiras')
+            .update(payload as any)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as unknown as CategoriaFinanceira;
+    },
+
+    async toggleStatusCategoriaFinanceira(id: string, novoStatus: StatusCategoriaFinanceira): Promise<CategoriaFinanceira> {
+        // Regra de negócio: Se for inativar uma Categoria Principal, todas as subcategorias devem estar inativas
+        if (novoStatus === 'inativa') {
+            const { data: subcategoriasAtivas, error: checkError } = await supabase
+                .from('categorias_financeiras')
+                .select('id, nome')
+                .eq('parent_id', id)
+                .eq('status', 'ativa');
+
+            if (checkError) throw checkError;
+
+            if (subcategoriasAtivas && subcategoriasAtivas.length > 0) {
+                throw new Error(
+                    `Não é possível inativar esta categoria principal pois ela possui ${subcategoriasAtivas.length} subcategoria(s) ativa(s). Inative as subcategorias primeiro.`
+                );
+            }
+        }
+
+        const { data, error } = await supabase
+            .from('categorias_financeiras')
+            .update({
+                status: novoStatus,
+                updated_at: new Date().toISOString()
+            } as any)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as unknown as CategoriaFinanceira;
+    },
+
+    async deleteCategoriaFinanceira(id: string): Promise<void> {
+        // Bloqueia exclusão de categoria pai se houver subcategorias
+        const { data: subcategorias } = await supabase
+            .from('categorias_financeiras')
+            .select('id')
+            .eq('parent_id', id);
+
+        if (subcategorias && subcategorias.length > 0) {
+            throw new Error('Não é possível excluir uma categoria que possui subcategorias vinculadas. Exclua ou desvincule as subcategorias primeiro.');
+        }
+
+        const { error } = await supabase
+            .from('categorias_financeiras')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
     }
 };

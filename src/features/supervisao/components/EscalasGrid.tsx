@@ -1,11 +1,12 @@
 import React from 'react';
 import jsPDF from 'jspdf';
-import { Save, ChevronDown, ChevronRight, Download, Trash2 } from 'lucide-react';
+import { Save, ChevronDown, ChevronRight, Download, Trash2, RefreshCw, Users } from 'lucide-react';
 import { useEscalas } from '../hooks/useEscalas';
-import { getDaysInMonth, getWeekday } from '../utils/escalaLogics';
+import { getDaysInMonth, getWeekday, getEscalaRowKey } from '../utils/escalaLogics';
 import type { PostoTrabalho } from '../types';
 import { useModal } from '../../../context/ModalContext';
 import EscalaRow from './EscalaRow';
+import PostoDetails from './PostoDetails';
 
 interface EscalasGridProps {
     posto: PostoTrabalho;
@@ -16,7 +17,7 @@ interface EscalasGridProps {
 }
 
 const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, onToggle, isExpanded }) => {
-    const { openConfirmModal } = useModal();
+    const { openConfirmModal, openViewModal, showFeedback } = useModal();
 
     // Derived Date properties based on Context
     const year = parseInt(competencia.split('-')[0] || new Date().getFullYear().toString());
@@ -31,9 +32,11 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
         hasUnsavedChanges,
         isSaving,
         isDeleting,
+        isSyncing,
         isLoading: isLoadingEscalas,
         saveEscala,
-        deleteEscala
+        deleteEscala,
+        syncAlocacoes
     } = useEscalas(posto.id, competencia, empresa);
 
     // Compute day headers (like Dom, Seg, Ter)
@@ -42,11 +45,9 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
         return ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'][d];
     };
 
-
-
     // Grid Interactivity Handlers
-    const toggleDay = React.useCallback((funcionarioId: string, dayNum: number) => {
-        const item = localEscalas.find(e => e.funcionario_id === funcionarioId);
+    const toggleDay = React.useCallback((rowKey: string, dayNum: number) => {
+        const item = localEscalas.find(e => getEscalaRowKey(e) === rowKey || e.id === rowKey || e.funcionario_id === rowKey);
         if (!item) return;
 
         let currentDias = item.dias || [];
@@ -56,16 +57,27 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
             currentDias = [...currentDias, dayNum].sort((a, b) => a - b);
         }
 
-        handleUpdateFuncionario(funcionarioId, { dias: currentDias });
+        handleUpdateFuncionario(rowKey, { dias: currentDias });
     }, [localEscalas, handleUpdateFuncionario]);
 
     const sortedEscalas = React.useMemo(() => {
         return [...localEscalas].sort((a, b) => {
-            const cargoCmp = (a.funcionario?.cargo?.cargo || '').localeCompare(b.funcionario?.cargo?.cargo || '', 'pt-BR');
-            if (cargoCmp !== 0) return cargoCmp;
-            const turnoCmp = (a.turno || '').localeCompare(b.turno || '', 'pt-BR');
+            // 1º Nome (ordem alfabética)
+            const nomeA = a.funcionario?.nome || '';
+            const nomeB = b.funcionario?.nome || '';
+            const nomeCmp = nomeA.localeCompare(nomeB, 'pt-BR');
+            if (nomeCmp !== 0) return nomeCmp;
+
+            // 2º Turno (ordem alfabética)
+            const turnoA = a.turno || '';
+            const turnoB = b.turno || '';
+            const turnoCmp = turnoA.localeCompare(turnoB, 'pt-BR');
             if (turnoCmp !== 0) return turnoCmp;
-            return (a.funcionario?.nome || '').localeCompare(b.funcionario?.nome || '', 'pt-BR');
+
+            // Desempate estável: Oficial antes de Extra
+            const isExtraA = a.tipo?.trim().toLowerCase() === 'extra' ? 1 : 0;
+            const isExtraB = b.tipo?.trim().toLowerCase() === 'extra' ? 1 : 0;
+            return isExtraA - isExtraB;
         });
     }, [localEscalas]);
 
@@ -73,6 +85,14 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
     const empColor = getThemeColor(posto.empresa);
 
     const handleDownloadPDF = () => {
+        // Filtrar apenas linhas que possuam pelo menos um dia marcado
+        const escalasParaPDF = sortedEscalas.filter(esc => (esc.dias && esc.dias.length > 0));
+
+        if (escalasParaPDF.length === 0) {
+            showFeedback('error', 'Nenhum funcionário possui dias marcados na escala para gerar o PDF.');
+            return;
+        }
+
         const doc = new jsPDF('landscape', 'pt', 'a4');
         const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -110,9 +130,7 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                 ]
             ];
 
-
-
-            const body = sortedEscalas.map((esc, index) => {
+            const body = escalasParaPDF.map((esc, index) => {
                 const isExtra = esc.tipo?.trim().toLowerCase() === 'extra';
                 const activeDays = esc.dias || [];
                 const rowColor = index % 2 === 0 ? [255, 255, 255] : [245, 245, 245];
@@ -169,16 +187,20 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                                 const x = data.cell.x + 3; // padding
                                 let y = data.cell.y + 12; // top padding
 
+                                // Cor vermelha para Extra (220, 38, 38) e preta para Oficial (0, 0, 0)
+                                const textColor = rawCell._isExtra ? [220, 38, 38] : [0, 0, 0];
+
                                 // Draw Employee Name (Bold, 8pt)
                                 doc.setFont("helvetica", "bold");
                                 doc.setFontSize(8);
-                                doc.setTextColor(rawCell._isExtra ? 220 : 0, rawCell._isExtra ? 38 : 0, rawCell._isExtra ? 38 : 0);
+                                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                                 doc.text(rawCell._employeeName, x, y);
 
                                 // Draw Role/Escala (Normal, 6.5pt, beneath name)
                                 y += 10;
                                 doc.setFont("helvetica", "normal");
                                 doc.setFontSize(6.5);
+                                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                                 doc.text(rawCell._employeeRole, x, y);
                             }
                         }
@@ -204,6 +226,40 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
         img.onerror = () => {
             drawTableAndSave(0); // Proceed even without image
         };
+    };
+
+    const handleOpenPostoDetails = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        openViewModal(
+            `Alocações - ${posto.nome}`,
+            <PostoDetails posto={posto} />
+        );
+    };
+
+    const handleSyncAlocacoes = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        openConfirmModal(
+            'Sincronizar Alocações do Posto',
+            <div className="space-y-2.5 text-sm text-gray-600">
+                <p>
+                    Esta ação atualizará a escala com base nas alocações atuais de <strong>{posto.nome}</strong> cadastradas em Gestão de Postos.
+                </p>
+                <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3 text-xs space-y-1">
+                    <p className="font-bold flex items-center gap-1 text-amber-800">
+                        ⚠️ Atenção sobre a atualização:
+                    </p>
+                    <ul className="list-disc pl-4 space-y-0.5 text-amber-900">
+                        <li><strong>Funcionários recém-alocados:</strong> Serão acrescentados à escala.</li>
+                        <li><strong>Funcionários excluídos do posto:</strong> Serão removidos desta escala.</li>
+                        <li><strong>Funcionários mantidos:</strong> Terão seus dias de trabalho preenchidos totalmente preservados.</li>
+                    </ul>
+                </div>
+                <p className="font-medium text-gray-800 pt-1">Deseja realmente atualizar a escala deste posto?</p>
+            </div>,
+            async () => {
+                await syncAlocacoes();
+            }
+        );
     };
 
     return (
@@ -314,9 +370,28 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                             <p className="text-gray-500 font-medium text-sm">Construindo plano de alocações para {posto.nome}...</p>
                         </div>
                     ) : localEscalas.length === 0 ? (
-                        <div className="p-8 text-center text-gray-500 font-medium bg-gray-50/50 text-sm border-t border-gray-100">
-                            Nenhum funcionário está permanentemente alocado a este posto na Tabela Base.<br />
-                            <span className="text-[10px] text-gray-400">Vá em Gestão de Postos &gt; Alocar Funcionários para resolver isso.</span>
+                        <div className="p-8 text-center text-gray-500 font-medium bg-gray-50/50 text-sm border-t border-gray-100 flex flex-col items-center justify-center gap-3">
+                            <div>
+                                Nenhum funcionário está alocado a este posto nesta escala.<br />
+                                <span className="text-xs text-gray-400">Você pode gerenciar os funcionários alocados ou sincronizar a escala.</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleOpenPostoDetails}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold hover:bg-blue-100 transition-colors shadow-2xs cursor-pointer"
+                                >
+                                    <Users size={14} /> Gerenciar Alocações
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSyncAlocacoes}
+                                    disabled={isSyncing}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-gray-700 border border-gray-200 text-xs font-semibold hover:bg-gray-50 transition-colors shadow-2xs cursor-pointer"
+                                >
+                                    <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} /> Sincronizar Escala
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="overflow-x-auto border-t border-gray-100">
@@ -324,7 +399,28 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                                 <thead>
                                     <tr className="bg-gray-100/50 text-gray-600 uppercase text-[10px]">
                                         <th className="font-semibold p-2 border-r border-b border-gray-300 sticky left-0 z-20 bg-[#f1f5f9] min-w-[240px] sm:min-w-[260px] md:min-w-[280px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)]">
-                                            Funcionário
+                                            <div className="flex items-center justify-between gap-1">
+                                                <span className="truncate">Funcionário</span>
+                                                <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSyncAlocacoes}
+                                                        disabled={isSyncing}
+                                                        className="p-1 rounded bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 transition-colors border border-gray-200 hover:border-blue-300 shadow-2xs cursor-pointer"
+                                                        title="Atualizar funcionários alocados na escala"
+                                                    >
+                                                        <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleOpenPostoDetails}
+                                                        className="p-1 rounded bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 transition-colors border border-gray-200 hover:border-blue-300 shadow-2xs cursor-pointer"
+                                                        title="Atalho: Gerenciar alocações deste posto (Gestão de Postos)"
+                                                    >
+                                                        <Users size={12} />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </th>
                                         <th className="font-semibold p-2 border-r border-b border-gray-200 bg-gray-100/50 text-center min-w-[65px]">
                                             Início
@@ -349,18 +445,22 @@ const EscalasGrid: React.FC<EscalasGridProps> = ({ posto, competencia, empresa, 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {sortedEscalas.map((esc) => (
-                                        <EscalaRow
-                                            key={esc.funcionario_id}
-                                            esc={esc}
-                                            daysArray={daysArray}
-                                            year={year}
-                                            month={month}
-                                            postoNome={posto.nome}
-                                            toggleDay={toggleDay}
-                                            handleUpdateFuncionario={handleUpdateFuncionario}
-                                        />
-                                    ))}
+                                    {sortedEscalas.map((esc) => {
+                                        const rowKey = getEscalaRowKey(esc);
+                                        return (
+                                            <EscalaRow
+                                                key={rowKey}
+                                                rowKey={rowKey}
+                                                esc={esc}
+                                                daysArray={daysArray}
+                                                year={year}
+                                                month={month}
+                                                postoNome={posto.nome}
+                                                toggleDay={toggleDay}
+                                                handleUpdateFuncionario={handleUpdateFuncionario}
+                                            />
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

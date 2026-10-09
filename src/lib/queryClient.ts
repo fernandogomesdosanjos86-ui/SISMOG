@@ -42,6 +42,17 @@ export const queryKeys = {
         list: () => [...queryKeys.recebimentos.all, 'list'] as const,
         detail: (id: string) => [...queryKeys.recebimentos.all, 'detail', id] as const,
     },
+    contasFinanceiras: {
+        all: ['contasFinanceiras'] as const,
+        list: () => [...queryKeys.contasFinanceiras.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.contasFinanceiras.all, 'detail', id] as const,
+        ajustes: (contaId: string) => [...queryKeys.contasFinanceiras.all, 'ajustes', contaId] as const,
+    },
+    categoriasFinanceiras: {
+        all: ['categoriasFinanceiras'] as const,
+        list: () => [...queryKeys.categoriasFinanceiras.all, 'list'] as const,
+        detail: (id: string) => [...queryKeys.categoriasFinanceiras.all, 'detail', id] as const,
+    },
     // Estoque
     equipamentos: {
         all: ['equipamentos'] as const,

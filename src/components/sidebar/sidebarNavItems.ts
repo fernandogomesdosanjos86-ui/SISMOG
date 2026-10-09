@@ -1,7 +1,7 @@
 import {
     Home, Settings, Users, FileText, BarChart2, DollarSign, Box, Briefcase, Package,
     Calendar, AlertTriangle, Award, Car, Droplet, ClipboardCheck, MapPin, PieChart, Handshake,
-    ArrowLeftRight
+    ArrowLeftRight, Landmark, Tags
 } from 'lucide-react';
 import { APP_ROUTES } from '../../config/routes';
 
@@ -88,7 +88,9 @@ export const navItems: NavItem[] = [
             { icon: FileText, label: 'Contratos', path: APP_ROUTES.FINANCEIRO.CONTRATOS },
             { icon: BarChart2, label: 'Faturamentos', path: APP_ROUTES.FINANCEIRO.FATURAMENTOS },
             { icon: Users, label: 'Recebimentos', path: APP_ROUTES.FINANCEIRO.RECEBIMENTOS },
-            { icon: PieChart, label: 'Relatório Financeiro', path: APP_ROUTES.FINANCEIRO.RELATORIOS }
+            { icon: PieChart, label: 'Relatório Financeiro', path: APP_ROUTES.FINANCEIRO.RELATORIOS },
+            { icon: Landmark, label: 'Contas Financeiras', path: APP_ROUTES.FINANCEIRO.CONTAS },
+            { icon: Tags, label: 'Categorias Financeiras', path: APP_ROUTES.FINANCEIRO.CATEGORIAS }
         ]
     },
     {

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -115,6 +115,145 @@ export type Database = {
           valor_he_noturno?: number
         }
         Relationships: []
+      }
+      categorias_financeiras: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          parent_id: string | null
+          status: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          parent_id?: string | null
+          status?: string
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          parent_id?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categorias_financeiras_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_financeiras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contas_financeiras: {
+        Row: {
+          agencia: string | null
+          chave_pix: string | null
+          conta: string | null
+          created_at: string
+          data_saldo_inicial: string
+          empresa: string
+          id: string
+          limite_cheque_especial: number
+          nome: string
+          saldo_atual: number
+          saldo_inicial: number
+          status: string
+          tipo_conta: string
+          updated_at: string
+        }
+        Insert: {
+          agencia?: string | null
+          chave_pix?: string | null
+          conta?: string | null
+          created_at?: string
+          data_saldo_inicial?: string
+          empresa: string
+          id?: string
+          limite_cheque_especial?: number
+          nome: string
+          saldo_atual?: number
+          saldo_inicial?: number
+          status?: string
+          tipo_conta: string
+          updated_at?: string
+        }
+        Update: {
+          agencia?: string | null
+          chave_pix?: string | null
+          conta?: string | null
+          created_at?: string
+          data_saldo_inicial?: string
+          empresa?: string
+          id?: string
+          limite_cheque_especial?: number
+          nome?: string
+          saldo_atual?: number
+          saldo_inicial?: number
+          status?: string
+          tipo_conta?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contas_financeiras_ajustes: {
+        Row: {
+          conta_id: string
+          created_at: string
+          data_ajuste: string
+          diferenca: number
+          id: string
+          motivo: string | null
+          saldo_anterior: number
+          saldo_novo: number
+          tipo_ajuste: string
+          usuario_id: string | null
+          usuario_nome: string | null
+        }
+        Insert: {
+          conta_id: string
+          created_at?: string
+          data_ajuste?: string
+          diferenca: number
+          id?: string
+          motivo?: string | null
+          saldo_anterior: number
+          saldo_novo: number
+          tipo_ajuste: string
+          usuario_id?: string | null
+          usuario_nome?: string | null
+        }
+        Update: {
+          conta_id?: string
+          created_at?: string
+          data_ajuste?: string
+          diferenca?: number
+          id?: string
+          motivo?: string | null
+          saldo_anterior?: number
+          saldo_novo?: number
+          tipo_ajuste?: string
+          usuario_id?: string | null
+          usuario_nome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_financeiras_ajustes_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_financeiras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contratos: {
         Row: {
@@ -675,6 +814,8 @@ export type Database = {
           conta: string | null
           cpf: string | null
           created_at: string | null
+          data_admissao: string | null
+          data_desligamento: string | null
           empresa: string
           id: string
           nome: string
@@ -685,8 +826,6 @@ export type Database = {
           updated_at: string | null
           valor_combustivel_dia: number | null
           valor_transporte_dia: number | null
-          data_admissao: string | null
-          data_desligamento: string | null
         }
         Insert: {
           agencia?: string | null
@@ -695,6 +834,8 @@ export type Database = {
           conta?: string | null
           cpf?: string | null
           created_at?: string | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
           empresa: string
           id?: string
           nome: string
@@ -705,8 +846,6 @@ export type Database = {
           updated_at?: string | null
           valor_combustivel_dia?: number | null
           valor_transporte_dia?: number | null
-          data_admissao?: string | null
-          data_desligamento?: string | null
         }
         Update: {
           agencia?: string | null
@@ -715,6 +854,8 @@ export type Database = {
           conta?: string | null
           cpf?: string | null
           created_at?: string | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
           empresa?: string
           id?: string
           nome?: string
@@ -725,8 +866,6 @@ export type Database = {
           updated_at?: string | null
           valor_combustivel_dia?: number | null
           valor_transporte_dia?: number | null
-          data_admissao?: string | null
-          data_desligamento?: string | null
         }
         Relationships: [
           {
@@ -965,6 +1104,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      parametros_folha: {
+        Row: {
+          aliquota_inss_1: number
+          aliquota_inss_2: number
+          aliquota_inss_3: number
+          aliquota_inss_4: number
+          ano: number
+          created_at: string
+          desconto_inss_1: number
+          desconto_inss_2: number
+          desconto_inss_3: number
+          desconto_inss_4: number
+          id: string
+          teto_inss_1: number
+          teto_inss_2: number
+          teto_inss_3: number
+          teto_inss_4: number
+          teto_salario_familia: number
+          updated_at: string
+          valor_salario_familia: number
+          valor_salario_minimo: number
+        }
+        Insert: {
+          aliquota_inss_1: number
+          aliquota_inss_2: number
+          aliquota_inss_3: number
+          aliquota_inss_4: number
+          ano: number
+          created_at?: string
+          desconto_inss_1: number
+          desconto_inss_2: number
+          desconto_inss_3: number
+          desconto_inss_4: number
+          id?: string
+          teto_inss_1: number
+          teto_inss_2: number
+          teto_inss_3: number
+          teto_inss_4: number
+          teto_salario_familia: number
+          updated_at?: string
+          valor_salario_familia: number
+          valor_salario_minimo: number
+        }
+        Update: {
+          aliquota_inss_1?: number
+          aliquota_inss_2?: number
+          aliquota_inss_3?: number
+          aliquota_inss_4?: number
+          ano?: number
+          created_at?: string
+          desconto_inss_1?: number
+          desconto_inss_2?: number
+          desconto_inss_3?: number
+          desconto_inss_4?: number
+          id?: string
+          teto_inss_1?: number
+          teto_inss_2?: number
+          teto_inss_3?: number
+          teto_inss_4?: number
+          teto_salario_familia?: number
+          updated_at?: string
+          valor_salario_familia?: number
+          valor_salario_minimo?: number
+        }
+        Relationships: []
       }
       postos_trabalho: {
         Row: {
@@ -1367,6 +1572,50 @@ export type Database = {
           },
         ]
       }
+      supervisao_banco_horas: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string
+          duracao_minutos: number
+          empresa: string
+          funcionario_id: string
+          id: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          descricao: string
+          duracao_minutos: number
+          empresa: string
+          funcionario_id: string
+          id?: string
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string
+          duracao_minutos?: number
+          empresa?: string
+          funcionario_id?: string
+          id?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supervisao_banco_horas_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supervisao_escalas: {
         Row: {
           competencia: string
@@ -1429,6 +1678,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supervisao_funcionarios_eventos: {
+        Row: {
+          avaliacao: number | null
+          cargo: string
+          cpf: string | null
+          created_at: string
+          data: string
+          funcionario_nome: string
+          grandes_eventos: boolean
+          id: string
+          numero_cnv: string | null
+          observacoes: string | null
+          pix: string | null
+          status: string
+          telefone: string | null
+          updated_at: string
+          validade_cnv: string | null
+          validade_reciclagem: string | null
+        }
+        Insert: {
+          avaliacao?: number | null
+          cargo: string
+          cpf?: string | null
+          created_at?: string
+          data: string
+          funcionario_nome?: string
+          grandes_eventos?: boolean
+          id?: string
+          numero_cnv?: string | null
+          observacoes?: string | null
+          pix?: string | null
+          status: string
+          telefone?: string | null
+          updated_at?: string
+          validade_cnv?: string | null
+          validade_reciclagem?: string | null
+        }
+        Update: {
+          avaliacao?: number | null
+          cargo?: string
+          cpf?: string | null
+          created_at?: string
+          data?: string
+          funcionario_nome?: string
+          grandes_eventos?: boolean
+          id?: string
+          numero_cnv?: string | null
+          observacoes?: string | null
+          pix?: string | null
+          status?: string
+          telefone?: string | null
+          updated_at?: string
+          validade_cnv?: string | null
+          validade_reciclagem?: string | null
+        }
+        Relationships: []
       }
       supervisao_trocas_plantao: {
         Row: {
@@ -1627,72 +1933,6 @@ export type Database = {
         }
         Relationships: []
       }
-      parametros_folha: {
-        Row: {
-          id: string
-          ano: number
-          valor_salario_minimo: number
-          teto_salario_familia: number
-          valor_salario_familia: number
-          teto_inss_1: number
-          aliquota_inss_1: number
-          desconto_inss_1: number
-          teto_inss_2: number
-          aliquota_inss_2: number
-          desconto_inss_2: number
-          teto_inss_3: number
-          aliquota_inss_3: number
-          desconto_inss_3: number
-          teto_inss_4: number
-          aliquota_inss_4: number
-          desconto_inss_4: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          ano: number
-          valor_salario_minimo: number
-          teto_salario_familia: number
-          valor_salario_familia: number
-          teto_inss_1: number
-          aliquota_inss_1: number
-          desconto_inss_1: number
-          teto_inss_2: number
-          aliquota_inss_2: number
-          desconto_inss_2: number
-          teto_inss_3: number
-          aliquota_inss_3: number
-          desconto_inss_3: number
-          teto_inss_4: number
-          aliquota_inss_4: number
-          desconto_inss_4: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          ano?: number
-          valor_salario_minimo?: number
-          teto_salario_familia?: number
-          valor_salario_familia?: number
-          teto_inss_1?: number
-          aliquota_inss_1?: number
-          desconto_inss_1?: number
-          teto_inss_2?: number
-          aliquota_inss_2?: number
-          desconto_inss_2?: number
-          teto_inss_3?: number
-          aliquota_inss_3?: number
-          desconto_inss_3?: number
-          teto_inss_4?: number
-          aliquota_inss_4?: number
-          desconto_inss_4?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -1769,12 +2009,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1798,11 +2038,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1823,11 +2063,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1848,11 +2088,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1865,11 +2105,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

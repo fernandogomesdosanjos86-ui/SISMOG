@@ -93,3 +93,68 @@ export interface ContratoDocumento {
 }
 
 export type ContratoDocumentoFormData = Omit<ContratoDocumento, 'id' | 'created_at' | 'created_by'>;
+
+export type TipoContaFinanceira = 'corrente' | 'poupanca_aplicacao' | 'caixa_fisico';
+export type StatusContaFinanceira = 'ativa' | 'inativa';
+
+export interface ContaFinanceira {
+    id: string;
+    empresa: Empresa;
+    nome: string;
+    tipo_conta: TipoContaFinanceira;
+    agencia?: string | null;
+    conta?: string | null;
+    chave_pix?: string | null;
+    saldo_inicial: number;
+    data_saldo_inicial: string;
+    limite_cheque_especial: number;
+    saldo_atual: number;
+    status: StatusContaFinanceira;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export type ContaFinanceiraFormData = Omit<ContaFinanceira, 'id' | 'saldo_atual' | 'created_at' | 'updated_at'>;
+
+export type TipoAjusteSaldo = 'credito' | 'debito';
+
+export interface ContaFinanceiraAjuste {
+    id: string;
+    conta_id: string;
+    saldo_anterior: number;
+    saldo_novo: number;
+    diferenca: number;
+    tipo_ajuste: TipoAjusteSaldo;
+    data_ajuste: string;
+    motivo?: string | null;
+    usuario_id?: string | null;
+    usuario_nome?: string | null;
+    created_at?: string;
+}
+
+export interface AjusteSaldoFormData {
+    saldo_real: number;
+    data_ajuste: string;
+    motivo: string;
+}
+
+// --- Categorias Financeiras ---
+export type TipoCategoriaFinanceira = 'receita' | 'despesa';
+export type StatusCategoriaFinanceira = 'ativa' | 'inativa';
+
+export interface CategoriaFinanceira {
+    id: string;
+    parent_id: string | null;
+    tipo: TipoCategoriaFinanceira;
+    nome: string;
+    status: StatusCategoriaFinanceira;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export type CategoriaFinanceiraFormData = Omit<CategoriaFinanceira, 'id' | 'created_at' | 'updated_at'>;
+
+export interface CategoriaComSubcategorias extends CategoriaFinanceira {
+    subcategorias: CategoriaFinanceira[];
+}
+

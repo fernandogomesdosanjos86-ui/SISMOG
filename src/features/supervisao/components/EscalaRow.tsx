@@ -5,13 +5,14 @@ import { getWeekday } from '../utils/escalaLogics';
 import { EscalaCalendarModal } from './EscalaCalendarModal';
 
 interface EscalaRowProps {
+    rowKey: string;
     esc: Partial<Escala>;
     daysArray: number[];
     year: number;
     month: number;
     postoNome?: string;
-    toggleDay: (funcionarioId: string, dayNum: number) => void;
-    handleUpdateFuncionario: (funcionarioId: string, data: Partial<Escala>) => void;
+    toggleDay: (rowKey: string, dayNum: number) => void;
+    handleUpdateFuncionario: (rowKey: string, data: Partial<Escala>) => void;
 }
 
 const getWeekDayName = (year: number, month: number, day: number) => {
@@ -20,6 +21,7 @@ const getWeekDayName = (year: number, month: number, day: number) => {
 };
 
 const EscalaRow: React.FC<EscalaRowProps> = ({
+    rowKey,
     esc,
     daysArray,
     year,
@@ -36,13 +38,24 @@ const EscalaRow: React.FC<EscalaRowProps> = ({
 
     return (
         <>
-            <tr className="border-b border-gray-200 bg-white hover:bg-blue-50/20 transition-colors group">
+            <tr className={`border-b border-gray-200 transition-colors group ${isExtra ? 'bg-amber-50/20 hover:bg-amber-50/40' : 'bg-white hover:bg-blue-50/20'}`}>
                 {/* Employee Name (Sticky Left Column - Opaque Solid Background) */}
-                <td className="p-2 border-r border-gray-300 sticky left-0 z-10 bg-white group-hover:bg-[#f0f6ff] transition-colors shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] min-w-[240px] sm:min-w-[260px] md:min-w-[280px]">
+                <td className={`p-2 border-r border-gray-300 sticky left-0 z-10 transition-colors shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] min-w-[240px] sm:min-w-[260px] md:min-w-[280px] ${isExtra ? 'bg-[#fffaf0] group-hover:bg-[#fef3c7]' : 'bg-white group-hover:bg-[#f0f6ff]'}`}>
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0 pr-1">
-                            <div className={`font-bold text-[11px] leading-snug whitespace-normal break-words ${isExtra ? 'text-red-600' : 'text-gray-900'}`}>
-                                {esc.funcionario?.nome || 'Func. Sem Nome'}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className={`font-bold text-[11px] leading-snug whitespace-normal break-words ${isExtra ? 'text-amber-950 font-black' : 'text-gray-900'}`}>
+                                    {esc.funcionario?.nome || 'Func. Sem Nome'}
+                                </span>
+                                {isExtra ? (
+                                    <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs">
+                                        Extra
+                                    </span>
+                                ) : (
+                                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 border border-blue-200 shadow-2xs">
+                                        Oficial
+                                    </span>
+                                )}
                             </div>
                             <div className="text-gray-500 text-[10px] mt-0.5 whitespace-normal break-words">
                                 {esc.funcionario?.cargo?.cargo || 'Sem Cargo'} &ndash; {esc.escala} ({esc.turno})
@@ -53,7 +66,10 @@ const EscalaRow: React.FC<EscalaRowProps> = ({
                         <button
                             type="button"
                             onClick={() => setIsCalendarOpen(true)}
-                            className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors shrink-0 flex items-center gap-1 border border-blue-200 shadow-xs"
+                            className={`p-1.5 rounded-lg transition-colors shrink-0 flex items-center gap-1 border shadow-xs ${isExtra
+                                ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
+                                : 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
+                                }`}
                             title="Editar dias no calendário mensal"
                         >
                             <CalendarIcon size={14} />
@@ -67,7 +83,7 @@ const EscalaRow: React.FC<EscalaRowProps> = ({
                     {is12x36 ? (
                         <select
                             value={esc.inicio_12x36 || ''}
-                            onChange={(e) => handleUpdateFuncionario(esc.funcionario_id!, { inicio_12x36: Number(e.target.value) as 1 | 2 })}
+                            onChange={(e) => handleUpdateFuncionario(rowKey, { inicio_12x36: Number(e.target.value) as 1 | 2 })}
                             className="w-full text-[11px] border border-gray-200 rounded px-1 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium text-center"
                         >
                             <option value="" disabled>Selec</option>
@@ -85,7 +101,10 @@ const EscalaRow: React.FC<EscalaRowProps> = ({
                     className="p-2 border-r border-gray-200 text-center font-bold text-gray-800 bg-gray-50/30 text-[11px] min-w-[45px] cursor-pointer hover:bg-blue-100 transition-colors"
                     title="Clique para editar dias"
                 >
-                    <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-black border border-blue-200">
+                    <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded-md font-black border ${isExtra
+                        ? 'bg-amber-100 text-amber-900 border-amber-300'
+                        : 'bg-blue-50 text-blue-700 border-blue-200'
+                        }`}>
                         {esc.qnt_dias}
                     </span>
                 </td>
@@ -102,8 +121,8 @@ const EscalaRow: React.FC<EscalaRowProps> = ({
                                 <input
                                     type="checkbox"
                                     checked={checked}
-                                    onChange={() => toggleDay(esc.funcionario_id!, dayNum)}
-                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus:ring-2 bg-white cursor-pointer"
+                                    onChange={() => toggleDay(rowKey, dayNum)}
+                                    className={`w-4 h-4 rounded border-gray-300 focus:ring-2 bg-white cursor-pointer ${isExtra ? 'text-amber-600 focus:ring-amber-500' : 'text-blue-600 focus:ring-blue-500'}`}
                                 />
                             </label>
                         </td>
@@ -114,6 +133,7 @@ const EscalaRow: React.FC<EscalaRowProps> = ({
             {/* Mobile / Responsive Day Selector Modal */}
             {isCalendarOpen && (
                 <EscalaCalendarModal
+                    rowKey={rowKey}
                     esc={esc}
                     daysArray={daysArray}
                     year={year}
@@ -129,5 +149,5 @@ const EscalaRow: React.FC<EscalaRowProps> = ({
 };
 
 export default React.memo(EscalaRow, (prevProps, nextProps) => {
-    return prevProps.esc === nextProps.esc && prevProps.month === nextProps.month && prevProps.postoNome === nextProps.postoNome;
+    return prevProps.rowKey === nextProps.rowKey && prevProps.esc === nextProps.esc && prevProps.month === nextProps.month && prevProps.postoNome === nextProps.postoNome;
 });

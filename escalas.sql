@@ -12,7 +12,7 @@ CREATE TABLE public.supervisao_escalas (
     qnt_dias INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(competencia, funcionario_id, posto_id)
+    UNIQUE(competencia, funcionario_id, posto_id, tipo, turno)
 );
 
 -- Enable RLS

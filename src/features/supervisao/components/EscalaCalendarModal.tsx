@@ -4,19 +4,21 @@ import type { Escala } from '../types';
 import { getWeekday } from '../utils/escalaLogics';
 
 interface EscalaCalendarModalProps {
+    rowKey: string;
     esc: Partial<Escala>;
     daysArray: number[];
     year: number;
     month: number;
     postoNome: string;
-    toggleDay: (funcionarioId: string, dayNum: number) => void;
-    handleUpdateFuncionario: (funcionarioId: string, data: Partial<Escala>) => void;
+    toggleDay: (rowKey: string, dayNum: number) => void;
+    handleUpdateFuncionario: (rowKey: string, data: Partial<Escala>) => void;
     onClose: () => void;
 }
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 export const EscalaCalendarModal: React.FC<EscalaCalendarModalProps> = ({
+    rowKey,
     esc,
     daysArray,
     year,
@@ -28,7 +30,7 @@ export const EscalaCalendarModal: React.FC<EscalaCalendarModalProps> = ({
 }) => {
     const activeDays = esc.dias || [];
     const is12x36 = esc.escala === '12x36';
-    const funcionarioId = esc.funcionario_id!;
+    const isExtra = esc.tipo?.trim().toLowerCase() === 'extra';
 
     // First day of month weekday offset (0 = Sunday, 1 = Monday, ...)
     const firstDayWeekday = getWeekday(year, month, 1);
@@ -42,16 +44,16 @@ export const EscalaCalendarModal: React.FC<EscalaCalendarModalProps> = ({
 
     // Quick Actions
     const handleSelectAll = () => {
-        handleUpdateFuncionario(funcionarioId, { dias: [...daysArray] });
+        handleUpdateFuncionario(rowKey, { dias: [...daysArray] });
     };
 
     const handleClearAll = () => {
-        handleUpdateFuncionario(funcionarioId, { dias: [] });
+        handleUpdateFuncionario(rowKey, { dias: [] });
     };
 
     const handleApply12x36 = (startDay: 1 | 2) => {
         const newDias = daysArray.filter(d => (d % 2) === (startDay % 2));
-        handleUpdateFuncionario(funcionarioId, {
+        handleUpdateFuncionario(rowKey, {
             inicio_12x36: startDay,
             dias: newDias
         });
@@ -62,22 +64,35 @@ export const EscalaCalendarModal: React.FC<EscalaCalendarModalProps> = ({
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
                 
                 {/* Modal Header */}
-                <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-4 flex items-start justify-between">
+                <div className={`p-4 flex items-start justify-between text-white ${isExtra ? 'bg-gradient-to-r from-amber-800 to-amber-700' : 'bg-gradient-to-r from-blue-900 to-blue-800'}`}>
                     <div>
                         <div className="flex items-center gap-2">
-                            <CalendarIcon size={18} className="text-blue-300" />
-                            <h3 className="font-bold text-base leading-tight">Escala do Colaborador</h3>
+                            <CalendarIcon size={18} className={isExtra ? 'text-amber-300' : 'text-blue-300'} />
+                            <h3 className="font-bold text-base leading-tight">
+                                Escala do Colaborador {isExtra ? '(Plantão Extra)' : '(Plantão Oficial)'}
+                            </h3>
                         </div>
-                        <p className="text-blue-100 text-sm font-semibold mt-1">
-                            {esc.funcionario?.nome || 'Funcionário'}
-                        </p>
-                        <p className="text-blue-200 text-xs mt-0.5">
+                        <div className="flex items-center gap-2 mt-1">
+                            <p className="text-white text-sm font-semibold">
+                                {esc.funcionario?.nome || 'Funcionário'}
+                            </p>
+                            {isExtra ? (
+                                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-300 shadow-2xs">
+                                    Extra
+                                </span>
+                            ) : (
+                                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-200 text-blue-900 border border-blue-300 shadow-2xs">
+                                    Oficial
+                                </span>
+                            )}
+                        </div>
+                        <p className={`text-xs mt-0.5 ${isExtra ? 'text-amber-100' : 'text-blue-200'}`}>
                             {postoNome} &bull; {esc.funcionario?.cargo?.cargo || 'Sem Cargo'} ({esc.escala} - {esc.turno})
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-blue-200 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+                        className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
                         title="Fechar"
                     >
                         <X size={20} />
@@ -178,7 +193,7 @@ export const EscalaCalendarModal: React.FC<EscalaCalendarModalProps> = ({
                                     <button
                                         key={dayNum}
                                         type="button"
-                                        onClick={() => toggleDay(funcionarioId, dayNum)}
+                                        onClick={() => toggleDay(rowKey, dayNum)}
                                         className={`h-12 rounded-xl flex flex-col items-center justify-center transition-all relative border ${isChecked
                                             ? 'bg-blue-600 text-white border-blue-700 shadow-md scale-[1.02] ring-2 ring-blue-400'
                                             : isSunday

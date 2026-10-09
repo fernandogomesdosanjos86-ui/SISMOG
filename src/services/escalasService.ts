@@ -77,7 +77,8 @@ export const escalasService = {
 
     /**
      * Gera e salva a escala inicial para todos os funcionários alocados num Posto.
-     * Deve ser chamada manualmente via Modal de Gerar Escala.
+     * Mantém funcionários Oficiais (Fixos) e Extras (HE), permitindo que o mesmo colaborador
+     * atue como Oficial e como Extra na mesma competência.
      */
     gerarEscalaParaPosto: async (postoId: string, competencia: string, empresa: 'FEMOG' | 'SEMOG') => {
         // Fetch allocated
@@ -87,25 +88,27 @@ export const escalasService = {
         const year = parseInt(competencia.split('-')[0], 10);
         const month = parseInt(competencia.split('-')[1], 10);
 
-        // Deduplicar alocações pelo funcionario_id, priorizando he = false (Fixo)
+        // Deduplicar alocações pelo trio (funcionario_id, he/tipo, turno) para garantir 1 linha por turno/tipo
         const uniqueAllocatedMap = new Map<string, any>();
         for (const alloc of allocated) {
-            const fId = alloc.funcionario_id;
-            if (!uniqueAllocatedMap.has(fId)) {
-                uniqueAllocatedMap.set(fId, alloc);
-            } else {
-                const existing = uniqueAllocatedMap.get(fId);
-                // Se a alocação existente for HE (Extra) e a nova for fixa (he = false), substituímos pela fixa
-                if (existing.he && !alloc.he) {
-                    uniqueAllocatedMap.set(fId, alloc);
-                }
+            const tipo = alloc.he ? 'Extra' : 'Fixo';
+            const turno = alloc.turno || 'Diurno';
+            const key = `${alloc.funcionario_id}_${tipo}_${turno}`;
+            if (!uniqueAllocatedMap.has(key)) {
+                uniqueAllocatedMap.set(key, alloc);
             }
         }
         const deduplicatedAllocated = Array.from(uniqueAllocatedMap.values());
 
         // Build base scale payloads
         const payloads: Partial<Escala>[] = deduplicatedAllocated.map((alloc: any) => {
-            const preCalculatedDays = generateDaysForEscala(alloc.escala, undefined, month, year);
+            const isExtra = !!alloc.he;
+            // Para Oficial/Fixo: pré-calcula os dias base da escala
+            // Para Extra: inicia com array vazio [] para o supervisor selecionar os plantões extras específicos (ex: dia 03)
+            const preCalculatedDays = isExtra
+                ? []
+                : generateDaysForEscala(alloc.escala, undefined, month, year);
+
             return {
                 competencia,
                 empresa,
@@ -113,51 +116,86 @@ export const escalasService = {
                 funcionario_id: alloc.funcionario_id,
                 escala: alloc.escala,
                 turno: alloc.turno,
-                tipo: alloc.he ? 'Extra' : 'Fixo',
+                tipo: isExtra ? 'Extra' : 'Fixo',
                 dias: preCalculatedDays,
                 qnt_dias: preCalculatedDays.length
             };
         });
 
-        // Insert / Upsert into DB
+        // Delete existing scales for this posto + competencia before regenerating to ensure clean slate
+        await escalasService.deleteEscala(postoId, competencia);
+
+        // Insert fresh scales into DB
         return await escalasService.saveEscalaEmMassa(payloads);
     },
 
     /**
-     * Massive UPSERT: Create or update Multiple rows at once in `supervisao_escalas`
-     * We use upsert relying on the UNIQUE constraint (competencia, funcionario_id, posto_id)
+     * Salva as escalas em massa no banco de dados.
+     * Atualiza registros existentes por ID ou insere novos registros.
      */
     saveEscalaEmMassa: async (escalasData: Partial<Escala>[]) => {
-        // Deduplicar para evitar "ON CONFLICT DO UPDATE command cannot affect row a second time"
+        // Deduplicar no frontend para evitar repetições idênticas
         const uniqueEscalas = new Map<string, Partial<Escala>>();
         for (const esc of escalasData) {
-            const key = `${esc.competencia}_${esc.funcionario_id}_${esc.posto_id}`;
+            const tipo = esc.tipo || 'Fixo';
+            const turno = esc.turno || 'Diurno';
+            const key = esc.id || `${esc.competencia}_${esc.funcionario_id}_${esc.posto_id}_${tipo}_${turno}`;
             if (!uniqueEscalas.has(key)) {
                 uniqueEscalas.set(key, esc);
-            } else {
-                const existing = uniqueEscalas.get(key)!;
-                // Priorizar Fixo em relação a Extra
-                if (existing.tipo === 'Extra' && esc.tipo === 'Fixo') {
-                    uniqueEscalas.set(key, esc);
-                }
             }
         }
         const cleanData = Array.from(uniqueEscalas.values());
 
-        const { data, error } = await supabase
-            .from('supervisao_escalas')
-            .upsert(cleanData as any, {
-                onConflict: 'competencia, funcionario_id, posto_id', // Make sure it overwrites instead of creating dupes
-                ignoreDuplicates: false
-            })
-            .select();
+        // Separar registros que já possuem ID (update) e registros novos (insert/upsert)
+        const withId = cleanData.filter(item => !!item.id);
 
-        if (error) {
-            console.error('Error hitting SUPABASE UPSERT on Escalas:', error);
-            throw new Error(`Falha ao salvar as Escalas: ${error.message}`);
+        // Para os sem ID, garantir deduplicação estrita pela chave única (competencia, funcionario_id, posto_id, tipo, turno)
+        const withoutIdMap = new Map<string, Partial<Escala>>();
+        for (const item of cleanData.filter(item => !item.id)) {
+            const tipo = item.tipo || 'Fixo';
+            const turno = item.turno || 'Diurno';
+            const conflictKey = `${item.competencia}_${item.funcionario_id}_${item.posto_id}_${tipo}_${turno}`;
+            withoutIdMap.set(conflictKey, item);
+        }
+        const withoutId = Array.from(withoutIdMap.values());
+
+        const results: any[] = [];
+
+        // 1. Upsert com ID
+        if (withId.length > 0) {
+            const { data: upsertData, error: upsertErr } = await supabase
+                .from('supervisao_escalas')
+                .upsert(withId as any, {
+                    onConflict: 'id',
+                    ignoreDuplicates: false
+                })
+                .select();
+
+            if (upsertErr) {
+                console.error('Error upserting with ID:', upsertErr);
+                throw new Error(`Falha ao atualizar escalas: ${upsertErr.message}`);
+            }
+            if (upsertData) results.push(...upsertData);
         }
 
-        return data;
+        // 2. Insert/Upsert novos
+        if (withoutId.length > 0) {
+            const { data: insertData, error: insertErr } = await supabase
+                .from('supervisao_escalas')
+                .upsert(withoutId as any, {
+                    onConflict: 'competencia, funcionario_id, posto_id, tipo, turno',
+                    ignoreDuplicates: false
+                })
+                .select();
+
+            if (insertErr) {
+                console.error('Error saving new escalas:', insertErr);
+                throw new Error(`Falha ao salvar novas escalas: ${insertErr.message}`);
+            }
+            if (insertData) results.push(...insertData);
+        }
+
+        return results;
     },
 
     /**
@@ -176,5 +214,92 @@ export const escalasService = {
         }
 
         return true;
+    },
+
+    /**
+     * Sincroniza a escala atual do posto com as alocações da tabela base (alocacoes_funcionarios).
+     * - Adiciona novos colaboradores alocados (preservando o cálculo de dias padrão para oficial e vazio para extra)
+     * - Remove da escala colaboradores que foram desalocados do posto
+     * - Preserva intactos os dias já marcados para quem permaneceu alocado
+     */
+    syncEscalaComAlocacoes: async (postoId: string, competencia: string, empresa: 'FEMOG' | 'SEMOG') => {
+        // 1. Buscar alocações atuais no posto
+        const allocated = await escalasService.getAlocadosForPosto(postoId);
+
+        const year = parseInt(competencia.split('-')[0], 10);
+        const month = parseInt(competencia.split('-')[1], 10);
+
+        // Deduplicar alocações atuais pelo trio (funcionario_id, tipo, turno)
+        const uniqueAllocatedMap = new Map<string, any>();
+        for (const alloc of (allocated || [])) {
+            const tipo = alloc.he ? 'Extra' : 'Fixo';
+            const turno = alloc.turno || 'Diurno';
+            const key = `${alloc.funcionario_id}_${tipo}_${turno}`;
+            if (!uniqueAllocatedMap.has(key)) {
+                uniqueAllocatedMap.set(key, alloc);
+            }
+        }
+
+        // 2. Buscar escalas existentes no posto para esta competência
+        const currentEscalas = await escalasService.getEscalasByPosto(postoId, competencia);
+        const currentEscalasMap = new Map<string, Escala>();
+        for (const esc of currentEscalas) {
+            const tipo = esc.tipo || 'Fixo';
+            const turno = esc.turno || 'Diurno';
+            const key = `${esc.funcionario_id}_${tipo}_${turno}`;
+            currentEscalasMap.set(key, esc);
+        }
+
+        // 3. Identificar os que foram removidos (estavam na escala mas não estão mais alocados)
+        const idsToDelete: string[] = [];
+        for (const [key, esc] of currentEscalasMap.entries()) {
+            if (!uniqueAllocatedMap.has(key)) {
+                if (esc.id) idsToDelete.push(esc.id);
+            }
+        }
+
+        if (idsToDelete.length > 0) {
+            const { error: delError } = await supabase
+                .from('supervisao_escalas')
+                .delete()
+                .in('id', idsToDelete);
+
+            if (delError) {
+                console.error('Erro ao remover escalas desalocadas:', delError);
+                throw new Error(`Falha ao remover colaboradores desalocados: ${delError.message}`);
+            }
+        }
+
+        // 4. Identificar novos a adicionar
+        const toInsert: Partial<Escala>[] = [];
+        for (const [key, alloc] of uniqueAllocatedMap.entries()) {
+            if (!currentEscalasMap.has(key)) {
+                const isExtra = !!alloc.he;
+                const preCalculatedDays = isExtra
+                    ? []
+                    : generateDaysForEscala(alloc.escala, undefined, month, year);
+
+                toInsert.push({
+                    competencia,
+                    empresa,
+                    posto_id: postoId,
+                    funcionario_id: alloc.funcionario_id,
+                    escala: alloc.escala,
+                    turno: alloc.turno,
+                    tipo: isExtra ? 'Extra' : 'Fixo',
+                    dias: preCalculatedDays,
+                    qnt_dias: preCalculatedDays.length
+                });
+            }
+        }
+
+        if (toInsert.length > 0) {
+            await escalasService.saveEscalaEmMassa(toInsert);
+        }
+
+        return {
+            addedCount: toInsert.length,
+            removedCount: idsToDelete.length
+        };
     }
 };
