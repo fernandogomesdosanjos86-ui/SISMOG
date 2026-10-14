@@ -32,7 +32,7 @@ export const BeneficioDetailsModal: React.FC<BeneficioDetailsModalProps> = ({
     // Recálculo automático dos totais em tempo real
     const calculations = useMemo(() => {
         const diasTrab = Math.max(0, Number(formData.dias_trabalhar) || 0);
-        const diasAus = Math.abs(Number(formData.dias_ausente) || 0);
+        const diasAus = Number(formData.dias_ausente) || 0;
         const totalDias = Math.max(0, diasTrab - diasAus);
 
         const valAlim = Math.max(0, Number(formData.valor_alimentacao_dia) || 0);
@@ -128,8 +128,14 @@ export const BeneficioDetailsModal: React.FC<BeneficioDetailsModalProps> = ({
                             <span className="text-base font-semibold text-gray-900">{beneficio.dias_trabalhar}</span>
                         </div>
                         <div>
-                            <span className="text-xs text-blue-600 block">Faltas / Ausências</span>
-                            <span className="text-base font-semibold text-gray-900">{beneficio.dias_ausente}</span>
+                            <span className="text-xs text-blue-600 block">Faltas / Trocas</span>
+                            <span className="text-base font-semibold text-gray-900">
+                                {Number(beneficio.dias_ausente) < 0
+                                    ? `+${Math.abs(Number(beneficio.dias_ausente))} (Troca Presença)`
+                                    : Number(beneficio.dias_ausente) > 0
+                                        ? `-${beneficio.dias_ausente} (Ausência)`
+                                        : '0'}
+                            </span>
                         </div>
                         <div>
                             <span className="text-xs text-blue-600 block">Dias Efetivos</span>
@@ -229,10 +235,13 @@ export const BeneficioDetailsModal: React.FC<BeneficioDetailsModalProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Dias Ausente / Faltas</label>
+                                <label className="block text-xs font-medium text-gray-700 mb-1" title="Positivo: subtrai dias (faltas). Negativo: adiciona dias (troca de plantão).">
+                                    Faltas / Trocas
+                                    <span className="text-[10px] text-gray-400 font-normal ml-1">(-Troca / +Falta)</span>
+                                </label>
                                 <input
                                     type="number"
-                                    min="0"
+                                    min="-31"
                                     max="31"
                                     value={formData.dias_ausente}
                                     onChange={(e) => setFormData({ ...formData, dias_ausente: Number(e.target.value) })}

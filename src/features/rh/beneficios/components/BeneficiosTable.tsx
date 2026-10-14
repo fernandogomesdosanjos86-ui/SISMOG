@@ -75,11 +75,17 @@ const BeneficiosTable: React.FC<BeneficiosTableProps> = ({
         {
             key: 'dias',
             header: 'Dias',
-            render: (i: BeneficioCalculado) => (
-                <span className="text-sm font-medium">
-                    {i.total_dias} <span className="text-xs text-gray-500 font-normal">({i.dias_trabalhar} Trab / {i.dias_ausente} Aus)</span>
-                </span>
-            )
+            render: (i: BeneficioCalculado) => {
+                const ausVal = Number(i.dias_ausente || 0);
+                const ausenteBadge = ausVal < 0
+                    ? `+${Math.abs(ausVal)} Troca`
+                    : `${ausVal} Aus`;
+                return (
+                    <span className="text-sm font-medium">
+                        {i.total_dias} <span className="text-xs text-gray-500 font-normal">({i.dias_trabalhar} Trab / {ausenteBadge})</span>
+                    </span>
+                );
+            }
         },
         {
             key: 'totais',
@@ -104,27 +110,31 @@ const BeneficiosTable: React.FC<BeneficiosTableProps> = ({
         }
     ];
 
-    const renderCard = (i: BeneficioCalculado) => (
-        <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${i.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
-            <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="font-semibold text-gray-900">{i.funcionarios?.nome}</h3>
-                    <p className="text-xs text-gray-500">{i.cargos_salarios?.cargo || '-'}</p>
-                    <p className="text-xs text-blue-600 font-medium mt-1">{i.postos_trabalho?.nome || 'N/A'}</p>
-                </div>
-                <CompanyBadge company={i.empresa} />
-            </div>
+    const renderCard = (i: BeneficioCalculado) => {
+        const ausVal = Number(i.dias_ausente || 0);
+        const badgeMobile = ausVal < 0 ? `+${Math.abs(ausVal)} Troca` : `${ausVal} Aus`;
 
-            <div className="flex justify-between items-center text-sm mt-2 border-b pb-2">
-                <div>
-                    <span className="text-gray-500 block text-xs">Dias Calculados</span>
-                    <span className="font-medium">{i.total_dias} <span className="text-xs font-normal text-gray-400">({i.dias_trabalhar}/{i.dias_ausente})</span></span>
+        return (
+            <div className={`flex flex-col gap-2 relative border-l-4 pl-3 ${i.empresa === 'FEMOG' ? 'border-l-blue-500' : 'border-l-orange-500'}`}>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="font-semibold text-gray-900">{i.funcionarios?.nome}</h3>
+                        <p className="text-xs text-gray-500">{i.cargos_salarios?.cargo || '-'}</p>
+                        <p className="text-xs text-blue-600 font-medium mt-1">{i.postos_trabalho?.nome || 'N/A'}</p>
+                    </div>
+                    <CompanyBadge company={i.empresa} />
                 </div>
-                <div className="text-right">
-                    <span className="text-gray-500 block text-xs">Total Geral</span>
-                    <span className="font-bold text-green-600">{formatarMoeda(i.total_geral)}</span>
+
+                <div className="flex justify-between items-center text-sm mt-2 border-b pb-2">
+                    <div>
+                        <span className="text-gray-500 block text-xs">Dias Calculados</span>
+                        <span className="font-medium">{i.total_dias} <span className="text-xs font-normal text-gray-400">({i.dias_trabalhar}/{badgeMobile})</span></span>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-gray-500 block text-xs">Total Geral</span>
+                        <span className="font-bold text-green-600">{formatarMoeda(i.total_geral)}</span>
+                    </div>
                 </div>
-            </div>
 
             <div className="grid grid-cols-2 gap-2 text-sm mt-1">
                 <div>
@@ -144,6 +154,7 @@ const BeneficiosTable: React.FC<BeneficiosTableProps> = ({
             </div>
         </div>
     );
+};
 
     return (
         <div>

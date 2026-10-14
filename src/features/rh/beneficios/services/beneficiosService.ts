@@ -138,7 +138,7 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         return mapEscalasCountFallback.get(funcId) || 0;
     };
 
-    // Determinar competência ANTERIOR para buscar faltas
+    // Determinar competência ANTERIOR para buscar apontamentos
     let mesAnt = parseInt(mesStr, 10) - 1;
     let anoAnt = parseInt(anoStr, 10);
     if (mesAnt === 0) {
@@ -146,10 +146,12 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         anoAnt -= 1;
     }
 
-    const inicioMesAnterior = new Date(anoAnt, mesAnt - 1, 1).toISOString().split('T')[0];
-    const fimMesAnterior = new Date(anoAnt, mesAnt, 0).toISOString().split('T')[0];
+    const mesAntStr = String(mesAnt).padStart(2, '0');
+    const ultimoDia = new Date(anoAnt, mesAnt, 0).getDate();
+    const inicioMesAnterior = `${anoAnt}-${mesAntStr}-01`;
+    const fimMesAnterior = `${anoAnt}-${mesAntStr}-${String(ultimoDia).padStart(2, '0')}`;
 
-    // 3. Buscar Dias Ausentes na competência anterior
+    // 3. Buscar Dias Ausentes / Apontamentos na competência anterior
     const { data: apontamentos, error: aptError } = await supabase
         .from('supervisao_apontamentos')
         .select('funcionario_id, beneficios_pts')
@@ -183,10 +185,10 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
 
     if (gratError) throw new Error(`Erro nas gratificações: ${gratError.message}`);
 
-    const mapFaltas = new Map<string, number>();
+    const mapPontos = new Map<string, number>();
     const typedApontamentos = apontamentos as unknown as ApontamentoResult[];
     typedApontamentos.forEach(a => {
-        mapFaltas.set(a.funcionario_id, (mapFaltas.get(a.funcionario_id) || 0) + (a.beneficios_pts || 0));
+        mapPontos.set(a.funcionario_id, (mapPontos.get(a.funcionario_id) || 0) + (a.beneficios_pts || 0));
     });
 
     const mapIncentivos = new Map<string, number>();
@@ -223,10 +225,17 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         const baseCombustivel = funcionarioInfo?.valor_combustivel_dia || 0;
 
         const diasTrabalhar = getDiasTrabalhar(funcId);
-        const diasAusente = mapFaltas.get(funcId) || 0;
+        const pontosBeneficios = mapPontos.get(funcId) || 0;
 
-        const absAusente = Math.abs(diasAusente);
-        const totalDias = Math.max(0, diasTrabalhar - absAusente);
+        // No apontamento:
+        // - Falta/Ausência/Atestado/Abono/Penalidade/Troca Ausência tem beneficios_pts = -1 (dedução de 1 dia)
+        // - Troca Presença tem beneficios_pts = +1 (acréscimo de 1 dia)
+        // No banco: total_dias = GREATEST(0, dias_trabalhar - dias_ausente)
+        // Logo: dias_ausente = -pontosBeneficios
+        // Exemplo Genival (+1 Troca Presença): dias_ausente = -1 => total_dias = 21 - (-1) = 22
+        // Exemplo Falta (-1 Ausência): dias_ausente = 1 => total_dias = 21 - 1 = 20
+        const diasAusente = -pontosBeneficios;
+        const totalDias = Math.max(0, diasTrabalhar - diasAusente);
 
         const incentivoMensal = mapIncentivos.get(funcId) || 0;
 
@@ -236,7 +245,7 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
         const tGeral = tAlim + tTransp + tComb + incentivoMensal;
 
         // Se total for > 0 ou dias > 0 geramos
-        if (diasTrabalhar > 0 || incentivoMensal > 0) {
+        if (diasTrabalhar > 0 || totalDias > 0 || incentivoMensal > 0) {
             payloadToInsert.push({
                 competencia,
                 empresa,
@@ -244,7 +253,7 @@ export async function gerarBeneficios({ competencia, empresa }: GenerateParams) 
                 funcionario_id: funcId,
                 cargo_id: cargoId,
                 dias_trabalhar: diasTrabalhar,
-                dias_ausente: absAusente,
+                dias_ausente: diasAusente,
                 valor_alimentacao_dia: baseAlimentacao,
                 valor_transporte_dia: baseTransporte,
                 valor_combustivel_dia: baseCombustivel,
